@@ -1,5 +1,5 @@
-use libc::{c_ulong, c_void};
 use core::ptr;
+use libc::{c_ulong, c_void};
 
 pub trait RawWindowHandleEx {
     fn new_x11(handle: X11Handle) -> Self;
@@ -13,7 +13,7 @@ impl RawWindowHandleEx for crate::RawWindowHandle {
         Self {
             handle: RawWindowHandle {
                 handle: UnixHandle::X11(handle),
-            }
+            },
         }
     }
 
@@ -21,7 +21,7 @@ impl RawWindowHandleEx for crate::RawWindowHandle {
         Self {
             handle: RawWindowHandle {
                 handle: UnixHandle::Wayland(handle),
-            }
+            },
         }
     }
 

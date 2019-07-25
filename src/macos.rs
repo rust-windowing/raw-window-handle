@@ -1,5 +1,5 @@
-use libc::c_void;
 use core::ptr;
+use libc::c_void;
 
 pub trait RawWindowHandleEx {
     fn new(handle: MacOSHandle) -> Self;
@@ -9,9 +9,7 @@ pub trait RawWindowHandleEx {
 impl RawWindowHandleEx for crate::RawWindowHandle {
     fn new(handle: MacOSHandle) -> Self {
         Self {
-            handle: RawWindowHandle {
-                handle,
-            }
+            handle: RawWindowHandle { handle },
         }
     }
 
