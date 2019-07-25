@@ -3,8 +3,10 @@ name = "raw-window-handle"
 version = "0.1.0"
 authors = ["Osspial <osspial@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "Raw platform window types for interoperability"
+license = "Unlicense"
+repository = "https://github.com/rust-windowing/raw-window-handle"
+keywords = ["windowing"]
 
 [dependencies]
 libc = {version="0.2", features=[]}
