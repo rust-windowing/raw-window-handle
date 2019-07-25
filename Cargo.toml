@@ -1,7 +1,10 @@
 [package]
 name = "raw-window-handle"
 version = "0.1.0"
-authors = ["Osspial <osspial@gmail.com>"]
+authors = [
+	"Osspial <osspial@gmail.com>",
+	"Dzmitry Malyshau <kvarkus@gmail.com>",
+]
 edition = "2018"
 description = "Raw platform window types for interoperability"
 license = "Unlicense"

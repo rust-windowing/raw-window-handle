@@ -1,15 +1,8 @@
 use core::ptr;
 use libc::{c_ulong, c_void};
 
-pub trait RawWindowHandleEx {
-    fn new_x11(handle: X11Handle) -> Self;
-    fn new_wayland(handle: WaylandHandle) -> Self;
-    fn x11_handle(&self) -> Option<X11Handle>;
-    fn wayland_handle(&self) -> Option<WaylandHandle>;
-}
-
-impl RawWindowHandleEx for crate::RawWindowHandle {
-    fn new_x11(handle: X11Handle) -> Self {
+impl crate::RawWindowHandle {
+    pub fn new_x11(handle: X11Handle) -> Self {
         Self {
             handle: RawWindowHandle {
                 handle: UnixHandle::X11(handle),
@@ -17,7 +10,7 @@ impl RawWindowHandleEx for crate::RawWindowHandle {
         }
     }
 
-    fn new_wayland(handle: WaylandHandle) -> Self {
+    pub fn new_wayland(handle: WaylandHandle) -> Self {
         Self {
             handle: RawWindowHandle {
                 handle: UnixHandle::Wayland(handle),
@@ -25,14 +18,14 @@ impl RawWindowHandleEx for crate::RawWindowHandle {
         }
     }
 
-    fn x11_handle(&self) -> Option<X11Handle> {
+    pub fn x11_handle(&self) -> Option<X11Handle> {
         match self.handle.handle {
             UnixHandle::X11(handle) => Some(handle),
             UnixHandle::Wayland(_) => None,
         }
     }
 
-    fn wayland_handle(&self) -> Option<WaylandHandle> {
+    pub fn wayland_handle(&self) -> Option<WaylandHandle> {
         match self.handle.handle {
             UnixHandle::X11(_) => None,
             UnixHandle::Wayland(handle) => Some(handle),
@@ -64,8 +57,8 @@ pub struct WaylandHandle {
 }
 
 impl X11Handle {
-    pub fn empty() -> X11Handle {
-        X11Handle {
+    pub fn empty() -> Self {
+        Self {
             window: 0,
             display: ptr::null_mut(),
             _non_exhaustive: (),
@@ -74,8 +67,8 @@ impl X11Handle {
 }
 
 impl WaylandHandle {
-    pub fn empty() -> WaylandHandle {
-        WaylandHandle {
+    pub fn empty() -> Self {
+        Self {
             surface: ptr::null_mut(),
             display: ptr::null_mut(),
             _non_exhaustive: (),

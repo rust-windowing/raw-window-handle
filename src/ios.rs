@@ -1,19 +1,14 @@
 use core::ptr;
 use libc::c_void;
 
-pub trait RawWindowHandleEx {
-    fn new(handle: IOSHandle) -> Self;
-    fn ios_handle(&self) -> IOSHandle;
-}
-
-impl RawWindowHandleEx for crate::RawWindowHandle {
-    fn new(handle: IOSHandle) -> Self {
+impl crate::RawWindowHandle {
+    pub fn new(handle: IOSHandle) -> Self {
         Self {
             handle: RawWindowHandle { handle },
         }
     }
 
-    fn ios_handle(&self) -> IOSHandle {
+    pub fn ios_handle(&self) -> IOSHandle {
         self.handle.handle
     }
 }
@@ -31,8 +26,8 @@ pub struct IOSHandle {
 }
 
 impl IOSHandle {
-    pub fn empty() -> IOSHandle {
-        IOSHandle {
+    pub fn empty() -> Self {
+        Self {
             ui_window: ptr::null_mut(),
             ui_view: ptr::null_mut(),
             ui_view_controller: ptr::null_mut(),
