@@ -10,3 +10,6 @@ keywords = ["windowing"]
 
 [dependencies]
 libc = {version="0.2", features=[]}
+
+[features]
+nightly-docs = []

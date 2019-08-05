@@ -1,31 +1,9 @@
 use core::ptr;
 use libc::c_void;
 
-pub trait RawWindowHandleEx {
-    fn new_windows(handle: WindowsHandle) -> Self;
-    fn windows_handle(&self) -> WindowsHandle;
-}
-
-impl RawWindowHandleEx for crate::RawWindowHandle {
-    fn new_windows(handle: WindowsHandle) -> Self {
-        Self {
-            handle: RawWindowHandle { handle },
-        }
-    }
-
-    fn windows_handle(&self) -> WindowsHandle {
-        self.handle.handle
-    }
-}
-
-pub(crate) struct RawWindowHandle {
-    handle: WindowsHandle,
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct WindowsHandle {
     pub hwnd: *mut c_void,
-    // TODO: WHAT ABOUT ns_window_controller and ns_view_controller?
     _non_exhaustive: (),
 }
 
