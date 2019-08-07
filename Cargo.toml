@@ -13,3 +13,6 @@ libc = {version="0.2", features=[]}
 
 [features]
 nightly-docs = []
+
+[package.metadata.docs.rs]
+features = ["nightly-docs"]
