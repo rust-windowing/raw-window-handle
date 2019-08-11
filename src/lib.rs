@@ -61,6 +61,9 @@ mod platform {
 /// to be `null` or `0`, and appropriate checking should be done before the handle is used. However,
 /// users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
 /// implementor of this trait to ensure that condition is upheld.
+///
+/// The exact handle returned by `raw_window_handle` must not change during the lifetime of this
+/// trait's implementor.
 pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
