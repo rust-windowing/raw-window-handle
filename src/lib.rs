@@ -1,3 +1,4 @@
+//! Interoperability library for Rust Windowing applications.
 #![cfg_attr(feature = "nightly-docs", feature(doc_cfg))]
 #![no_std]
 
@@ -54,7 +55,13 @@ mod platform {
     pub use crate::ios::*;
 }
 
-pub trait HasRawWindowHandle {
+//! Window that wraps around a raw window handle.
+//!
+//! It is entirely valid behavior for fields within each platform-specific `RawWindowHandle` variant
+//! to be `null` or `0`, and appropriate checking should be done before the handle is used. However,
+//! users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+//! implementor of this trait to ensure that condition is upheld.
+pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
 
