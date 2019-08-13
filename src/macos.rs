@@ -6,7 +6,9 @@ pub struct MacOSHandle {
     pub ns_window: *mut c_void,
     pub ns_view: *mut c_void,
     // TODO: WHAT ABOUT ns_window_controller and ns_view_controller?
-    _non_exhaustive: (),
+    #[doc(hidden)]
+    #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]
+    pub _non_exhaustive_do_not_use: crate::seal::Seal,
 }
 
 impl MacOSHandle {
@@ -14,7 +16,7 @@ impl MacOSHandle {
         MacOSHandle {
             ns_window: ptr::null_mut(),
             ns_view: ptr::null_mut(),
-            _non_exhaustive: (),
+            _non_exhaustive_do_not_use: crate::seal::Seal,
         }
     }
 }
