@@ -7,6 +7,12 @@ description = "Raw platform window types for interoperability"
 license = "Unlicense"
 repository = "https://github.com/rust-windowing/raw-window-handle"
 keywords = ["windowing"]
+readme = "README.md"
+documentation = "https://docs.rs/raw-window-handle"
+
+[badges]
+travis-ci = { repository = "rust-windowing/raw-window-handle" }
+appveyor = { repository = "rust-windowing/raw-window-handle" }
 
 [dependencies]
 libc = {version="0.2", features=[]}
