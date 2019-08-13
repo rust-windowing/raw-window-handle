@@ -2,7 +2,11 @@
 //!
 //! ## Platform handle initialization
 //!
-//! Each platform handle struct is purposefully non-exhaustive,
+//! Each platform handle struct is purposefully non-exhaustive, so that additional fields may be
+//! added without breaking backwards compatibility. Each struct provides an `empty` method that may
+//! be used along with the struct update syntax to construct it. See each specific struct for
+//! examples.
+//!
 #![cfg_attr(feature = "nightly-docs", feature(doc_cfg))]
 #![no_std]
 

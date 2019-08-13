@@ -1,6 +1,16 @@
 use core::ptr;
 use libc::c_void;
 
+/// Raw window handle for macOS.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::macos::MacOSHandle;
+/// let handle = MacOSHandle {
+///     /* fields */
+///     ..MacOSHandle::empty()
+/// };
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MacOSHandle {
     pub ns_window: *mut c_void,
@@ -13,6 +23,7 @@ pub struct MacOSHandle {
 
 impl MacOSHandle {
     pub fn empty() -> MacOSHandle {
+        #[allow(deprecated)]
         MacOSHandle {
             ns_window: ptr::null_mut(),
             ns_view: ptr::null_mut(),

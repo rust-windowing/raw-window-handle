@@ -1,6 +1,16 @@
 use core::ptr;
 use libc::c_void;
 
+/// Raw window handle for iOS.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::ios::IOSHandle;
+/// let handle = IOSHandle {
+///     /* fields */
+///     ..IOSHandle::empty()
+/// };
+/// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct IOSHandle {
     pub ui_window: *mut c_void,
@@ -13,6 +23,7 @@ pub struct IOSHandle {
 
 impl IOSHandle {
     pub fn empty() -> IOSHandle {
+        #[allow(deprecated)]
         IOSHandle {
             ui_window: ptr::null_mut(),
             ui_view: ptr::null_mut(),
