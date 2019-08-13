@@ -1,4 +1,12 @@
 //! Interoperability library for Rust Windowing applications.
+//!
+//! ## Platform handle initialization
+//!
+//! Each platform handle struct is purposefully non-exhaustive, so that additional fields may be
+//! added without breaking backwards compatibility. Each struct provides an `empty` method that may
+//! be used along with the struct update syntax to construct it. See each specific struct for
+//! examples.
+//!
 #![cfg_attr(feature = "nightly-docs", feature(doc_cfg))]
 #![no_std]
 
@@ -126,9 +134,11 @@ pub enum RawWindowHandle {
     Windows(windows::WindowsHandle),
 
     #[doc(hidden)]
+    #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]
     __NonExhaustiveDoNotUse(seal::Seal),
 }
 
 mod seal {
-    pub enum Seal {}
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct Seal;
 }
