@@ -1,7 +1,6 @@
 use core::ptr;
 use libc::c_void;
 
-
 /// Raw window handle for Windows.
 ///
 /// ## Construction
