@@ -1,5 +1,10 @@
 //! Interoperability library for Rust Windowing applications.
 //!
+//! This library provides standard types for accessing a window's platform-specific raw window
+//! handle. This does not provide any utilities for creating and managing windows; instead, it
+//! provides a common interface that window creation libraries (e.g. Winit, SDL) can use to easily
+//! talk with graphics libraries (e.g. gfx-hal).
+//!
 //! ## Platform handle initialization
 //!
 //! Each platform handle struct is purposefully non-exhaustive, so that additional fields may be
