@@ -1,5 +1,4 @@
-use core::ptr;
-use libc::c_void;
+use core::{ptr, c_void};
 
 /// Raw window handle for macOS.
 ///

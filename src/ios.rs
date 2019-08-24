@@ -1,5 +1,5 @@
 use core::ptr;
-use libc::c_void;
+use core::ffi::c_void;
 
 /// Raw window handle for iOS.
 ///
