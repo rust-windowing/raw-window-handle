@@ -1,4 +1,5 @@
-use core::{ptr, c_void};
+use core::ptr;
+use core::ffi::c_void;
 
 /// Raw window handle for macOS.
 ///
@@ -21,9 +22,9 @@ pub struct MacOSHandle {
 }
 
 impl MacOSHandle {
-    pub fn empty() -> MacOSHandle {
+    pub fn empty() -> Self {
         #[allow(deprecated)]
-        MacOSHandle {
+        Self {
             ns_window: ptr::null_mut(),
             ns_view: ptr::null_mut(),
             _non_exhaustive_do_not_use: crate::seal::Seal,

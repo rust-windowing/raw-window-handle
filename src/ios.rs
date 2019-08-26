@@ -22,9 +22,9 @@ pub struct IOSHandle {
 }
 
 impl IOSHandle {
-    pub fn empty() -> IOSHandle {
+    pub fn empty() -> Self {
         #[allow(deprecated)]
-        IOSHandle {
+        Self {
             ui_window: ptr::null_mut(),
             ui_view: ptr::null_mut(),
             ui_view_controller: ptr::null_mut(),
