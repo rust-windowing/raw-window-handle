@@ -110,7 +110,7 @@ pub enum RawWindowHandle {
 
     #[cfg_attr(
         feature = "nightly-docs",
-    	doc(cfg(any(
+        doc(cfg(any(
             target_os = "linux",
             target_os = "dragonfly",
             target_os = "freebsd",
