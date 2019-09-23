@@ -45,12 +45,12 @@ pub mod macos;
     ))
 )]
 pub mod unix;
-#[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "windows")))]
-#[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "windows"))]
-pub mod windows;
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_arch = "wasm32")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_arch = "wasm32"))]
 pub mod web;
+#[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "windows")))]
+#[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "windows"))]
+pub mod windows;
 
 mod platform {
     #[cfg(target_os = "android")]
