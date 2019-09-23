@@ -46,7 +46,9 @@ pub mod windows;
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "ios")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "ios"))]
 pub mod ios;
-// pub mod wasm;
+#[cfg_attr(feature = "nightly-docs", doc(cfg(target_arch = "wasm32")))]
+#[cfg_attr(not(feature = "nightly-docs"), cfg(target_arch = "wasm32"))]
+pub mod web;
 
 mod platform {
     #[cfg(target_os = "macos")]
@@ -66,6 +68,8 @@ mod platform {
     // mod platform;
     #[cfg(target_os = "ios")]
     pub use crate::ios::*;
+    #[cfg(target_arch = "wasm32")]
+    pub use crate::web::*;
 }
 
 /// Window that wraps around a raw window handle.
@@ -138,6 +142,10 @@ pub enum RawWindowHandle {
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "windows")))]
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "windows"))]
     Windows(windows::WindowsHandle),
+
+    #[cfg_attr(feature = "nightly-docs", doc(cfg(target_arch = "wasm32")))]
+    #[cfg_attr(not(feature = "nightly-docs"), cfg(target_arch = "wasm32"))]
+    Web(web::WebHandle),
 
     #[doc(hidden)]
     #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]
