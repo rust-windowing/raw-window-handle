@@ -15,6 +15,12 @@
 #![cfg_attr(feature = "nightly-docs", feature(doc_cfg))]
 #![no_std]
 
+#[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "android")))]
+#[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "android"))]
+pub mod android;
+#[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "ios")))]
+#[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "ios"))]
+pub mod ios;
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "macos")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "macos"))]
 pub mod macos;
@@ -42,15 +48,13 @@ pub mod unix;
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "windows")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "windows"))]
 pub mod windows;
-// pub mod android;
-#[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "ios")))]
-#[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "ios"))]
-pub mod ios;
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_arch = "wasm32")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_arch = "wasm32"))]
 pub mod web;
 
 mod platform {
+    #[cfg(target_os = "android")]
+    pub use crate::android::*;
     #[cfg(target_os = "macos")]
     pub use crate::macos::*;
     #[cfg(any(
@@ -63,8 +67,6 @@ mod platform {
     pub use crate::unix::*;
     #[cfg(target_os = "windows")]
     pub use crate::windows::*;
-    // #[cfg(target_os = "android")]
-    // #[path = "android/mod.rs"]
     // mod platform;
     #[cfg(target_os = "ios")]
     pub use crate::ios::*;
@@ -146,6 +148,10 @@ pub enum RawWindowHandle {
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_arch = "wasm32")))]
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_arch = "wasm32"))]
     Web(web::WebHandle),
+
+    #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "android")))]
+    #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "android"))]
+    Android(android::AndroidHandle),
 
     #[doc(hidden)]
     #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]
