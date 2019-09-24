@@ -10,7 +10,7 @@
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct WebHandle {
-    /// An ID value inserted into the data attributes of the canvas element
+    /// An ID value inserted into the data attributes of the canvas element as 'raw-handle'
     ///
     /// Each canvas created by the windowing system shoudl be assigned their own unique ID.
     /// 0 should be reserved for invalid / null IDs.
