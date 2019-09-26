@@ -1,20 +1,39 @@
 use core::ptr;
 use libc::{c_ulong, c_void};
 
-/// Raw window handle for X11.
+/// Raw window handle for Xlib.
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::unix::X11Handle;
-/// let handle = X11Handle {
+/// # use raw_window_handle::unix::XlibHandle;
+/// let handle = XlibHandle {
 ///     /* fields */
-///     ..X11Handle::empty()
+///     ..XlibHandle::empty()
 /// };
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct X11Handle {
+pub struct XlibHandle {
     pub window: c_ulong,
     pub display: *mut c_void,
+    #[doc(hidden)]
+    #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]
+    pub _non_exhaustive_do_not_use: crate::seal::Seal,
+}
+
+/// Raw window handle for Xcb.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::unix::XcbHandle;
+/// let handle = XcbHandle {
+///     /* fields */
+///     ..XcbHandle::empty()
+/// };
+/// ```
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct XcbHandle {
+    pub surface: u32, // Based on xproto.h
+    pub connection: *mut c_void,
     #[doc(hidden)]
     #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]
     pub _non_exhaustive_do_not_use: crate::seal::Seal,
@@ -39,12 +58,23 @@ pub struct WaylandHandle {
     pub _non_exhaustive_do_not_use: crate::seal::Seal,
 }
 
-impl X11Handle {
-    pub fn empty() -> X11Handle {
+impl XlibHandle {
+    pub fn empty() -> XlibHandle {
         #[allow(deprecated)]
-        X11Handle {
+        XlibHandle {
             window: 0,
             display: ptr::null_mut(),
+            _non_exhaustive_do_not_use: crate::seal::Seal,
+        }
+    }
+}
+
+impl XcbHandle {
+    pub fn empty() -> XcbHandle {
+        #[allow(deprecated)]
+        XcbHandle {
+            surface: 0,
+            connection: ptr::null_mut(),
             _non_exhaustive_do_not_use: crate::seal::Seal,
         }
     }

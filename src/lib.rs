@@ -117,7 +117,29 @@ pub enum RawWindowHandle {
             target_os = "openbsd"
         ))
     )]
-    X11(unix::X11Handle),
+    Xlib(unix::XlibHandle),
+
+    #[cfg_attr(
+        feature = "nightly-docs",
+        doc(cfg(any(
+            target_os = "linux",
+            target_os = "dragonfly",
+            target_os = "freebsd",
+            target_os = "netbsd",
+            target_os = "openbsd"
+        )))
+    )]
+    #[cfg_attr(
+        not(feature = "nightly-docs"),
+        cfg(any(
+            target_os = "linux",
+            target_os = "dragonfly",
+            target_os = "freebsd",
+            target_os = "netbsd",
+            target_os = "openbsd"
+        ))
+    )]
+    Xcb(unix::XcbHandle),
 
     #[cfg_attr(
         feature = "nightly-docs",
