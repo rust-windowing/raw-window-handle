@@ -45,10 +45,12 @@ pub mod macos;
     ))
 )]
 pub mod unix;
+#[cfg_attr(feature = "nightly-docs", doc(cfg(target_arch = "wasm32")))]
+#[cfg_attr(not(feature = "nightly-docs"), cfg(target_arch = "wasm32"))]
+pub mod web;
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "windows")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "windows"))]
 pub mod windows;
-// pub mod wasm;
 
 mod platform {
     #[cfg(target_os = "android")]
@@ -68,6 +70,8 @@ mod platform {
     // mod platform;
     #[cfg(target_os = "ios")]
     pub use crate::ios::*;
+    #[cfg(target_arch = "wasm32")]
+    pub use crate::web::*;
 }
 
 /// Window that wraps around a raw window handle.
@@ -140,6 +144,10 @@ pub enum RawWindowHandle {
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "windows")))]
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "windows"))]
     Windows(windows::WindowsHandle),
+
+    #[cfg_attr(feature = "nightly-docs", doc(cfg(target_arch = "wasm32")))]
+    #[cfg_attr(not(feature = "nightly-docs"), cfg(target_arch = "wasm32"))]
+    Web(web::WebHandle),
 
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "android")))]
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "android"))]
