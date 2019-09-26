@@ -1,8 +1,9 @@
 # 0.2.0 (2019-09-26)
 
-* **Breaking:** Rename `X11` to `XLib`
-* Add XCB support
-* Add Web support
+* **Breaking:** Rename `X11` to `XLib`.
+* Add XCB support.
+* Add Web support.
+* Add Android support.
 
 # 0.1.2 (2019-08-13)
 
