@@ -14,7 +14,7 @@ pub struct WebHandle {
     ///
     /// When accessing from JS, the attribute will automatically be called rawHandle
     ///
-    /// Each canvas created by the windowing system shoudl be assigned their own unique ID.
+    /// Each canvas created by the windowing system should be assigned their own unique ID.
     /// 0 should be reserved for invalid / null IDs.
     pub id: u32,
     #[doc(hidden)]
