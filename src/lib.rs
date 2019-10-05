@@ -87,6 +87,12 @@ pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
 
+unsafe impl HasRawWindowHandle for RawWindowHandle {
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        *self
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RawWindowHandle {
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "ios")))]
