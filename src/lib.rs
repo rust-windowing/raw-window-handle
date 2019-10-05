@@ -81,6 +81,11 @@ mod platform {
 /// users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
 /// implementor of this trait to ensure that condition is upheld.
 ///
+/// Despite that qualification, implementors should still make a best-effort attempt to fill in all
+/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
+/// try to derive the field from other fields the implementor *does* provide via whatever methods the
+/// platform provides.
+///
 /// The exact handle returned by `raw_window_handle` must not change during the lifetime of this
 /// trait's implementor.
 pub unsafe trait HasRawWindowHandle {
