@@ -2,6 +2,7 @@
 
 * **Breaking:** Rename `XLib.surface` to `XLib.window`, as that more accurately represents the underlying type.
 * Implement `HasRawWindowHandle` for `RawWindowHandle`
+* Add `HINSTANCE` field to `WindowsHandle`.
 
 # 0.2.0 (2019-09-26)
 
