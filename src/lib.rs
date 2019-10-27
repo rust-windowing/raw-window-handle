@@ -89,7 +89,8 @@ mod platform {
 /// platform provides.
 ///
 /// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
-/// to `raw_window_handle`, and must be valid for at least the the implementer's lifetime.
+/// to `raw_window_handle`, and must be valid for at least the lifetime of the `HasRawWindowHandle`
+/// implementer.
 pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
