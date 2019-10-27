@@ -1,3 +1,8 @@
+# Unreleased
+
+* Remove `RawWindowHandle`'s `HasRawWindowHandle` implementation, as it was unsound (see [#35](https://github.com/rust-windowing/raw-window-handle/issues/35))
+* Explicitly require that handles within `RawWindowHandle` be valid for the lifetime of the `HasRawWindowHandle` implementation that provided them.
+
 # 0.3.0 (2019-10-5)
 
 * **Breaking:** Rename `XLib.surface` to `XLib.window`, as that more accurately represents the underlying type.
