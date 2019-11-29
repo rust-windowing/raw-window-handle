@@ -1,6 +1,6 @@
 [package]
 name = "raw-window-handle"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["Osspial <osspial@gmail.com>"]
 edition = "2018"
 description = "Interoperability library for Rust Windowing applications."
