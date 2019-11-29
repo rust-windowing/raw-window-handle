@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.3.2 (2019-11-29)
+
+* Add `Hash` implementation for `RawWindowHandle`.
+
 # 0.3.1 (2019-10-27)
 
 * Remove `RawWindowHandle`'s `HasRawWindowHandle` implementation, as it was unsound (see [#35](https://github.com/rust-windowing/raw-window-handle/issues/35))
