@@ -1,5 +1,9 @@
 # Unreleased
 
+# 0.3.3 (2019-12-1)
+
+* Add missing `Hash` implementation for `AndroidHandle`.
+
 # 0.3.2 (2019-11-29)
 
 * Add `Hash` implementation for `RawWindowHandle`.
