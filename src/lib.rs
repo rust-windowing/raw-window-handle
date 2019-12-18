@@ -31,7 +31,8 @@ pub mod macos;
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
-        target_os = "openbsd"
+        target_os = "openbsd",
+        target_os = "solaris"
     )))
 )]
 #[cfg_attr(
@@ -41,7 +42,8 @@ pub mod macos;
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
-        target_os = "openbsd"
+        target_os = "openbsd",
+        target_os = "solaris"
     ))
 )]
 pub mod unix;
@@ -62,7 +64,8 @@ mod platform {
         target_os = "dragonfly",
         target_os = "freebsd",
         target_os = "netbsd",
-        target_os = "openbsd"
+        target_os = "openbsd",
+        target_os = "solaris",
     ))]
     pub use crate::unix::*;
     #[cfg(target_os = "windows")]
@@ -112,7 +115,8 @@ pub enum RawWindowHandle {
             target_os = "dragonfly",
             target_os = "freebsd",
             target_os = "netbsd",
-            target_os = "openbsd"
+            target_os = "openbsd",
+            target_os = "solaris"
         )))
     )]
     #[cfg_attr(
@@ -122,7 +126,8 @@ pub enum RawWindowHandle {
             target_os = "dragonfly",
             target_os = "freebsd",
             target_os = "netbsd",
-            target_os = "openbsd"
+            target_os = "openbsd",
+            target_os = "solaris"
         ))
     )]
     Xlib(unix::XlibHandle),
@@ -134,7 +139,8 @@ pub enum RawWindowHandle {
             target_os = "dragonfly",
             target_os = "freebsd",
             target_os = "netbsd",
-            target_os = "openbsd"
+            target_os = "openbsd",
+            target_os = "solaris"
         )))
     )]
     #[cfg_attr(
@@ -144,7 +150,8 @@ pub enum RawWindowHandle {
             target_os = "dragonfly",
             target_os = "freebsd",
             target_os = "netbsd",
-            target_os = "openbsd"
+            target_os = "openbsd",
+            target_os = "solaris"
         ))
     )]
     Xcb(unix::XcbHandle),
@@ -156,7 +163,8 @@ pub enum RawWindowHandle {
             target_os = "dragonfly",
             target_os = "freebsd",
             target_os = "netbsd",
-            target_os = "openbsd"
+            target_os = "openbsd",
+            target_os = "solaris"
         )))
     )]
     #[cfg_attr(
@@ -166,7 +174,8 @@ pub enum RawWindowHandle {
             target_os = "dragonfly",
             target_os = "freebsd",
             target_os = "netbsd",
-            target_os = "openbsd"
+            target_os = "openbsd",
+            target_os = "solaris"
         ))
     )]
     Wayland(unix::WaylandHandle),
