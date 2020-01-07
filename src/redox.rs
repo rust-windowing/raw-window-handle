@@ -1,5 +1,5 @@
 use core::ptr;
-use orbclient::Window;
+use libc::c_void;
 
 /// Raw window handle for Redox OS.
 ///
@@ -13,7 +13,8 @@ use orbclient::Window;
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct RedoxHandle {
-    pub window: *mut Window,
+    /// A pointer to an orbclient window.
+    pub window: *mut c_void,
 
     #[doc(hidden)]
     #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]

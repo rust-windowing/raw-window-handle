@@ -112,7 +112,7 @@ pub enum RawWindowHandle {
 
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "redox")))]
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "redox"))]
-    MacOS(redox::RedoxHandle),
+    Redox(redox::RedoxHandle),
 
     #[cfg_attr(
         feature = "nightly-docs",
