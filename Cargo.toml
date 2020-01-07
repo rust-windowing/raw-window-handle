@@ -14,6 +14,9 @@ documentation = "https://docs.rs/raw-window-handle"
 travis-ci = { repository = "rust-windowing/raw-window-handle" }
 appveyor = { repository = "rust-windowing/raw-window-handle" }
 
+[target.'cfg(target_os = "redox")'.dependencies]
+orbclient = "0.3.27"
+
 [dependencies]
 libc = {version="0.2", features=[]}
 
