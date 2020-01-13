@@ -100,6 +100,7 @@ pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
 
+#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "ios")))]
@@ -195,15 +196,6 @@ pub enum RawWindowHandle {
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "android")))]
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "android"))]
     Android(android::AndroidHandle),
-
-    #[doc(hidden)]
-    #[deprecated = "This field is used to ensure that this struct is non-exhaustive, so that it may be extended in the future. Do not refer to this field."]
-    __NonExhaustiveDoNotUse(seal::Seal),
-}
-
-mod seal {
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-    pub struct Seal;
 }
 
 /// This wraps a [`RawWindowHandle`] to give it a [`HasRawWindowHandle`] impl.
