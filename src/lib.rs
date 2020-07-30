@@ -215,7 +215,7 @@ impl TrustedHandle {
         Self { raw }
     }
 }
-unsafe impl HasRawWindowHandle {
+unsafe impl HasRawWindowHandle for TrustedHandle {
     fn raw_window_handle(&self) -> RawWindowHandle {
         self.raw
     }
