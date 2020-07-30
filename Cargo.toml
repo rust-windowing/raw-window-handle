@@ -14,9 +14,6 @@ documentation = "https://docs.rs/raw-window-handle"
 travis-ci = { repository = "rust-windowing/raw-window-handle" }
 appveyor = { repository = "rust-windowing/raw-window-handle" }
 
-[dependencies]
-libc = {version="0.2", features=[]}
-
 [features]
 nightly-docs = []
 
