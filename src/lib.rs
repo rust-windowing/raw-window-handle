@@ -202,10 +202,10 @@ mod seal {
 ///
 /// The solution is that you assert that you're trusting a particular handle
 /// value by (unsafely) placing it within this wrapper struct.
-pub struct TrustedHandle {
+pub struct TrustedWindowHandle {
     raw: RawWindowHandle,
 }
-impl TrustedHandle {
+impl TrustedWindowHandle {
     /// Assert that the `RawWindowHandle` value can be trusted.
     ///
     /// ## Safety
@@ -215,7 +215,7 @@ impl TrustedHandle {
         Self { raw }
     }
 }
-unsafe impl HasRawWindowHandle for TrustedHandle {
+unsafe impl HasRawWindowHandle for TrustedWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle {
         self.raw
     }
