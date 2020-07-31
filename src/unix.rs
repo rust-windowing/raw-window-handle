@@ -1,10 +1,7 @@
 use core::ffi::c_void;
 use core::ptr;
 
-#[cfg(any(windows, target_pointer_width = "32"))]
-pub type c_ulong = u32;
-#[cfg(not(any(windows, target_pointer_width = "32")))]
-pub type c_ulong = u64;
+use cty::c_ulong;
 
 /// Raw window handle for Xlib.
 ///
