@@ -10,12 +10,12 @@ keywords = ["windowing"]
 readme = "README.md"
 documentation = "https://docs.rs/raw-window-handle"
 
+[dependencies]
+cty = "0.2"
+
 [badges]
 travis-ci = { repository = "rust-windowing/raw-window-handle" }
 appveyor = { repository = "rust-windowing/raw-window-handle" }
-
-[dependencies]
-libc = {version="0.2", features=[]}
 
 [features]
 nightly-docs = []

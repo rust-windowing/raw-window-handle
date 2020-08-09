@@ -1,5 +1,7 @@
+use core::ffi::c_void;
 use core::ptr;
-use libc::{c_ulong, c_void};
+
+use cty::c_ulong;
 
 /// Raw window handle for Xlib.
 ///
