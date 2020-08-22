@@ -87,9 +87,7 @@ mod platform {
 /// # Safety guarantees
 ///
 /// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
-/// implementer of this trait to ensure that condition is upheld. However, It is entirely valid
-/// behavior for fields within each platform-specific `RawWindowHandle` variant to be `null` or
-/// `0`, and appropriate checking should be done before the handle is used.
+/// implementer of this trait to ensure that condition is upheld.
 ///
 /// Despite that qualification, implementers should still make a best-effort attempt to fill in all
 /// available fields. If an implementation doesn't, and a downstream user needs the field, it should
@@ -97,8 +95,7 @@ mod platform {
 /// platform provides.
 ///
 /// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
-/// to `raw_window_handle`, and must be valid for at least the lifetime of the `HasRawWindowHandle`
-/// implementer.
+/// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
 pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
