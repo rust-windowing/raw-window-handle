@@ -1,7 +1,8 @@
 use core::ffi::c_void;
 use core::ptr;
 
-/// Raw window handle for iOS.
+/// Raw window handle for IOS and other platforms using UIKit-based windowing
+/// (tvOS, Mac Catalyst (`*-ios-macabi` targets), and, in theory, watchOS).
 ///
 /// ## Construction
 /// ```

@@ -18,8 +18,14 @@
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "android")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "android"))]
 pub mod android;
-#[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "ios")))]
-#[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "ios"))]
+#[cfg_attr(
+    feature = "nightly-docs",
+    doc(cfg(any(target_os = "ios", target_os = "tvos")))
+)]
+#[cfg_attr(
+    not(feature = "nightly-docs"),
+    cfg(any(target_os = "ios", target_os = "tvos"))
+)]
 pub mod ios;
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "macos")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "macos"))]
@@ -68,7 +74,7 @@ mod platform {
     #[cfg(target_os = "windows")]
     pub use crate::windows::*;
     // mod platform;
-    #[cfg(target_os = "ios")]
+    #[cfg(any(target_os = "ios", target_os = "tvos"))]
     pub use crate::ios::*;
     #[cfg(target_arch = "wasm32")]
     pub use crate::web::*;
@@ -97,8 +103,14 @@ pub unsafe trait HasRawWindowHandle {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
-    #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "ios")))]
-    #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "ios"))]
+    #[cfg_attr(
+        feature = "nightly-docs",
+        doc(cfg(any(target_os = "ios", target_os = "tvos")))
+    )]
+    #[cfg_attr(
+        not(feature = "nightly-docs"),
+        cfg(any(target_os = "ios", target_os = "tvos"))
+    )]
     IOS(ios::IOSHandle),
 
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "macos")))]
