@@ -1,5 +1,7 @@
 # Unreleased
 
+* **Breaking:** Change type for pointers, which may be null, to `Option<NonNull<_>>`.
+
 # 0.3.3 (2019-12-1)
 
 * Add missing `Hash` implementation for `AndroidHandle`.
