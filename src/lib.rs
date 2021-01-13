@@ -24,6 +24,9 @@ pub mod ios;
 #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "macos")))]
 #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "macos"))]
 pub mod macos;
+#[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "redox")))]
+#[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "redox"))]
+pub mod redox;
 #[cfg_attr(
     feature = "nightly-docs",
     doc(cfg(any(
@@ -59,6 +62,8 @@ mod platform {
     pub use crate::android::*;
     #[cfg(target_os = "macos")]
     pub use crate::macos::*;
+    #[cfg(target_os = "redox")]
+    pub use crate::redox::*;
     #[cfg(any(
         target_os = "linux",
         target_os = "dragonfly",
@@ -107,6 +112,10 @@ pub enum RawWindowHandle {
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "macos")))]
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "macos"))]
     MacOS(macos::MacOSHandle),
+
+    #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "redox")))]
+    #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "redox"))]
+    Redox(redox::RedoxHandle),
 
     #[cfg_attr(
         feature = "nightly-docs",
