@@ -6,10 +6,8 @@ use core::ptr::NonNull;
 /// ## Construction
 /// ```
 /// # use raw_window_handle::macos::MacOSHandle;
-/// let handle = MacOSHandle {
-///     /* fields */
-///     ..MacOSHandle::empty()
-/// };
+/// let mut handle = MacOSHandle::empty();
+/// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

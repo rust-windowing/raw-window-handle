@@ -6,10 +6,8 @@ use core::ptr::NonNull;
 /// ## Construction
 /// ```
 /// # use raw_window_handle::windows::WindowsHandle;
-/// let handle = WindowsHandle {
-///     /* fields */
-///     ..WindowsHandle::empty()
-/// };
+/// let mut handle = WindowsHandle::empty();
+/// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

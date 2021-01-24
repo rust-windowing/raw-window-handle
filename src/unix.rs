@@ -8,10 +8,8 @@ use cty::c_ulong;
 /// ## Construction
 /// ```
 /// # use raw_window_handle::unix::XlibHandle;
-/// let handle = XlibHandle {
-///     /* fields */
-///     ..XlibHandle::empty()
-/// };
+/// let handle = XlibHandle::empty();
+/// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -27,10 +25,8 @@ pub struct XlibHandle {
 /// ## Construction
 /// ```
 /// # use raw_window_handle::unix::XcbHandle;
-/// let handle = XcbHandle {
-///     /* fields */
-///     ..XcbHandle::empty()
-/// };
+/// let handle = XcbHandle::empty();
+/// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -46,10 +42,8 @@ pub struct XcbHandle {
 /// ## Construction
 /// ```
 /// # use raw_window_handle::unix::WaylandHandle;
-/// let handle = WaylandHandle {
-///     /* fields */
-///     ..WaylandHandle::empty()
-/// };
+/// let handle = WaylandHandle::empty();
+/// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

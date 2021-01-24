@@ -6,10 +6,8 @@ use core::ptr::NonNull;
 /// ## Construction
 /// ```
 /// # use raw_window_handle::android::AndroidHandle;
-/// let handle = AndroidHandle {
-///     /* fields */
-///     ..AndroidHandle::empty()
-/// };
+/// let mut handle = AndroidHandle::empty();
+///  /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

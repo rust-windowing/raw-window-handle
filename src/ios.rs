@@ -6,10 +6,8 @@ use core::ptr::NonNull;
 /// ## Construction
 /// ```
 /// # use raw_window_handle::ios::IOSHandle;
-/// let handle = IOSHandle {
-///     /* fields */
-///     ..IOSHandle::empty()
-/// };
+/// let mut handle = IOSHandle::empty();
+/// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

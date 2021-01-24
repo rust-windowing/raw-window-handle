@@ -3,10 +3,8 @@
 /// ## Construction
 /// ```
 /// # use raw_window_handle::web::WebHandle;
-/// let handle = WebHandle {
-///     /* fields */
-///     ..WebHandle::empty()
-/// };
+/// let mut handle = WebHandle::empty();
+/// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
