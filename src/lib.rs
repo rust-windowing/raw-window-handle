@@ -211,13 +211,23 @@ pub struct TrustedWindowHandle {
     raw: RawWindowHandle,
 }
 impl TrustedWindowHandle {
-    /// Assert that the `RawWindowHandle` value can be trusted.
+    /// Assert that the [`RawWindowHandle`] value can be trusted.
     ///
     /// ## Safety
     /// If the value violates any of the safety outlines given in the
     /// [`HasRawWindowHandle`] trait this can lead to UB.
     pub const unsafe fn new(raw: RawWindowHandle) -> Self {
         Self { raw }
+    }
+
+    /// Read from a [`HasRawWindowHandle`] into being a trusted value.
+    pub fn from_has_raw_window_handle<H: HasRawWindowHandle>(fr: &H) -> Self {
+        // Safety: Because `HasRawWindowHandle` is an unsafe trait, we can trust
+        // that it gives a correct handle. If not, the fault lies with the trait
+        // implementation, not this function.
+        Self {
+            raw: fr.raw_window_handle(),
+        }
     }
 }
 unsafe impl HasRawWindowHandle for TrustedWindowHandle {
