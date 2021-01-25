@@ -2,6 +2,7 @@
 
 * **Breaking:** Change type for pointers, which may be null, to `Option<NonNull<_>>`.
 * **Breaking** Remove `_do_not_use` tags to use `#[non_exhaustive]` macro
+* Added `TrustedWindowHandle::from_has_raw_window_handle`.
 
 # 0.3.3 (2019-12-1)
 
