@@ -6,7 +6,7 @@ use core::ptr;
 /// ## Construction
 /// ```
 /// # use raw_window_handle::redox::RedoxHandle;
-/// let mut handle = RedoxHandle::empty()
+/// let mut handle = RedoxHandle::empty();
 ///  /* set fields */
 /// ```
 #[non_exhaustive]
