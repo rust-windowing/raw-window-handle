@@ -16,9 +16,3 @@ cty = "0.2"
 [badges]
 travis-ci = { repository = "rust-windowing/raw-window-handle" }
 appveyor = { repository = "rust-windowing/raw-window-handle" }
-
-[features]
-nightly-docs = []
-
-[package.metadata.docs.rs]
-features = ["nightly-docs"]
