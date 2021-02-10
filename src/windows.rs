@@ -26,3 +26,26 @@ impl WindowsHandle {
         }
     }
 }
+
+/// Raw window handle for WinRT.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::windows::WinRTHandle;
+/// let mut handle = WinRTHandle::empty();
+/// /* set fields */
+/// ```
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct WinRTHandle {
+    /// A WinRT CoreWindow handle.
+    pub core_window: Option<NonNull<c_void>>,
+}
+
+impl WinRTHandle {
+    pub fn empty() -> WinRTHandle {
+        WinRTHandle {
+            core_window: None,
+        }
+    }
+}

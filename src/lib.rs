@@ -189,6 +189,10 @@ pub enum RawWindowHandle {
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "windows"))]
     Windows(windows::WindowsHandle),
 
+    #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "windows")))]
+    #[cfg_attr(not(feature = "nightly-docs"), cfg(target_os = "windows"))]
+    WinRT(windows::WinRTHandle),
+
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_arch = "wasm32")))]
     #[cfg_attr(not(feature = "nightly-docs"), cfg(target_arch = "wasm32"))]
     Web(web::WebHandle),
