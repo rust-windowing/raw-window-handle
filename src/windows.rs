@@ -44,8 +44,6 @@ pub struct WinRTHandle {
 
 impl WinRTHandle {
     pub fn empty() -> WinRTHandle {
-        WinRTHandle {
-            core_window: None,
-        }
+        WinRTHandle { core_window: None }
     }
 }
