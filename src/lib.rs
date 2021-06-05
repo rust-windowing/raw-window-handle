@@ -57,7 +57,9 @@ pub enum RawWindowHandle {
     Wayland(unix::WaylandHandle),
 
     Windows(windows::WindowsHandle),
-
+  
+    WinRT(windows::WinRTHandle),
+  
     Web(web::WebHandle),
 
     Android(android::AndroidHandle),
