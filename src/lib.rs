@@ -26,13 +26,13 @@ mod unix;
 mod web;
 mod windows;
 
-pub use android::AndroidNDKHandle;
+pub use android::AndroidNdkHandle;
 pub use appkit::AppKitHandle;
 pub use redox::OrbitalHandle;
-pub use uikit::UIKitHandle;
+pub use uikit::UiKitHandle;
 pub use unix::{WaylandHandle, XcbHandle, XlibHandle};
 pub use web::WebHandle;
-pub use windows::{Win32Handle, WinRTHandle};
+pub use windows::{Win32Handle, WinRtHandle};
 
 /// Window that wraps around a raw window handle.
 ///
@@ -75,7 +75,7 @@ pub enum RawWindowHandle {
     /// Mac Catalyst (`$arch-apple-ios-macabi` targets, which can notably use
     /// UIKit *or* AppKit), as these are the targets that (currently) support
     /// UIKit.
-    UIKit(UIKitHandle),
+    UiKit(UiKitHandle),
     /// A raw window handle for AppKit.
     ///
     /// ## Availability Hints
@@ -118,7 +118,7 @@ pub enum RawWindowHandle {
     ///
     /// ## Availability Hints
     /// This variant is used on Windows systems.
-    WinRT(WinRTHandle),
+    WinRt(WinRtHandle),
     /// A raw window handle for the Web.
     ///
     /// ## Availability Hints
@@ -128,7 +128,7 @@ pub enum RawWindowHandle {
     ///
     /// ## Availability Hints
     /// This variant is used on Android targets.
-    AndroidNDK(AndroidNDKHandle),
+    AndroidNdk(AndroidNdkHandle),
 }
 
 /// This wraps a [`RawWindowHandle`] to give it a [`HasRawWindowHandle`] impl.

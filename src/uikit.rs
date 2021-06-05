@@ -5,13 +5,13 @@ use core::ptr;
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::UIKitHandle;
-/// let mut handle = UIKitHandle::empty();
+/// # use raw_window_handle::UiKitHandle;
+/// let mut handle = UiKitHandle::empty();
 /// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct UIKitHandle {
+pub struct UiKitHandle {
     /// A pointer to an `UIWindow` object.
     pub ui_window: *mut c_void,
     /// A pointer to an `UIView` object.
@@ -20,7 +20,7 @@ pub struct UIKitHandle {
     pub ui_view_controller: *mut c_void,
 }
 
-impl UIKitHandle {
+impl UiKitHandle {
     pub fn empty() -> Self {
         Self {
             ui_window: ptr::null_mut(),

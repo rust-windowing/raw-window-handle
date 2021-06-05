@@ -31,18 +31,18 @@ impl Win32Handle {
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::WinRTHandle;
-/// let mut handle = WinRTHandle::empty();
+/// # use raw_window_handle::WinRtHandle;
+/// let mut handle = WinRtHandle::empty();
 /// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WinRTHandle {
+pub struct WinRtHandle {
     /// A WinRT `CoreWindow` handle.
     pub core_window: *mut c_void,
 }
 
-impl WinRTHandle {
+impl WinRtHandle {
     pub fn empty() -> Self {
         Self {
             core_window: ptr::null_mut(),
