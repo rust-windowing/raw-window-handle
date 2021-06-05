@@ -1,6 +1,6 @@
 [package]
 name = "raw-window-handle"
-version = "0.3.3"
+version = "0.4.0-alpha.0"
 authors = ["Osspial <osspial@gmail.com>"]
 edition = "2018"
 description = "Interoperability library for Rust Windowing applications."
@@ -16,9 +16,3 @@ cty = "0.2"
 [badges]
 travis-ci = { repository = "rust-windowing/raw-window-handle" }
 appveyor = { repository = "rust-windowing/raw-window-handle" }
-
-[features]
-nightly-docs = []
-
-[package.metadata.docs.rs]
-features = ["nightly-docs"]

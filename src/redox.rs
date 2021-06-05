@@ -1,12 +1,12 @@
+use core::ffi::c_void;
 use core::ptr;
-use libc::c_void;
 
 /// Raw window handle for Redox OS.
 ///
 /// ## Construction
 /// ```
 /// # use raw_window_handle::redox::RedoxHandle;
-/// let mut handle = RedoxHandle::empty()
+/// let mut handle = RedoxHandle::empty();
 ///  /* set fields */
 /// ```
 #[non_exhaustive]
