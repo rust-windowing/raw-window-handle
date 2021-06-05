@@ -11,6 +11,7 @@
 * **Breaking:** Rename `Redox` to `Orbital`.
 * **Breaking:** Rename `Android` to `AndroidNdk`.
 * **Breaking:** Inner window handle structs are now exported at crate root.
+* Added Windows `WinRt` handle.
 
 ## 0.3.3 (2019-12-1)
 
