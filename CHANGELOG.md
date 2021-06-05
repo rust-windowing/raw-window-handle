@@ -2,10 +2,15 @@
 
 ## 0.4.0 (?)
 
-* **Breaking:** Change type for pointers, which may be null, to `Option<NonNull<_>>`.
 * **Breaking:** Remove `_do_not_use` tags to use `#[non_exhaustive]` macro
 * Added `TrustedWindowHandle::from_has_raw_window_handle`.
-* **Breaking:** handle variants are no longer cfg-guarded by platform.
+* **Breaking:** `RawWindowHandle` variants are no longer cfg-guarded by platform. 
+* **Breaking:** Rename `IOS` to `UIKit`.
+* **Breaking:** Rename `MacOS` to `AppKit`.
+* **Breaking:** Rename `Windows` to `Win32`.
+* **Breaking:** Rename `Redox` to `Orbital`.
+* **Breaking:** Rename `Android` to `AndroidNDK`.
+* **Breaking:** Inner window handle structs are now exported at crate root.
 
 ## 0.3.3 (2019-12-1)
 

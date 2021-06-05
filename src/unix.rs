@@ -7,7 +7,7 @@ use cty::c_ulong;
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::unix::XlibHandle;
+/// # use raw_window_handle::XlibHandle;
 /// let handle = XlibHandle::empty();
 /// /* set fields */
 /// ```
@@ -24,7 +24,7 @@ pub struct XlibHandle {
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::unix::XcbHandle;
+/// # use raw_window_handle::XcbHandle;
 /// let handle = XcbHandle::empty();
 /// /* set fields */
 /// ```
@@ -41,7 +41,7 @@ pub struct XcbHandle {
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::unix::WaylandHandle;
+/// # use raw_window_handle::WaylandHandle;
 /// let handle = WaylandHandle::empty();
 /// /* set fields */
 /// ```
