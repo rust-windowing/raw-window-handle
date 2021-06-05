@@ -21,8 +21,8 @@ pub struct UIKitHandle {
 }
 
 impl UIKitHandle {
-    pub fn empty() -> UIKitHandle {
-        UIKitHandle {
+    pub fn empty() -> Self {
+        Self {
             ui_window: ptr::null_mut(),
             ui_view: ptr::null_mut(),
             ui_view_controller: ptr::null_mut(),

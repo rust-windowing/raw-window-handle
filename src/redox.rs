@@ -17,8 +17,8 @@ pub struct OrbitalHandle {
 }
 
 impl OrbitalHandle {
-    pub fn empty() -> OrbitalHandle {
-        OrbitalHandle {
+    pub fn empty() -> Self {
+        Self {
             window: ptr::null_mut(),
         }
     }

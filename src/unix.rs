@@ -55,8 +55,8 @@ pub struct WaylandHandle {
 }
 
 impl XlibHandle {
-    pub fn empty() -> XlibHandle {
-        XlibHandle {
+    pub fn empty() -> Self {
+        Self {
             window: 0,
             display: ptr::null_mut(),
         }
@@ -64,8 +64,8 @@ impl XlibHandle {
 }
 
 impl XcbHandle {
-    pub fn empty() -> XcbHandle {
-        XcbHandle {
+    pub fn empty() -> Self {
+        Self {
             window: 0,
             connection: ptr::null_mut(),
         }
@@ -73,8 +73,8 @@ impl XcbHandle {
 }
 
 impl WaylandHandle {
-    pub fn empty() -> WaylandHandle {
-        WaylandHandle {
+    pub fn empty() -> Self {
+        Self {
             surface: ptr::null_mut(),
             display: ptr::null_mut(),
         }

@@ -71,60 +71,60 @@ pub enum RawWindowHandle {
     /// Mac Catalyst (`$arch-apple-ios-macabi` targets, which can notably use
     /// UIKit *or* AppKit), as these are the targets that (currently) support
     /// UIKit.
-    UIKit(uikit::UIKitHandle),
+    UIKit(UIKitHandle),
     /// A raw window handle for AppKit.
     ///
     /// ## Availability Hints
     /// This variant is likely to be used on macOS, although Mac Catalyst
     /// (`$arch-apple-ios-macabi` targets, which can notably use UIKit *or*
     /// AppKit) can also use it despite being `target_os = "ios"`.
-    AppKit(appkit::AppKitHandle),
+    AppKit(AppKitHandle),
     /// A raw window handle for the Redox operating system.
     ///
     /// ## Availability Hints
     /// This variant is used by the Orbital Windowing System in the Redox
     /// operating system.
-    Orbital(redox::OrbitalHandle),
+    Orbital(OrbitalHandle),
     /// A raw window handle for Xlib.
     ///
     /// ## Availability Hints
     /// This variant is likely to show up anywhere someone manages to get X11
     /// working that Xlib can be built for, which is to say, most (but not all)
     /// Unix systems.
-    Xlib(unix::XlibHandle),
+    Xlib(XlibHandle),
     /// A raw window handle for Xcb.
     ///
     /// ## Availability Hints
     /// This variant is likely to show up anywhere someone manages to get X11
     /// working that XCB can be built for, which is to say, most (but not all)
     /// Unix systems.
-    Xcb(unix::XcbHandle),
+    Xcb(XcbHandle),
     /// A raw window handle for Wayland.
     ///
     /// ## Availability Hints
     /// This variant should be expected anywhere Wayland works, which is
     /// currently some subset of unix systems.
-    Wayland(unix::WaylandHandle),
+    Wayland(WaylandHandle),
     /// A raw window handle for Win32.
     ///
     /// ## Availability Hints
     /// This variant is used on Windows systems.
-    Win32(windows::Win32Handle),
+    Win32(Win32Handle),
     /// A raw window handle for WinRT.
     ///
     /// ## Availability Hints
     /// This variant is used on Windows systems.
-    WinRT(windows::WinRTHandle),
+    WinRT(WinRTHandle),
     /// A raw window handle for the Web.
     ///
     /// ## Availability Hints
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
-    Web(web::WebHandle),
+    Web(WebHandle),
     /// A raw window handle for Android NDK.
     ///
     /// ## Availability Hints
     /// This variant is used on Android targets.
-    AndroidNDK(android::AndroidNDKHandle),
+    AndroidNDK(AndroidNDKHandle),
 }
 
 /// This wraps a [`RawWindowHandle`] to give it a [`HasRawWindowHandle`] impl.
@@ -139,6 +139,7 @@ pub enum RawWindowHandle {
 pub struct TrustedWindowHandle {
     raw: RawWindowHandle,
 }
+
 impl TrustedWindowHandle {
     /// Assert that the [`RawWindowHandle`] value can be trusted.
     ///
@@ -159,6 +160,7 @@ impl TrustedWindowHandle {
         }
     }
 }
+
 unsafe impl HasRawWindowHandle for TrustedWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle {
         self.raw

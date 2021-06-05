@@ -19,7 +19,7 @@ pub struct WebHandle {
 }
 
 impl WebHandle {
-    pub fn empty() -> WebHandle {
-        WebHandle { id: 0 }
+    pub fn empty() -> Self {
+        Self { id: 0 }
     }
 }

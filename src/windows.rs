@@ -19,8 +19,8 @@ pub struct Win32Handle {
 }
 
 impl Win32Handle {
-    pub fn empty() -> Win32Handle {
-        Win32Handle {
+    pub fn empty() -> Self {
+        Self {
             hwnd: ptr::null_mut(),
             hinstance: ptr::null_mut(),
         }
@@ -43,8 +43,8 @@ pub struct WinRTHandle {
 }
 
 impl WinRTHandle {
-    pub fn empty() -> WinRTHandle {
-        WinRTHandle {
+    pub fn empty() -> Self {
+        Self {
             core_window: ptr::null_mut(),
         }
     }

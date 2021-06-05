@@ -20,8 +20,8 @@ pub struct AppKitHandle {
 }
 
 impl AppKitHandle {
-    pub fn empty() -> AppKitHandle {
-        AppKitHandle {
+    pub fn empty() -> Self {
+        Self {
             ns_window: ptr::null_mut(),
             ns_view: ptr::null_mut(),
         }

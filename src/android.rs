@@ -17,8 +17,8 @@ pub struct AndroidNDKHandle {
 }
 
 impl AndroidNDKHandle {
-    pub fn empty() -> AndroidNDKHandle {
-        AndroidNDKHandle {
+    pub fn empty() -> Self {
+        Self {
             a_native_window: ptr::null_mut(),
         }
     }
