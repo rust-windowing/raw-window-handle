@@ -7,6 +7,19 @@
 //! provides a common interface that window creation libraries (e.g. Winit, SDL) can use to easily
 //! talk with graphics libraries (e.g. gfx-hal).
 //!
+//! # Safety guarantees
+//!
+//! Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+//! implementer of this trait to ensure that condition is upheld.
+//!
+//! Despite that qualification, implementers should still make a best-effort attempt to fill in all
+//! available fields. If an implementation doesn't, and a downstream user needs the field, it should
+//! try to derive the field from other fields the implementer *does* provide via whatever methods the
+//! platform provides.
+//!
+//! The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
+//! to `raw_window_handle` as long as not indicated otherwise by platform specific events.
+//!
 //! ## Platform handle initialization
 //!
 //! Each platform handle struct is purposefully non-exhaustive, so that additional fields may be
@@ -31,19 +44,6 @@ pub use web::WebHandle;
 pub use windows::{Win32Handle, WinRTHandle};
 
 /// Window that wraps around a raw window handle.
-///
-/// # Safety guarantees
-///
-/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
-/// implementer of this trait to ensure that condition is upheld.
-///
-/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
-/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
-/// try to derive the field from other fields the implementer *does* provide via whatever methods the
-/// platform provides.
-///
-/// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
-/// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
 pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
