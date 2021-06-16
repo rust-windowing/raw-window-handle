@@ -7,7 +7,7 @@ use cty::c_ulong;
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::unix::XlibHandle;
+/// # use raw_window_handle::XlibHandle;
 /// let handle = XlibHandle::empty();
 /// /* set fields */
 /// ```
@@ -24,7 +24,7 @@ pub struct XlibHandle {
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::unix::XcbHandle;
+/// # use raw_window_handle::XcbHandle;
 /// let handle = XcbHandle::empty();
 /// /* set fields */
 /// ```
@@ -41,7 +41,7 @@ pub struct XcbHandle {
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::unix::WaylandHandle;
+/// # use raw_window_handle::WaylandHandle;
 /// let handle = WaylandHandle::empty();
 /// /* set fields */
 /// ```
@@ -55,8 +55,8 @@ pub struct WaylandHandle {
 }
 
 impl XlibHandle {
-    pub fn empty() -> XlibHandle {
-        XlibHandle {
+    pub fn empty() -> Self {
+        Self {
             window: 0,
             display: ptr::null_mut(),
         }
@@ -64,8 +64,8 @@ impl XlibHandle {
 }
 
 impl XcbHandle {
-    pub fn empty() -> XcbHandle {
-        XcbHandle {
+    pub fn empty() -> Self {
+        Self {
             window: 0,
             connection: ptr::null_mut(),
         }
@@ -73,8 +73,8 @@ impl XcbHandle {
 }
 
 impl WaylandHandle {
-    pub fn empty() -> WaylandHandle {
-        WaylandHandle {
+    pub fn empty() -> Self {
+        Self {
             surface: ptr::null_mut(),
             display: ptr::null_mut(),
         }

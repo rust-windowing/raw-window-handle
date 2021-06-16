@@ -1,28 +1,28 @@
 use core::ffi::c_void;
-use core::ptr::NonNull;
+use core::ptr;
 
-/// Raw window handle for Windows.
+/// Raw window handle for Win32.
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::windows::WindowsHandle;
-/// let mut handle = WindowsHandle::empty();
+/// # use raw_window_handle::Win32Handle;
+/// let mut handle = Win32Handle::empty();
 /// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WindowsHandle {
-    /// A Win32 HWND handle.
-    pub hwnd: Option<NonNull<c_void>>,
-    /// The HINSTANCE associated with this type's HWND.
-    pub hinstance: Option<NonNull<c_void>>,
+pub struct Win32Handle {
+    /// A Win32 `HWND` handle.
+    pub hwnd: *mut c_void,
+    /// The `HINSTANCE` associated with this type's `HWND`.
+    pub hinstance: *mut c_void,
 }
 
-impl WindowsHandle {
-    pub fn empty() -> WindowsHandle {
-        WindowsHandle {
-            hwnd: None,
-            hinstance: None,
+impl Win32Handle {
+    pub fn empty() -> Self {
+        Self {
+            hwnd: ptr::null_mut(),
+            hinstance: ptr::null_mut(),
         }
     }
 }
@@ -31,19 +31,21 @@ impl WindowsHandle {
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::windows::WinRTHandle;
-/// let mut handle = WinRTHandle::empty();
+/// # use raw_window_handle::WinRtHandle;
+/// let mut handle = WinRtHandle::empty();
 /// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WinRTHandle {
-    /// A WinRT CoreWindow handle.
-    pub core_window: Option<NonNull<c_void>>,
+pub struct WinRtHandle {
+    /// A WinRT `CoreWindow` handle.
+    pub core_window: *mut c_void,
 }
 
-impl WinRTHandle {
-    pub fn empty() -> WinRTHandle {
-        WinRTHandle { core_window: None }
+impl WinRtHandle {
+    pub fn empty() -> Self {
+        Self {
+            core_window: ptr::null_mut(),
+        }
     }
 }

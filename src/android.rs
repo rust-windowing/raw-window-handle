@@ -1,25 +1,25 @@
 use core::ffi::c_void;
-use core::ptr::NonNull;
+use core::ptr;
 
-/// Raw window handle for Android.
+/// Raw window handle for Android NDK.
 ///
 /// ## Construction
 /// ```
-/// # use raw_window_handle::android::AndroidHandle;
-/// let mut handle = AndroidHandle::empty();
-///  /* set fields */
+/// # use raw_window_handle::AndroidNdkHandle;
+/// let mut handle = AndroidNdkHandle::empty();
+/// /* set fields */
 /// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AndroidHandle {
-    /// A pointer to an ANativeWindow.
-    pub a_native_window: Option<NonNull<c_void>>,
+pub struct AndroidNdkHandle {
+    /// A pointer to an `ANativeWindow`.
+    pub a_native_window: *mut c_void,
 }
 
-impl AndroidHandle {
-    pub fn empty() -> AndroidHandle {
-        AndroidHandle {
-            a_native_window: None,
+impl AndroidNdkHandle {
+    pub fn empty() -> Self {
+        Self {
+            a_native_window: ptr::null_mut(),
         }
     }
 }

@@ -7,6 +7,10 @@
 //! provides a common interface that window creation libraries (e.g. Winit, SDL) can use to easily
 //! talk with graphics libraries (e.g. gfx-hal).
 //!
+//! ## Safety guarantees
+//!
+//! Please see the docs of [`HasRawWindowHandle`].
+//!
 //! ## Platform handle initialization
 //!
 //! Each platform handle struct is purposefully non-exhaustive, so that additional fields may be
@@ -14,13 +18,21 @@
 //! be used along with the struct update syntax to construct it. See each specific struct for
 //! examples.
 
-pub mod android;
-pub mod ios;
-pub mod macos;
-pub mod redox;
-pub mod unix;
-pub mod web;
-pub mod windows;
+mod android;
+mod appkit;
+mod redox;
+mod uikit;
+mod unix;
+mod web;
+mod windows;
+
+pub use android::AndroidNdkHandle;
+pub use appkit::AppKitHandle;
+pub use redox::OrbitalHandle;
+pub use uikit::UiKitHandle;
+pub use unix::{WaylandHandle, XcbHandle, XlibHandle};
+pub use web::WebHandle;
+pub use windows::{Win32Handle, WinRtHandle};
 
 /// Window that wraps around a raw window handle.
 ///
@@ -41,28 +53,82 @@ pub unsafe trait HasRawWindowHandle {
 }
 
 /// An enum to simply combine the different possible raw window handle variants.
+///
+/// # Variant Availability
+///
+/// Note that all variants are present on all targets (none are disabled behind
+/// `#[cfg]`s), but see the "Availability Hints" section on each variant for
+/// some hints on where this variant might be expected.
+///
+/// Note that these "Availability Hints" are not normative. That is to say, a
+/// [`HasRawWindowHandle`] implementor is completely allowed to return something
+/// unexpected. (For example, it's legal for someone to return a
+/// [`RawWindowHandle::Xlib`] on macOS, it would just be weird, and probably
+/// requires something like XQuartz be used).
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
-    IOS(ios::IOSHandle),
-
-    MacOS(macos::MacOSHandle),
-
-    Redox(redox::RedoxHandle),
-
-    Xlib(unix::XlibHandle),
-
-    Xcb(unix::XcbHandle),
-
-    Wayland(unix::WaylandHandle),
-
-    Windows(windows::WindowsHandle),
-  
-    WinRT(windows::WinRTHandle),
-  
-    Web(web::WebHandle),
-
-    Android(android::AndroidHandle),
+    /// A raw window handle for UIKit (Apple's non-macOS windowing library).
+    ///
+    /// ## Availability Hints
+    /// This variant is likely to be used on iOS, tvOS, (in theory) watchOS, and
+    /// Mac Catalyst (`$arch-apple-ios-macabi` targets, which can notably use
+    /// UIKit *or* AppKit), as these are the targets that (currently) support
+    /// UIKit.
+    UiKit(UiKitHandle),
+    /// A raw window handle for AppKit.
+    ///
+    /// ## Availability Hints
+    /// This variant is likely to be used on macOS, although Mac Catalyst
+    /// (`$arch-apple-ios-macabi` targets, which can notably use UIKit *or*
+    /// AppKit) can also use it despite being `target_os = "ios"`.
+    AppKit(AppKitHandle),
+    /// A raw window handle for the Redox operating system.
+    ///
+    /// ## Availability Hints
+    /// This variant is used by the Orbital Windowing System in the Redox
+    /// operating system.
+    Orbital(OrbitalHandle),
+    /// A raw window handle for Xlib.
+    ///
+    /// ## Availability Hints
+    /// This variant is likely to show up anywhere someone manages to get X11
+    /// working that Xlib can be built for, which is to say, most (but not all)
+    /// Unix systems.
+    Xlib(XlibHandle),
+    /// A raw window handle for Xcb.
+    ///
+    /// ## Availability Hints
+    /// This variant is likely to show up anywhere someone manages to get X11
+    /// working that XCB can be built for, which is to say, most (but not all)
+    /// Unix systems.
+    Xcb(XcbHandle),
+    /// A raw window handle for Wayland.
+    ///
+    /// ## Availability Hints
+    /// This variant should be expected anywhere Wayland works, which is
+    /// currently some subset of unix systems.
+    Wayland(WaylandHandle),
+    /// A raw window handle for Win32.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Windows systems.
+    Win32(Win32Handle),
+    /// A raw window handle for WinRT.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Windows systems.
+    WinRt(WinRtHandle),
+    /// A raw window handle for the Web.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
+    Web(WebHandle),
+    /// A raw window handle for Android NDK.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Android targets.
+    AndroidNdk(AndroidNdkHandle),
 }
 
 /// This wraps a [`RawWindowHandle`] to give it a [`HasRawWindowHandle`] impl.
@@ -77,6 +143,7 @@ pub enum RawWindowHandle {
 pub struct TrustedWindowHandle {
     raw: RawWindowHandle,
 }
+
 impl TrustedWindowHandle {
     /// Assert that the [`RawWindowHandle`] value can be trusted.
     ///
@@ -97,6 +164,7 @@ impl TrustedWindowHandle {
         }
     }
 }
+
 unsafe impl HasRawWindowHandle for TrustedWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle {
         self.raw
