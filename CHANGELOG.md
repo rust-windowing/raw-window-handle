@@ -3,7 +3,6 @@
 ## 0.4.0 (?)
 
 * **Breaking:** Remove `_do_not_use` tags to use `#[non_exhaustive]` macro
-* Added `TrustedWindowHandle::from_has_raw_window_handle`.
 * **Breaking:** `RawWindowHandle` variants are no longer cfg-guarded by platform. 
 * **Breaking:** Rename `IOS` to `UiKit`.
 * **Breaking:** Rename `MacOS` to `AppKit`.
