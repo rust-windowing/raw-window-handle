@@ -18,6 +18,9 @@
 //! be used along with the struct update syntax to construct it. See each specific struct for
 //! examples.
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 mod android;
 mod appkit;
 mod redox;
@@ -50,6 +53,24 @@ pub use windows::{Win32Handle, WinRtHandle};
 /// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
 pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
+}
+
+unsafe impl<'a, T: HasRawWindowHandle> HasRawWindowHandle for &'a T {
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        (*self).raw_window_handle()
+    }
+}
+#[cfg(feature = "alloc")]
+unsafe impl<T: HasRawWindowHandle> HasRawWindowHandle for alloc::rc::Rc<T> {
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        (**self).raw_window_handle()
+    }
+}
+#[cfg(feature = "alloc")]
+unsafe impl<T: HasRawWindowHandle> HasRawWindowHandle for alloc::sync::Arc<T> {
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        (**self).raw_window_handle()
+    }
 }
 
 /// An enum to simply combine the different possible raw window handle variants.
@@ -130,4 +151,3 @@ pub enum RawWindowHandle {
     /// This variant is used on Android targets.
     AndroidNdk(AndroidNdkHandle),
 }
-
