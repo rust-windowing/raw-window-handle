@@ -1,9 +1,12 @@
 # Changelog
 
-## 0.4.0 (?)
+## 0.4.1 (?)
+
+* Added an impl of `HasRawWindowHandle` for `&T`, `Rc<T>`, and `Arc<T>`. The impls for `Rc<T>` and `Arc<T>` require the `alloc` feature.
+
+## 0.4.0 (2021-11-15)
 
 * **Breaking:** Remove `_do_not_use` tags to use `#[non_exhaustive]` macro
-* Added `TrustedWindowHandle::from_has_raw_window_handle`.
 * **Breaking:** `RawWindowHandle` variants are no longer cfg-guarded by platform. 
 * **Breaking:** Rename `IOS` to `UiKit`.
 * **Breaking:** Rename `MacOS` to `AppKit`.

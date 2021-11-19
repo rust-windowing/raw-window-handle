@@ -10,6 +10,9 @@ keywords = ["windowing"]
 readme = "README.md"
 documentation = "https://docs.rs/raw-window-handle"
 
+[features]
+alloc = []
+
 [dependencies]
 cty = "0.2"
 
