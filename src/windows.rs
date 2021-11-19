@@ -32,3 +32,13 @@ impl WindowsHandle {
         }
     }
 }
+
+impl From<new::Win32Handle> for WindowsHandle {
+    fn from(handle: new::Win32Handle) -> Self {
+        Self {
+            hwnd: handle.hwnd,
+            hinstance: handle.hinstance,
+            ..Self::empty()
+        }
+    }
+}

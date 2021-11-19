@@ -32,3 +32,14 @@ impl IOSHandle {
         }
     }
 }
+
+impl From<new::UiKitHandle> for IOSHandle {
+    fn from(handle: new::UiKitHandle) -> Self {
+        Self {
+            ui_window: handle.ui_window,
+            ui_view: handle.ui_view,
+            ui_view_controller: handle.ui_view_controller,
+            ..Self::empty()
+        }
+    }
+}

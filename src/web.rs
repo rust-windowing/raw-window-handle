@@ -31,3 +31,12 @@ impl WebHandle {
         }
     }
 }
+
+impl From<new::WebHandle> for WebHandle {
+    fn from(handle: new::WebHandle) -> Self {
+        Self {
+            id: handle.id,
+            ..Self::empty()
+        }
+    }
+}

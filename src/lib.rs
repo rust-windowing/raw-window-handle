@@ -95,6 +95,65 @@ pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
 
+unsafe impl<T: new::HasRawWindowHandle> HasRawWindowHandle for T {
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        match new::HasRawWindowHandle::raw_window_handle(self) {
+            #[cfg(target_os = "ios")]
+            new::RawWindowHandle::UiKit(handle) => {
+                RawWindowHandle::IOS(handle.into())
+            }
+            #[cfg(target_os = "macos")]
+            new::RawWindowHandle::AppKit(handle) => {
+                RawWindowHandle::MacOS(handle.into())
+            }
+            #[cfg(any(
+                target_os = "linux",
+                target_os = "dragonfly",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd"
+            ))]
+            new::RawWindowHandle::Xlib(handle) => {
+                RawWindowHandle::Xlib(handle.into())
+            }
+            #[cfg(any(
+                target_os = "linux",
+                target_os = "dragonfly",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd"
+            ))]
+            new::RawWindowHandle::Xcb(handle) => {
+                RawWindowHandle::Xcb(handle.into())
+            }
+            #[cfg(any(
+                target_os = "linux",
+                target_os = "dragonfly",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd"
+            ))]
+            new::RawWindowHandle::Wayland(handle) => {
+                RawWindowHandle::Wayland(handle.into())
+            }
+            #[cfg(target_os = "windows")]
+            new::RawWindowHandle::Win32(handle) => {
+                RawWindowHandle::Windows(handle.into())
+            }
+            #[cfg(target_arch = "wasm32")]
+            new::RawWindowHandle::Web(handle) => {
+                RawWindowHandle::Web(handle.into())
+            }
+            #[cfg(target_os = "android")]
+            new::RawWindowHandle::AndroidNdk(handle) => {
+                RawWindowHandle::Android(handle.into())
+            }
+            _ => panic!("Invalid handle for this platform. Please update raw-window-handle to > 0.4.1!")
+        }
+    }
+}
+
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
     #[cfg_attr(feature = "nightly-docs", doc(cfg(target_os = "ios")))]
