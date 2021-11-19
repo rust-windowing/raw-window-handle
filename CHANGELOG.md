@@ -1,5 +1,15 @@
 # Unreleased
 
+* Add `HasRawWindowHandle` implementation for `HasRawWindowHandle` in the newer
+  version `0.4.1`.
+
+  This allows "provider" crates that implement `HasRawWindowHandle` (like
+  `winit`, `sdl2`, `glfw`, `fltk`, ...) to upgrade to `v0.4.1` without a
+  breaking change.
+
+  Afterwards "consumer" crates (like `gfx`, `wgpu`, `rfd`, ...) can start
+  upgrading with minimal breakage for their users.
+
 # 0.3.3 (2019-12-1)
 
 * Add missing `Hash` implementation for `AndroidHandle`.
