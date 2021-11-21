@@ -55,19 +55,20 @@ pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
 
+// TODO: Lower bound to `T: ?Sized` in a breaking release
 unsafe impl<'a, T: HasRawWindowHandle> HasRawWindowHandle for &'a T {
     fn raw_window_handle(&self) -> RawWindowHandle {
         (*self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
-unsafe impl<T: HasRawWindowHandle> HasRawWindowHandle for alloc::rc::Rc<T> {
+unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
     fn raw_window_handle(&self) -> RawWindowHandle {
         (**self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
-unsafe impl<T: HasRawWindowHandle> HasRawWindowHandle for alloc::sync::Arc<T> {
+unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::Arc<T> {
     fn raw_window_handle(&self) -> RawWindowHandle {
         (**self).raw_window_handle()
     }
