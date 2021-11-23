@@ -31,3 +31,13 @@ impl MacOSHandle {
         }
     }
 }
+
+impl From<new::AppKitHandle> for MacOSHandle {
+    fn from(handle: new::AppKitHandle) -> Self {
+        Self {
+            ns_window: handle.ns_window,
+            ns_view: handle.ns_view,
+            ..Self::empty()
+        }
+    }
+}

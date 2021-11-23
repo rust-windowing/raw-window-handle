@@ -16,6 +16,7 @@ appveyor = { repository = "rust-windowing/raw-window-handle" }
 
 [dependencies]
 libc = {version="0.2", features=[]}
+new = { version = "0.4.1", package = "raw-window-handle" }
 
 [features]
 nightly-docs = []
