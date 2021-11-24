@@ -1,10 +1,10 @@
-# Unreleased
+# 0.3.4 (2021-11-27)
 
-* Add `HasRawWindowHandle` implementation for `HasRawWindowHandle` in the newer
-  version `0.4.1`.
+* Add `HasRawWindowHandle` implementation for `HasRawWindowHandle` in the
+  newer `v0.4`.
 
   This allows "provider" crates that implement `HasRawWindowHandle` (like
-  `winit`, `sdl2`, `glfw`, `fltk`, ...) to upgrade to `v0.4.1` without a
+  `winit`, `sdl2`, `glfw`, `fltk`, ...) to upgrade to `v0.4` without a
   breaking change.
 
   Afterwards "consumer" crates (like `gfx`, `wgpu`, `rfd`, ...) can start
