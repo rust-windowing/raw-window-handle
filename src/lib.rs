@@ -55,8 +55,7 @@ pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
 
-// TODO: Lower bound to `T: ?Sized` in a breaking release
-unsafe impl<'a, T: HasRawWindowHandle> HasRawWindowHandle for &'a T {
+unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
     fn raw_window_handle(&self) -> RawWindowHandle {
         (*self).raw_window_handle()
     }
