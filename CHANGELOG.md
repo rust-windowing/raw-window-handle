@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.2 (?)
+## 0.4.2 (2021-11-24)
 
 * Also implement `HasRawWindowHandle` for `Rc<T>`, and `Arc<T>` where `T: ?Sized`.
 
