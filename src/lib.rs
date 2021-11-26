@@ -1,5 +1,7 @@
 #![no_std]
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 //! Interoperability library for Rust Windowing applications.
 //!
 //! This library provides standard types for accessing a window's platform-specific raw window
@@ -61,12 +63,14 @@ unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
     }
 }
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
     fn raw_window_handle(&self) -> RawWindowHandle {
         (**self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::Arc<T> {
     fn raw_window_handle(&self) -> RawWindowHandle {
         (**self).raw_window_handle()
