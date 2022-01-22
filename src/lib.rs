@@ -30,6 +30,7 @@ mod uikit;
 mod unix;
 mod web;
 mod windows;
+mod haiku;
 
 pub use android::AndroidNdkHandle;
 pub use appkit::AppKitHandle;
@@ -38,6 +39,7 @@ pub use uikit::UiKitHandle;
 pub use unix::{WaylandHandle, XcbHandle, XlibHandle};
 pub use web::WebHandle;
 pub use windows::{Win32Handle, WinRtHandle};
+pub use haiku::HaikuHandle;
 
 /// Window that wraps around a raw window handle.
 ///
@@ -154,4 +156,9 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on Android targets.
     AndroidNdk(AndroidNdkHandle),
+    /// A raw window handle for Haiku.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on HaikuOS.
+    Haiku(HaikuHandle),
 }
