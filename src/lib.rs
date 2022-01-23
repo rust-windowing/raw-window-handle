@@ -1,5 +1,4 @@
 #![no_std]
-
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 //! Interoperability library for Rust Windowing applications.
@@ -25,21 +24,21 @@ extern crate alloc;
 
 mod android;
 mod appkit;
+mod haiku;
 mod redox;
 mod uikit;
 mod unix;
 mod web;
 mod windows;
-mod haiku;
 
 pub use android::AndroidNdkHandle;
 pub use appkit::AppKitHandle;
+pub use haiku::HaikuHandle;
 pub use redox::OrbitalHandle;
 pub use uikit::UiKitHandle;
 pub use unix::{WaylandHandle, XcbHandle, XlibHandle};
 pub use web::WebHandle;
 pub use windows::{Win32Handle, WinRtHandle};
-pub use haiku::HaikuHandle;
 
 /// Window that wraps around a raw window handle.
 ///
