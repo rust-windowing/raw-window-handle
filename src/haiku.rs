@@ -14,7 +14,7 @@ use core::ptr;
 pub struct HaikuHandle {
     /// A pointer to a BWindow object
     pub b_window: *mut c_void,
-    /// A pointer to a BDirectWindow object
+    /// A pointer to a BDirectWindow object that might be null
     pub b_direct_window: *mut c_void,
 }
 
