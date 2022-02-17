@@ -155,3 +155,10 @@ pub enum RawWindowHandle {
     /// This variant is used on Android targets.
     AndroidNdk(AndroidNdkHandle),
 }
+
+
+unsafe impl HasRawWindowHandle for RawWindowHandle {
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        *self
+    }
+}
