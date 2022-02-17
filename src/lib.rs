@@ -1,5 +1,4 @@
 #![no_std]
-
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 //! Interoperability library for Rust Windowing applications.
@@ -155,7 +154,6 @@ pub enum RawWindowHandle {
     /// This variant is used on Android targets.
     AndroidNdk(AndroidNdkHandle),
 }
-
 
 unsafe impl HasRawWindowHandle for RawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle {
