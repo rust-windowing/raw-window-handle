@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.3 (2022-03-29)
+
+* [Add visual IDs to X11 handles](https://github.com/rust-windowing/raw-window-handle/pull/83)
+* [Add a link to the MDN page for data attributes in the documentation for WebHandle](https://github.com/rust-windowing/raw-window-handle/pull/86)
+* [add haiku support](https://github.com/rust-windowing/raw-window-handle/pull/88)
+
 ## 0.4.2 (2021-11-24)
 
 * Also implement `HasRawWindowHandle` for `Rc<T>`, and `Arc<T>` where `T: ?Sized`.
