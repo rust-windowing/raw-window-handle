@@ -58,6 +58,14 @@ pub struct WaylandHandle {
     pub display: *mut c_void,
 }
 
+/// Raw window handle for KMS/DRM.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::DrmHandle;
+/// let handle = DrmHandle::empty();
+/// /* set fields */
+/// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DrmHandle {

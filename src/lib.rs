@@ -135,6 +135,11 @@ pub enum RawWindowHandle {
     /// This variant should be expected anywhere Wayland works, which is
     /// currently some subset of unix systems.
     Wayland(WaylandHandle),
+    /// A raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Linux when X nor Wayland are available
+    Drm(DrmHandle),
     /// A raw window handle for Win32.
     ///
     /// ## Availability Hints
@@ -160,9 +165,4 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuHandle),
-    /// A raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager
-    ///
-    /// ## Availability Hints
-    /// This variant is used on Linux when X nor Wayland are available
-    Drm(DrmHandle),
 }
