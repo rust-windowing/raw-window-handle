@@ -60,7 +60,7 @@ pub struct WaylandHandle {
 
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct GbmHandle {
+pub struct DrmHandle {
     /// The drm file descriptor
     pub fd: i32,
 }
@@ -94,7 +94,7 @@ impl WaylandHandle {
     }
 }
 
-impl GbmHandle {
+impl DrmHandle {
     pub fn empty() -> Self {
         Self { fd: 0 }
     }
