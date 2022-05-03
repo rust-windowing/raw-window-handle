@@ -36,7 +36,7 @@ pub use appkit::AppKitHandle;
 pub use haiku::HaikuHandle;
 pub use redox::OrbitalHandle;
 pub use uikit::UiKitHandle;
-pub use unix::{WaylandHandle, XcbHandle, XlibHandle};
+pub use unix::{GbmHandle, WaylandHandle, XcbHandle, XlibHandle};
 pub use web::WebHandle;
 pub use windows::{Win32Handle, WinRtHandle};
 
@@ -160,4 +160,9 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuHandle),
+    /// A raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Linux when X nor Wayland are available
+    Gbm(GbmHandle),
 }

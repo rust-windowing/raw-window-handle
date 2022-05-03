@@ -58,6 +58,15 @@ pub struct WaylandHandle {
     pub display: *mut c_void,
 }
 
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct GbmHandle {
+    /// A pointer to a gbm device.
+    pub display: *mut c_void,
+    /// The drm file descriptor
+    pub fd: i32,
+}
+
 impl XlibHandle {
     pub fn empty() -> Self {
         Self {
@@ -83,6 +92,15 @@ impl WaylandHandle {
         Self {
             surface: ptr::null_mut(),
             display: ptr::null_mut(),
+        }
+    }
+}
+
+impl GbmHandle {
+    pub fn empty() -> Self {
+        Self {
+            display: ptr::null_mut(),
+            fd: 0,
         }
     }
 }
