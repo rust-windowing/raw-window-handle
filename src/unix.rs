@@ -58,7 +58,7 @@ pub struct WaylandHandle {
     pub display: *mut c_void,
 }
 
-/// Raw window handle for KMS/DRM.
+/// Raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager.
 ///
 /// ## Construction
 /// ```
