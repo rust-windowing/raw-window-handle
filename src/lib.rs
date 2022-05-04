@@ -138,7 +138,7 @@ pub enum RawWindowHandle {
     /// A raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager
     ///
     /// ## Availability Hints
-    /// This variant is used on Linux when X nor Wayland are available
+    /// This variant is used on Linux when neither X nor Wayland are available
     Drm(DrmHandle),
     /// A raw window handle for Win32.
     ///
