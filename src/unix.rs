@@ -71,6 +71,8 @@ pub struct WaylandHandle {
 pub struct DrmHandle {
     /// The drm file descriptor
     pub fd: i32,
+    /// The primary drm plane handle
+    pub plane: u32,
 }
 
 impl XlibHandle {
@@ -104,6 +106,6 @@ impl WaylandHandle {
 
 impl DrmHandle {
     pub fn empty() -> Self {
-        Self { fd: 0 }
+        Self { fd: 0, plane: 0 }
     }
 }
