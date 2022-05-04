@@ -58,6 +58,23 @@ pub struct WaylandHandle {
     pub display: *mut c_void,
 }
 
+/// Raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::DrmHandle;
+/// let handle = DrmHandle::empty();
+/// /* set fields */
+/// ```
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct DrmHandle {
+    /// The drm file descriptor
+    pub fd: i32,
+    /// The primary drm plane handle
+    pub plane: u32,
+}
+
 impl XlibHandle {
     pub fn empty() -> Self {
         Self {
@@ -84,5 +101,11 @@ impl WaylandHandle {
             surface: ptr::null_mut(),
             display: ptr::null_mut(),
         }
+    }
+}
+
+impl DrmHandle {
+    pub fn empty() -> Self {
+        Self { fd: 0, plane: 0 }
     }
 }
