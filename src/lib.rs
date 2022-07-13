@@ -1,8 +1,7 @@
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-//! Interoperability library for Rust Windowing applications and Rust applications that connect
-//! to system display server.
+//! Interoperability library for Rust Windowing applications.
 //!
 //! This library provides standard types for accessing a window's platform-specific raw window
 //! handle and platforms display handle. This does not provide any utilities for creating and
