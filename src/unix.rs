@@ -141,6 +141,36 @@ pub struct DrmWindowHandle {
     pub plane: u32,
 }
 
+/// Raw display handle for the Linux Generic Buffer Manager.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::GbmDisplayHandle;
+/// let display_handle = GbmDisplayHandle::empty();
+/// /* set fields */
+/// ```
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct GbmDisplayHandle {
+    /// The gbm device.
+    pub gbm_device: *mut c_void,
+}
+
+/// Raw window handle for the Linux Generic Buffer Manager.
+///
+/// ## Construction
+/// ```
+/// # use raw_window_handle::GbmWindowHandle;
+/// let handle = GbmWindowHandle::empty();
+/// /* set fields */
+/// ```
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct GbmWindowHandle {
+    /// The gbm surface.
+    pub gbm_surface: *mut c_void,
+}
+
 impl XlibDisplayHandle {
     pub fn empty() -> Self {
         Self {
@@ -202,5 +232,21 @@ impl DrmDisplayHandle {
 impl DrmWindowHandle {
     pub fn empty() -> Self {
         Self { plane: 0 }
+    }
+}
+
+impl GbmDisplayHandle {
+    pub fn empty() -> Self {
+        Self {
+            gbm_device: ptr::null_mut(),
+        }
+    }
+}
+
+impl GbmWindowHandle {
+    pub fn empty() -> Self {
+        Self {
+            gbm_surface: ptr::null_mut(),
+        }
     }
 }

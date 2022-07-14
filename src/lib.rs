@@ -37,8 +37,8 @@ pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
 pub use unix::{
-    DrmDisplayHandle, DrmWindowHandle, WaylandDisplayHandle, WaylandWindowHandle, XcbDisplayHandle,
-    XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle,
+    DrmDisplayHandle, DrmWindowHandle, GbmDisplayHandle, GbmWindowHandle, WaylandDisplayHandle,
+    WaylandWindowHandle, XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle,
 };
 pub use web::{WebDisplayHandle, WebWindowHandle};
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
@@ -143,6 +143,12 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on Linux when neither X nor Wayland are available
     Drm(DrmWindowHandle),
+    /// A raw window handle for the Linux Generic Buffer Manager.
+    ///
+    /// ## Availability Hints
+    /// This variant is present regardless of windowing backend and likely to be used with
+    /// EGL_MESA_platfrom_gbm or EGL_KHR_platfrom_gbm.
+    Gbm(GbmWindowHandle),
     /// A raw window handle for Win32.
     ///
     /// ## Availability Hints
@@ -272,6 +278,12 @@ pub enum RawDisplayHandle {
     /// ## Availability Hints
     /// This variant is used on Linux when neither X nor Wayland are available
     Drm(DrmDisplayHandle),
+    /// A raw display handle for the Linux Generic Buffer Manager.
+    ///
+    /// ## Availability Hints
+    /// This variant is present regardless of windowing backend and likely to be used with
+    /// EGL_MESA_platfrom_gbm or EGL_KHR_platfrom_gbm.
+    Gbm(GbmDisplayHandle),
     /// A raw display handle for Win32.
     ///
     /// ## Availability Hints
