@@ -4,6 +4,7 @@
 
 * **Breaking:** The `RawWindowHandle` variants were split into `RawDisplayHandle` and `RawWindowHandle`.
 * The X11 screen is now present in new `XlibDisplayHandle` and `XcbDisplayHandle`.
+- Add GBM support.
 
 ## 0.4.3 (2022-03-29)
 
