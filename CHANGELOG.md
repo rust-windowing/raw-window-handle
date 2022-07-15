@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.5.0 (2022-07-14)
 
 * **Breaking:** The `RawWindowHandle` variants were split into `RawDisplayHandle` and `RawWindowHandle`.
 * The X11 screen is now present in new `XlibDisplayHandle` and `XcbDisplayHandle`.
