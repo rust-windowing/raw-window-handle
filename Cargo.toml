@@ -1,6 +1,6 @@
 [package]
 name = "raw-window-handle"
-version = "0.4.3"
+version = "0.4.4"
 authors = ["Osspial <osspial@gmail.com>"]
 edition = "2018"
 description = "Interoperability library for Rust Windowing applications."
@@ -11,10 +11,11 @@ readme = "README.md"
 documentation = "https://docs.rs/raw-window-handle"
 
 [features]
-alloc = []
+alloc = ["new/alloc"]
 
 [dependencies]
 cty = "0.2"
+new = { version = "0.5.0", package = "raw-window-handle" }
 
 [badges]
 travis-ci = { repository = "rust-windowing/raw-window-handle" }

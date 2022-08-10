@@ -29,3 +29,14 @@ impl UiKitHandle {
         }
     }
 }
+
+impl From<new::UiKitWindowHandle> for UiKitHandle {
+    fn from(handle: new::UiKitWindowHandle) -> Self {
+        Self {
+            ui_window: handle.ui_window,
+            ui_view: handle.ui_view,
+            ui_view_controller: handle.ui_view_controller,
+            ..Self::empty()
+        }
+    }
+}

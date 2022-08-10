@@ -58,23 +58,36 @@ pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
 
-unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
+unsafe impl<T: new::HasRawWindowHandle + new::HasRawDisplayHandle> HasRawWindowHandle for T {
     fn raw_window_handle(&self) -> RawWindowHandle {
-        (*self).raw_window_handle()
-    }
-}
-#[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
-    fn raw_window_handle(&self) -> RawWindowHandle {
-        (**self).raw_window_handle()
-    }
-}
-#[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::Arc<T> {
-    fn raw_window_handle(&self) -> RawWindowHandle {
-        (**self).raw_window_handle()
+        match (
+            new::HasRawWindowHandle::raw_window_handle(self),
+            new::HasRawDisplayHandle::raw_display_handle(self),
+        ) {
+            (new::RawWindowHandle::UiKit(handle), _) => RawWindowHandle::UiKit(handle.into()),
+            (new::RawWindowHandle::AppKit(handle), _) => RawWindowHandle::AppKit(handle.into()),
+            (new::RawWindowHandle::Orbital(handle), _) => RawWindowHandle::Orbital(handle.into()),
+            (new::RawWindowHandle::Xlib(handle), new::RawDisplayHandle::Xlib(display_handle)) => {
+                RawWindowHandle::Xlib((handle, display_handle).into())
+            }
+            (new::RawWindowHandle::Xcb(handle), new::RawDisplayHandle::Xcb(display_handle)) => {
+                RawWindowHandle::Xcb((handle, display_handle).into())
+            }
+            (
+                new::RawWindowHandle::Wayland(handle),
+                new::RawDisplayHandle::Wayland(display_handle),
+            ) => RawWindowHandle::Wayland((handle, display_handle).into()),
+            (new::RawWindowHandle::Win32(handle), _) => RawWindowHandle::Win32(handle.into()),
+            (new::RawWindowHandle::WinRt(handle), _) => RawWindowHandle::WinRt(handle.into()),
+            (new::RawWindowHandle::Web(handle), _) => RawWindowHandle::Web(handle.into()),
+            (new::RawWindowHandle::AndroidNdk(handle), _) => {
+                RawWindowHandle::AndroidNdk(handle.into())
+            }
+            (new::RawWindowHandle::Haiku(handle), _) => RawWindowHandle::Haiku(handle.into()),
+            _ => panic!(
+                "Invalid handle for this platform. Please update raw-window-handle to > 0.5.0!"
+            ),
+        }
     }
 }
 

@@ -26,3 +26,13 @@ impl HaikuHandle {
         }
     }
 }
+
+impl From<new::HaikuWindowHandle> for HaikuHandle {
+    fn from(handle: new::HaikuWindowHandle) -> Self {
+        Self {
+            b_window: handle.b_window,
+            b_direct_window: handle.b_direct_window,
+            ..Self::empty()
+        }
+    }
+}

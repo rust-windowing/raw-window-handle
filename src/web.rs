@@ -25,3 +25,12 @@ impl WebHandle {
         Self { id: 0 }
     }
 }
+
+impl From<new::WebWindowHandle> for WebHandle {
+    fn from(handle: new::WebWindowHandle) -> Self {
+        Self {
+            id: handle.id,
+            ..Self::empty()
+        }
+    }
+}

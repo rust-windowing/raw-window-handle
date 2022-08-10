@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.4 (2022-08-10)
+
+* Add `HasRawWindowHandle` implementation for `HasRawWindowHandle` +
+  `HasRawDisplayHandle` in the newer version `0.5.0`.
+
+  This allows "provider" crates that implement `HasRawWindowHandle` (like
+  `winit`, `sdl2`, `glfw`, `fltk`, ...) to upgrade to `v0.5.0` immediately.
+
+  Afterwards "consumer" crates (like `gfx`, `wgpu`, `rfd`, ...) can start
+  upgrading with minimal breakage for their users.
+
 ## 0.4.3 (2022-03-29)
 
 * [Add visual IDs to X11 handles](https://github.com/rust-windowing/raw-window-handle/pull/83)

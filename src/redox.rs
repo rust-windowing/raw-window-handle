@@ -23,3 +23,12 @@ impl OrbitalHandle {
         }
     }
 }
+
+impl From<new::OrbitalWindowHandle> for OrbitalHandle {
+    fn from(handle: new::OrbitalWindowHandle) -> Self {
+        Self {
+            window: handle.window,
+            ..Self::empty()
+        }
+    }
+}

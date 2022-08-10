@@ -27,6 +27,16 @@ impl Win32Handle {
     }
 }
 
+impl From<new::Win32WindowHandle> for Win32Handle {
+    fn from(handle: new::Win32WindowHandle) -> Self {
+        Self {
+            hwnd: handle.hwnd,
+            hinstance: handle.hinstance,
+            ..Self::empty()
+        }
+    }
+}
+
 /// Raw window handle for WinRT.
 ///
 /// ## Construction
@@ -46,6 +56,15 @@ impl WinRtHandle {
     pub fn empty() -> Self {
         Self {
             core_window: ptr::null_mut(),
+        }
+    }
+}
+
+impl From<new::WinRtWindowHandle> for WinRtHandle {
+    fn from(handle: new::WinRtWindowHandle) -> Self {
+        Self {
+            core_window: handle.core_window,
+            ..Self::empty()
         }
     }
 }

@@ -27,3 +27,13 @@ impl AppKitHandle {
         }
     }
 }
+
+impl From<new::AppKitWindowHandle> for AppKitHandle {
+    fn from(handle: new::AppKitWindowHandle) -> Self {
+        Self {
+            ns_window: handle.ns_window,
+            ns_view: handle.ns_view,
+            ..Self::empty()
+        }
+    }
+}

@@ -23,3 +23,12 @@ impl AndroidNdkHandle {
         }
     }
 }
+
+impl From<new::AndroidNdkWindowHandle> for AndroidNdkHandle {
+    fn from(handle: new::AndroidNdkWindowHandle) -> Self {
+        Self {
+            a_native_window: handle.a_native_window,
+            ..Self::empty()
+        }
+    }
+}

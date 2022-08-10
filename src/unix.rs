@@ -86,3 +86,35 @@ impl WaylandHandle {
         }
     }
 }
+
+impl From<(new::XlibWindowHandle, new::XlibDisplayHandle)> for XlibHandle {
+    fn from(handle: (new::XlibWindowHandle, new::XlibDisplayHandle)) -> Self {
+        Self {
+            window: handle.0.window,
+            display: handle.1.display,
+            visual_id: handle.0.visual_id,
+            ..Self::empty()
+        }
+    }
+}
+
+impl From<(new::XcbWindowHandle, new::XcbDisplayHandle)> for XcbHandle {
+    fn from(handle: (new::XcbWindowHandle, new::XcbDisplayHandle)) -> Self {
+        Self {
+            window: handle.0.window,
+            connection: handle.1.connection,
+            visual_id: handle.0.visual_id,
+            ..Self::empty()
+        }
+    }
+}
+
+impl From<(new::WaylandWindowHandle, new::WaylandDisplayHandle)> for WaylandHandle {
+    fn from(handle: (new::WaylandWindowHandle, new::WaylandDisplayHandle)) -> Self {
+        Self {
+            surface: handle.0.surface,
+            display: handle.1.display,
+            ..Self::empty()
+        }
+    }
+}
