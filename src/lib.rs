@@ -58,11 +58,12 @@ pub unsafe trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> RawWindowHandle;
 }
 
-unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
-    fn raw_window_handle(&self) -> RawWindowHandle {
-        (*self).raw_window_handle()
-    }
-}
+// FIXME: figure out how to avoid conflict with v0.5 forwards compatibility implementation
+//unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
+//    fn raw_window_handle(&self) -> RawWindowHandle {
+//        (*self).raw_window_handle()
+//    }
+//}
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
@@ -160,4 +161,93 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuHandle),
+}
+
+/// For forwards compatibility this provides a blanket implementation of the `RawWindowHandle`
+/// for anything that is based on the newer 0.5 version of the `raw_window_handle` crate and
+/// implements both `HasRawWindowHandle` and `HasRawDisplayHandle`
+unsafe impl<T: raw_window_handle_05::HasRawWindowHandle + raw_window_handle_05::HasRawDisplayHandle> HasRawWindowHandle for T
+{
+    fn raw_window_handle(&self) -> RawWindowHandle {
+        match raw_window_handle_05::HasRawWindowHandle::raw_window_handle(self) {
+            raw_window_handle_05::RawWindowHandle::UiKit(window_handle) => {
+                let mut handle = UiKitHandle::empty();
+                handle.ui_view = window_handle.ui_view;
+                handle.ui_window = window_handle.ui_window;
+                handle.ui_view_controller = window_handle.ui_view_controller;
+                RawWindowHandle::UiKit(handle)
+            },
+            raw_window_handle_05::RawWindowHandle::AppKit(window_handle) => {
+                let mut handle = AppKitHandle::empty();
+                handle.ns_window = window_handle.ns_window;
+                handle.ns_view = window_handle.ns_view;
+                RawWindowHandle::AppKit(handle)
+            },
+            raw_window_handle_05::RawWindowHandle::Orbital(window_handle) => {
+                let mut handle = OrbitalHandle::empty();
+                handle.window = window_handle.window;
+                RawWindowHandle::Orbital(handle)
+            },
+            raw_window_handle_05::RawWindowHandle::Xlib(window_handle) => {
+                if let raw_window_handle_05::RawDisplayHandle::Xlib(display_handle) = raw_window_handle_05::HasRawDisplayHandle::raw_display_handle(self) {
+                    let mut handle = XlibHandle::empty();
+                    handle.display = display_handle.display;
+                    handle.window = window_handle.window;
+                    handle.visual_id = window_handle.visual_id;
+                    RawWindowHandle::Xlib(handle)
+                } else {
+                    panic!("Unsupported display handle associated with Xlib window");
+                }
+            },
+            raw_window_handle_05::RawWindowHandle::Xcb(window_handle) => {
+                if let raw_window_handle_05::RawDisplayHandle::Xcb(display_handle) = raw_window_handle_05::HasRawDisplayHandle::raw_display_handle(self) {
+                    let mut handle = XcbHandle::empty();
+                    handle.connection = display_handle.connection;
+                    handle.window = window_handle.window;
+                    handle.visual_id = window_handle.visual_id;
+                    RawWindowHandle::Xcb(handle)
+                } else {
+                    panic!("Unsupported display handle associated with Xcb window");
+                }
+            },
+            raw_window_handle_05::RawWindowHandle::Wayland(window_handle) => {
+                if let raw_window_handle_05::RawDisplayHandle::Wayland(display_handle) = raw_window_handle_05::HasRawDisplayHandle::raw_display_handle(self) {
+                    let mut handle = WaylandHandle::empty();
+                    handle.display = display_handle.display;
+                    handle.surface = window_handle.surface;
+                    RawWindowHandle::Wayland(handle)
+                } else {
+                    panic!("Unsupported display handle associated with Xcb window");
+                }
+            },
+            raw_window_handle_05::RawWindowHandle::Win32(window_handle) => {
+                let mut handle = Win32Handle::empty();
+                handle.hwnd = window_handle.hwnd;
+                handle.hinstance = window_handle.hinstance;
+                RawWindowHandle::Win32(handle)
+            },
+            raw_window_handle_05::RawWindowHandle::WinRt(window_handle) => {
+                let mut handle = WinRtHandle::empty();
+                handle.core_window = window_handle.core_window;
+                RawWindowHandle::WinRt(handle)
+            },
+            raw_window_handle_05::RawWindowHandle::Web(window_handle) => {
+                let mut handle = WebHandle::empty();
+                handle.id = window_handle.id;
+                RawWindowHandle::Web(handle)
+            },
+            raw_window_handle_05::RawWindowHandle::AndroidNdk(window_handle) => {
+                let mut handle = AndroidNdkHandle::empty();
+                handle.a_native_window = window_handle.a_native_window;
+                RawWindowHandle::AndroidNdk(handle)
+            },
+            raw_window_handle_05::RawWindowHandle::Haiku(window_handle) => {
+                let mut handle = HaikuHandle::empty();
+                handle.b_window = window_handle.b_window;
+                handle.b_direct_window = window_handle.b_direct_window;
+                RawWindowHandle::Haiku(handle)
+            },
+            _ => panic!("No HasRawWindowHandle version 0.4 backwards compatibility for new Winit window type"),
+        }
+    }
 }

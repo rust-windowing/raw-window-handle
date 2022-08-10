@@ -15,6 +15,7 @@ alloc = []
 
 [dependencies]
 cty = "0.2"
+raw_window_handle_05 = { package = "raw-window-handle", version = "0.5" }
 
 [badges]
 travis-ci = { repository = "rust-windowing/raw-window-handle" }
