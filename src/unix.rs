@@ -38,6 +38,8 @@ pub struct XlibDisplayHandle {
 pub struct XlibWindowHandle {
     /// An Xlib `Window`.
     pub window: c_ulong,
+    #[deprecated = "use the `RawDisplayHandle` trait instead"]
+    pub display: *mut c_void,
     /// An Xlib visual ID, or 0 if unknown.
     pub visual_id: c_ulong,
 }
@@ -77,6 +79,8 @@ pub struct XcbDisplayHandle {
 pub struct XcbWindowHandle {
     /// An X11 `xcb_window_t`.
     pub window: u32, // Based on xproto.h
+    #[deprecated = "use the `RawDisplayHandle` trait instead"]
+    pub connection: *mut c_void,
     /// An X11 `xcb_visualid_t`, or 0 if unknown.
     pub visual_id: u32,
 }
@@ -109,6 +113,8 @@ pub struct WaylandDisplayHandle {
 pub struct WaylandWindowHandle {
     /// A pointer to a `wl_surface`.
     pub surface: *mut c_void,
+    #[deprecated = "use the `RawDisplayHandle` trait instead"]
+    pub display: *mut c_void,
 }
 
 /// Raw display handle for the Linux Kernel Mode Set/Direct Rendering Manager.

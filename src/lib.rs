@@ -43,6 +43,29 @@ pub use unix::{
 pub use web::{WebDisplayHandle, WebWindowHandle};
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 
+#[deprecated = "renamed to `AndroidNdkWindowHandle`"]
+pub type AndroidNdkHandle = AndroidNdkWindowHandle;
+#[deprecated = "renamed to `AppKitWindowHandle`"]
+pub type AppKitHandle = AppKitWindowHandle;
+#[deprecated = "renamed to `HaikuWindowHandle`"]
+pub type HaikuHandle = HaikuWindowHandle;
+#[deprecated = "renamed to `OrbitalWindowHandle`"]
+pub type OrbitalHandle = OrbitalWindowHandle;
+#[deprecated = "renamed to `UiKitWindowHandle`"]
+pub type UiKitHandle = UiKitWindowHandle;
+#[deprecated = "renamed to `XlibWindowHandle`"]
+pub type XlibHandle = XlibWindowHandle;
+#[deprecated = "renamed to `XcbWindowHandle`"]
+pub type XcbHandle = XcbWindowHandle;
+#[deprecated = "renamed to `WaylandWindowHandle`"]
+pub type WaylandHandle = WaylandWindowHandle;
+#[deprecated = "renamed to `WebWindowHandle`"]
+pub type WebHandle = WebWindowHandle;
+#[deprecated = "renamed to `Win32WindowHandle`"]
+pub type Win32Handle = Win32WindowHandle;
+#[deprecated = "renamed to `WinRtWindowHandle`"]
+pub type WinRtHandle = WinRtWindowHandle;
+
 /// Window that wraps around a raw window handle.
 ///
 /// # Safety

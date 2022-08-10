@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 (2022-08-10)
+
+* Make upgrading `0.4 -> 0.5.1` not a breaking change by adding deprecated fields and type aliases.
+
 ## 0.5.0 (2022-07-14)
 
 * **Breaking:** The `RawWindowHandle` variants were split into `RawDisplayHandle` and `RawWindowHandle`.
