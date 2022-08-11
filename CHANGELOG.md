@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 (2022-08-11)
+
+* Add the `rust-version` field.
+
 ## 0.5.0 (2022-07-14)
 
 * **Breaking:** The `RawWindowHandle` variants were split into `RawDisplayHandle` and `RawWindowHandle`.
