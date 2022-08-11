@@ -16,13 +16,13 @@ jobs:
     name: Check Formatting
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: stable
-        components: rustfmt
-    - name: Check Formatting
-      run: cargo fmt --all -- --check
+      - uses: actions/checkout@v2
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: stable
+          components: rustfmt
+      - name: Check Formatting
+        run: cargo fmt --all -- --check
 
   tests:
     name: Tests
@@ -34,17 +34,17 @@ jobs:
         rust_version: [stable, nightly]
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - uses: hecrj/setup-rust-action@v1
-      with:
-        rust-version: ${{ matrix.rust_version }}
+      - uses: hecrj/setup-rust-action@v1
+        with:
+          rust-version: ${{ matrix.rust_version }}
 
-    - name: Check documentation
-      run: cargo doc --no-deps --document-private-items
+      - name: Check documentation
+        run: cargo doc --no-deps --document-private-items
 
-    - name: Build
-      run: cargo build --verbose
+      - name: Build
+        run: cargo build --verbose
 
-    - name: Run tests
-      run: cargo test --verbose
+      - name: Run tests
+        run: cargo test --verbose
