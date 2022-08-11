@@ -43,8 +43,5 @@ jobs:
       - name: Check documentation
         run: cargo doc --no-deps --document-private-items
 
-      - name: Build
-        run: cargo build --verbose
-
       - name: Run tests
         run: cargo test --verbose
