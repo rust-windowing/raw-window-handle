@@ -1,14 +1,15 @@
 [package]
 name = "raw-window-handle"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Osspial <osspial@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "Interoperability library for Rust Windowing applications."
 license = "MIT OR Apache-2.0 OR Zlib"
 repository = "https://github.com/rust-windowing/raw-window-handle"
 keywords = ["windowing"]
 readme = "README.md"
 documentation = "https://docs.rs/raw-window-handle"
+rust-version = "1.56"
 
 [features]
 alloc = []
