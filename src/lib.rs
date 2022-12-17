@@ -97,6 +97,8 @@ unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
+    /// Not a valid raw handle
+    Invalid,
     /// A raw window handle for UIKit (Apple's non-macOS windowing library).
     ///
     /// ## Availability Hints
@@ -232,6 +234,8 @@ unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::sync
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawDisplayHandle {
+    /// Not a valid raw handle
+    Invalid,
     /// A raw display handle for UIKit (Apple's non-macOS windowing library).
     ///
     /// ## Availability Hints
