@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Add GTK support.
+
 ## 0.5.1 (2022-08-11)
 
 * Add the `rust-version` field.

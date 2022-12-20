@@ -24,6 +24,7 @@ extern crate alloc;
 
 mod android;
 mod appkit;
+mod gtk;
 mod haiku;
 mod redox;
 mod uikit;
@@ -33,6 +34,7 @@ mod windows;
 
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
+pub use gtk::{Gtk3DisplayHandle, Gtk3WindowHandle, Gtk4DisplayHandle, Gtk4WindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
@@ -174,6 +176,18 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuWindowHandle),
+    /// A raw window handle for GTK4.
+    ///
+    /// ## Availability Hints
+    ///
+    /// This variant is used on any system that supports the GTK toolkit.
+    Gtk4(Gtk4WindowHandle),
+    /// A raw window handle for GTK3.
+    ///
+    /// ## Availability Hints
+    ///
+    /// This variant is used on any system that supports the GTK toolkit.
+    Gtk3(Gtk3WindowHandle),
 }
 
 /// Display that wraps around a raw display handle.
@@ -304,4 +318,16 @@ pub enum RawDisplayHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuDisplayHandle),
+    /// A raw display handle for GTK4.
+    ///
+    /// ## Availability Hints
+    ///
+    /// This variant is used on any system that supports the GTK toolkit.
+    Gtk4(Gtk4DisplayHandle),
+    /// A raw display handle for GTK3.
+    ///
+    /// ## Availability Hints
+    ///
+    /// This variant is used on any system that supports the GTK toolkit.
+    Gtk3(Gtk3DisplayHandle),
 }
