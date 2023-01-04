@@ -18,6 +18,12 @@
 //! added without breaking backwards compatibility. Each struct provides an `empty` method that may
 //! be used along with the struct update syntax to construct it. See each specific struct for
 //! examples.
+//!
+//! ## Display Handles
+//!
+//! Some windowing systems use a separate display handle for some operations. The display usually
+//! represents a connection to some display server, but it is not necessarily tied to a particular
+//! window. See [`RawDisplayHandle`] for more details.
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -81,7 +87,14 @@ unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::
     }
 }
 
-/// An enum to simply combine the different possible raw window handle variants.
+/// A window handle for a particular windowing system.
+///
+/// Each variant contains a struct with fields specific to that windowing system
+/// (e.g. [`Win32WindowHandle`] will include a [HWND], [`WaylandWindowHandle`] uses [wl_surface],
+/// etc.)
+///
+/// [HWND]: https://learn.microsoft.com/en-us/windows/win32/winmsg/about-windows#window-handle
+/// [wl_surface]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_surface
 ///
 /// # Variant Availability
 ///
@@ -216,7 +229,20 @@ unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::sync
     }
 }
 
-/// An enum to simply combine the different possible raw display handle variants.
+/// A display server handle for a particular windowing system.
+///
+/// The display usually represents a connection to some display server, but it is not necessarily
+/// tied to a particular window. Some APIs can use the display handle without ever creating a window
+/// handle (e.g. offscreen rendering, headless event handling).
+///
+/// Each variant contains a struct with fields specific to that windowing system
+/// (e.g. [`XlibDisplayHandle`] contains a [Display] connection to an X Server,
+/// [`WaylandDisplayHandle`] uses [wl_display] to connect to a compositor). Not all windowing
+/// systems have a separate display handle (or they haven't been implemented yet) and their variants
+/// contain empty structs.
+///
+/// [Display]: https://www.x.org/releases/current/doc/libX11/libX11/libX11.html#Display_Functions
+/// [wl_display]: https://wayland.freedesktop.org/docs/html/apb.html#Client-classwl__display
 ///
 /// # Variant Availability
 ///
