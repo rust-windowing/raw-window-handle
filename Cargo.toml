@@ -9,13 +9,10 @@ repository = "https://github.com/rust-windowing/raw-window-handle"
 keywords = ["windowing"]
 readme = "README.md"
 documentation = "https://docs.rs/raw-window-handle"
-rust-version = "1.56"
+rust-version = "1.64"
 
 [features]
 alloc = []
-
-[dependencies]
-cty = "0.2"
 
 [package.metadata.docs.rs]
 all-features = true
