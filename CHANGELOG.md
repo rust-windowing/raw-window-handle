@@ -1,5 +1,6 @@
 # Changelog
 
+* Implemented `From` for `RawWindowHandle` and `RawDisplayHandle`
 * The `rust-version` was bumped to `1.64`
 
 ## 0.5.1 (2022-08-11)
