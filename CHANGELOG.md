@@ -1,11 +1,9 @@
 # Changelog
 
+## 0.5.1 (2023-03-07)
+
+* Add the `rust-version` field (`1.64`).
 * Implemented `From` for `RawWindowHandle` and `RawDisplayHandle`
-* The `rust-version` was bumped to `1.64`
-
-## 0.5.1 (2022-08-11)
-
-* Add the `rust-version` field.
 
 ## 0.5.0 (2022-07-14)
 
