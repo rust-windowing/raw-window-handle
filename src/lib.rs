@@ -30,6 +30,7 @@ extern crate alloc;
 
 mod android;
 mod appkit;
+mod borrowed;
 mod haiku;
 mod redox;
 mod uikit;
@@ -39,6 +40,7 @@ mod windows;
 
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
+pub use borrowed::{Active, DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
