@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Add several types for using raw window handles safely, including `HasWindowHandle`, `WindowHandle`, `HasDisplayHandle`, `DisplayHandle` and `Active`.
+
 ## 0.5.1 (2023-03-07)
 
 * Add the `rust-version` field (`1.64`).
