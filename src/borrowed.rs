@@ -6,9 +6,7 @@
 use core::fmt;
 use core::marker::PhantomData;
 
-use crate::{
-    HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
-};
+use crate::{HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle};
 
 /// The application is currently active.
 ///
@@ -198,8 +196,6 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// rather, they are enforced on the constructors of
 /// [`WindowHandle`]. This is because the `HasWindowHandle` trait is
 /// safe to implement.
-///
-/// [`HasRawWindowHandle`]: raw_window_handle::HasRawWindowHandle
 pub trait HasWindowHandle {
     /// Get a handle to the window.
     fn window_handle<'this, 'active>(
