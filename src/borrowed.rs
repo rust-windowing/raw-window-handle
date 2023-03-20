@@ -1,90 +1,72 @@
 //! Borrowable window handles based on the ones in this crate.
 //!
-//! These should be 100% safe to pass around and use, no possibility of dangling or
-//! invalidity.
+//! These should be 100% safe to pass around and use, no possibility of dangling or invalidity.
 
 use core::fmt;
+use core::hash::{Hash, Hasher};
 use core::marker::PhantomData;
 
 use crate::{HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle};
 
-/// The application is currently active.
-///
-/// This structure is a token that indicates that the application is
-/// not presently suspended. It is used to ensure that the window handle
-/// is only used when the application is active.
-///
-/// It is safe to create this token on platforms where the application
-/// is guaranteed to be active, such as on desktop platforms. On Android
-/// platforms, the application may be suspended, so this token must be
-/// either created with `unsafe` or derived from a `HasDisplayHandle`
-/// type.
-pub struct Active<'a> {
-    _marker: PhantomData<&'a *const ()>,
-}
+/// Keeps track of whether the application is currently active.
+pub struct Active(imp::Active);
 
-impl fmt::Debug for Active<'_> {
+impl fmt::Debug for Active {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("Active { .. }")
     }
 }
 
-impl<'a> Active<'a> {
-    /// Create a new active token.
+/// Represents a live window handle.
+#[derive(Clone)]
+pub struct ActiveHandle<'a>(imp::ActiveHandle<'a>);
+
+impl<'a> fmt::Debug for ActiveHandle<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("ActiveHandle { .. }")
+    }
+}
+
+impl Active {
+    /// Create a new `Active` tracker.
+    pub const fn new() -> Self {
+        Self(imp::Active::new())
+    }
+
+    /// Get a live window handle.
+    pub fn handle(&self) -> Option<ActiveHandle<'_>> {
+        self.0.handle().map(ActiveHandle)
+    }
+
+    /// Set the application to be inactive.
+    ///
+    /// This function may block until there are no more active handles.
     ///
     /// # Safety
     ///
-    /// The application must not be `Suspend`ed.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use raw_window_handle::Active;
-    ///
-    /// // SAFETY: The application is active.
-    /// let active = unsafe { Active::new_unchecked() };
-    /// ```
-    pub unsafe fn new_unchecked() -> Self {
-        Self {
-            _marker: PhantomData,
-        }
+    /// The application must actually be inactive.
+    pub unsafe fn set_inactive(&self) {
+        self.0.set_inactive()
     }
 
-    /// Create a new active token on a system where the application is
-    /// guaranteed to be active.
+    /// Set the application to be active.
     ///
-    /// On most platforms, there is no event where the application is
-    /// suspended, so there are no cases where this function is unsafe.
+    /// # Safety
     ///
-    /// ```
-    /// use raw_window_handle::Active;
+    /// The application must actually be active.
+    pub unsafe fn set_active(&self) {
+        self.0.set_active()
+    }
+}
+
+impl ActiveHandle<'_> {
+    /// Create a new freestanding active handle.
     ///
-    /// let with_active = |active: Active<'_>| {
-    ///     /* ... */
-    /// };
+    /// # Safety
     ///
-    /// // Only use this code-path on non-android platforms.
-    /// #[cfg(not(target_os = "android"))]
-    /// {
-    ///     let active = Active::new();
-    ///     with_active(active);
-    /// }
-    ///
-    /// // Only use this code-path on android platforms.
-    /// #[cfg(target_os = "android")]
-    /// {
-    ///     if application_is_active() {
-    ///         let active = unsafe { Active::new_unchecked() };
-    ///         with_active(active);
-    ///     }
-    /// }
-    /// # fn application_is_active() -> bool { false }
-    /// ```       
-    #[cfg(not(target_os = "android"))]
-    #[cfg_attr(docsrs, doc(cfg(not(target_os = "android"))))]
-    pub fn new() -> Self {
-        // SAFETY: The application is guaranteed to be active.
-        unsafe { Self::new_unchecked() }
+    /// The application must actually be active.
+    pub unsafe fn new_unchecked() -> Self {
+        Self(imp::ActiveHandle::new_unchecked())
     }
 }
 
@@ -92,31 +74,18 @@ impl<'a> Active<'a> {
 ///
 /// # Safety
 ///
-/// The safety requirements of [`HasRawDisplayHandle`] apply here as
-/// well. To clarify, the [`DisplayHandle`] must contain a valid window
-/// handle for its lifetime. In addition, the handle must be consistent
-/// between multiple calls barring platform-specific events.
+/// The safety requirements of [`HasRawDisplayHandle`] apply here as  well. To reiterate, the
+/// [`DisplayHandle`] must contain a valid window handle for its lifetime.
 ///
-/// In addition, the `active` function must only return an `Active`
-/// token if the application is active.
+/// It is not possible to invalidate a [`DisplayHandle`] on any platform without additional unsafe code.
 ///
-/// Note that these requirements are not enforced on `HasDisplayHandle`,
-/// rather, they are enforced on the constructors of [`Active`] and
-/// [`DisplayHandle`]. This is because the `HasDisplayHandle` trait is
-/// safe to implement.
+/// Note that these requirements are not enforced on `HasDisplayHandle`, rather, they are enforced on the
+/// constructors of [`DisplayHandle`]. This is because the `HasDisplayHandle` trait is safe to implement.
 ///
 /// [`HasRawDisplayHandle`]: crate::HasRawDisplayHandle
 pub trait HasDisplayHandle {
-    /// Get a token indicating whether the application is active.
-    fn active(&self) -> Option<Active<'_>>;
-
     /// Get a handle to the display controller of the windowing system.
-    fn display_handle<'this, 'active>(
-        &'this self,
-        active: &'active Active<'_>,
-    ) -> DisplayHandle<'this>
-    where
-        'active: 'this;
+    fn display_handle(&self) -> DisplayHandle<'_>;
 }
 
 impl<T: HasDisplayHandle + ?Sized> HasDisplayHandle for &T {
@@ -191,7 +160,10 @@ impl<T: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<T> {
 
 /// The handle to the display controller of the windowing system.
 ///
-/// Get the underlying raw display handle with the `HasRawDisplayHandle` trait.
+/// This is the primary return type of the [`HasDisplayHandle`] trait. It is guaranteed to contain
+/// a valid platform-specific display handle for its lifetime.
+///
+/// Get the underlying raw display handle with the [`HasRawDisplayHandle`] trait.
 #[repr(transparent)]
 #[derive(PartialEq, Eq, Hash)]
 pub struct DisplayHandle<'a> {
@@ -213,15 +185,12 @@ impl<'a> Clone for DisplayHandle<'a> {
 }
 
 impl<'a> DisplayHandle<'a> {
-    /// Borrow a `DisplayHandle` from a `RawDisplayHandle`.
+    /// Borrow a `DisplayHandle` from a [`RawDisplayHandle`].
     ///
     /// # Safety
     ///
-    /// The `RawDisplayHandle` must be valid for the lifetime and the
-    /// application must be `Active`. See the requirements on the
-    /// [`HasDisplayHandle`] trait for more information.
-    pub unsafe fn borrow_raw(raw: RawDisplayHandle, active: &Active<'a>) -> Self {
-        let _ = active;
+    /// The `RawDisplayHandle` must be valid for the lifetime.
+    pub unsafe fn borrow_raw(raw: RawDisplayHandle) -> Self {
         Self {
             raw,
             _marker: PhantomData,
@@ -236,19 +205,7 @@ unsafe impl HasRawDisplayHandle for DisplayHandle<'_> {
 }
 
 impl<'a> HasDisplayHandle for DisplayHandle<'a> {
-    fn active(&self) -> Option<Active<'_>> {
-        // SAFETY: The fact that this handle was created means that the
-        // application is active.
-        Some(unsafe { Active::new_unchecked() })
-    }
-
-    fn display_handle<'this, 'active>(
-        &'this self,
-        _active: &'active Active<'_>,
-    ) -> DisplayHandle<'this>
-    where
-        'active: 'this,
-    {
+    fn display_handle(&self) -> DisplayHandle<'_> {
         *self
     }
 }
@@ -257,20 +214,31 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 ///
 /// # Safety
 ///
-/// The safety requirements of [`HasRawWindowHandle`] apply here as
-/// well. To clarify, the [`WindowHandle`] must contain a valid window
-/// handle for its lifetime. In addition, the handle must be consistent
-/// between multiple calls barring platform-specific events.
+/// All pointers within the resulting [`WindowHandle`] must be valid and not dangling for the lifetime of
+/// the handle.
 ///
-/// Note that these requirements are not enforced on `HasWindowHandle`,
-/// rather, they are enforced on the constructors of
-/// [`WindowHandle`]. This is because the `HasWindowHandle` trait is
-/// safe to implement.
+/// Note that this guarantee only applies to *pointers*, and not any window ID types in the handle.
+/// This includes Window IDs (XIDs) from X11, `HWND`s from Win32, and the window ID for web platforms.
+/// There is no way for Rust to enforce any kind of invariant on these types, since:
+///
+/// - For all three listed platforms, it is possible for safe code in the same process to delete
+///   the window.
+/// - For X11 and Win32, it is possible for code in a different process to delete the window.
+/// - For X11, it is possible for code on a different *machine* to delete the window.
+///
+/// It is *also* possible for the window to be replaced with another, valid-but-different window. User
+/// code should be aware of this possibility, and should be ready to soundly handle the possible error
+/// conditions that can arise from this.
+///
+/// In addition, the window handle must not be invalidated for the duration of the [`ActiveHandle`] token.
+///
+/// Note that these requirements are not enforced on `HasWindowHandle`, rather, they are enforced on the
+/// constructors of [`WindowHandle`]. This is because the `HasWindowHandle` trait is safe to implement.
 pub trait HasWindowHandle {
     /// Get a handle to the window.
     fn window_handle<'this, 'active>(
         &'this self,
-        active: &'active Active<'_>,
+        active: ActiveHandle<'active>,
     ) -> WindowHandle<'this>
     where
         'active: 'this;
@@ -332,12 +300,17 @@ impl<T: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<T> {
 
 /// The handle to a window.
 ///
-/// This handle is guaranteed to be safe and valid. Get the underlying
-/// raw window handle with the `HasRawWindowHandle` trait.
-#[repr(transparent)]
-#[derive(PartialEq, Eq, Hash)]
+/// This is the primary return type of the [`HasWindowHandle`] trait. All *pointers* within this type
+/// are guaranteed to be valid and not dangling for the lifetime of the handle. This excludes window IDs
+/// like XIDs, `HWND`s, and the window ID for web platforms. See the documentation on the
+/// [`HasWindowHandle`] trait for more information about these safety requirements.
+///
+/// This handle is guaranteed to be safe and valid. Get the underlying raw window handle with the
+/// [`HasRawWindowHandle`] trait.
+#[derive(Clone)]
 pub struct WindowHandle<'a> {
     raw: RawWindowHandle,
+    _active: ActiveHandle<'a>,
     _marker: PhantomData<&'a *const ()>,
 }
 
@@ -347,24 +320,30 @@ impl fmt::Debug for WindowHandle<'_> {
     }
 }
 
-impl<'a> Copy for WindowHandle<'a> {}
-impl<'a> Clone for WindowHandle<'a> {
-    fn clone(&self) -> Self {
-        *self
+impl PartialEq for WindowHandle<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.raw == other.raw
+    }
+}
+
+impl Eq for WindowHandle<'_> {}
+
+impl Hash for WindowHandle<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.raw.hash(state);
     }
 }
 
 impl<'a> WindowHandle<'a> {
-    /// Borrow a `WindowHandle` from a `RawWindowHandle`.
+    /// Borrow a `WindowHandle` from a [`RawWindowHandle`].
     ///
     /// # Safety
     ///
-    /// The `RawWindowHandle` must be valid for the lifetime and the
-    /// application must be `Active`.
-    pub unsafe fn borrow_raw(raw: RawWindowHandle, active: &Active<'a>) -> Self {
-        let _ = active;
+    /// The [`RawWindowHandle`] must be valid for the lifetime and the application must be `Active`.
+    pub unsafe fn borrow_raw(raw: RawWindowHandle, active: ActiveHandle<'a>) -> Self {
         Self {
             raw,
+            _active: active,
             _marker: PhantomData,
         }
     }
@@ -379,12 +358,16 @@ unsafe impl HasRawWindowHandle for WindowHandle<'_> {
 impl<'a> HasWindowHandle for WindowHandle<'a> {
     fn window_handle<'this, 'active>(
         &'this self,
-        _active: &'active Active<'_>,
+        active: ActiveHandle<'active>,
     ) -> WindowHandle<'this>
     where
         'active: 'this,
     {
-        *self
+        WindowHandle {
+            raw: self.raw,
+            _active: active,
+            _marker: PhantomData,
+        }
     }
 }
 
@@ -396,3 +379,121 @@ impl<'a> HasWindowHandle for WindowHandle<'a> {
 /// _assert::<WindowHandle<'static>>();
 /// ```
 fn _not_send_or_sync() {}
+
+#[cfg(not(any(target_os = "android", raw_window_handle_force_refcount)))]
+#[cfg_attr(docsrs, doc(cfg(not(target_os = "android"))))]
+mod imp {
+    //! We don't need to refcount the handles, so we can just use no-ops.
+
+    use core::marker::PhantomData;
+
+    pub(super) struct Active;
+
+    #[derive(Clone)]
+    pub(super) struct ActiveHandle<'a> {
+        _marker: PhantomData<&'a ()>,
+    }
+
+    impl Active {
+        pub(super) const fn new() -> Self {
+            Self
+        }
+
+        pub(super) fn handle(&self) -> Option<ActiveHandle<'_>> {
+            // SAFETY: The handle is always active.
+            Some(unsafe { ActiveHandle::new_unchecked() })
+        }
+
+        pub(super) unsafe fn set_active(&self) {}
+
+        pub(super) unsafe fn set_inactive(&self) {}
+    }
+
+    impl ActiveHandle<'_> {
+        pub(super) unsafe fn new_unchecked() -> Self {
+            Self {
+                _marker: PhantomData,
+            }
+        }
+    }
+
+    impl super::ActiveHandle<'_> {
+        /// Create a new `ActiveHandle`.
+        ///
+        /// This is safe because the handle is always active.
+        #[allow(clippy::new_without_default)]
+        pub fn new() -> Self {
+            // SAFETY: The handle is always active.
+            unsafe { super::ActiveHandle::new_unchecked() }
+        }
+    }
+}
+
+#[cfg(any(target_os = "android", raw_window_handle_force_refcount))]
+#[cfg_attr(docsrs, doc(cfg(any(target_os = "android"))))]
+mod imp {
+    //! We need to refcount the handles, so we use an `RwLock` to do so.
+
+    extern crate std;
+    use std::sync::{RwLock, RwLockReadGuard};
+
+    pub(super) struct Active {
+        active: RwLock<bool>,
+    }
+
+    pub(super) struct ActiveHandle<'a> {
+        inner: Option<Inner<'a>>,
+    }
+
+    struct Inner<'a> {
+        _read_guard: RwLockReadGuard<'a, bool>,
+        active: &'a Active,
+    }
+
+    impl Clone for ActiveHandle<'_> {
+        fn clone(&self) -> Self {
+            Self {
+                inner: self.inner.as_ref().map(|inner| Inner {
+                    _read_guard: inner.active.active.read().unwrap(),
+                    active: inner.active,
+                }),
+            }
+        }
+    }
+
+    impl Active {
+        pub(super) const fn new() -> Self {
+            Self {
+                active: RwLock::new(false),
+            }
+        }
+
+        pub(super) fn handle(&self) -> Option<ActiveHandle<'_>> {
+            let active = self.active.read().ok()?;
+            if !*active {
+                return None;
+            }
+
+            Some(ActiveHandle {
+                inner: Some(Inner {
+                    _read_guard: active,
+                    active: self,
+                }),
+            })
+        }
+
+        pub(super) unsafe fn set_active(&self) {
+            *self.active.write().unwrap() = true;
+        }
+
+        pub(super) unsafe fn set_inactive(&self) {
+            *self.active.write().unwrap() = false;
+        }
+    }
+
+    impl ActiveHandle<'_> {
+        pub(super) unsafe fn new_unchecked() -> Self {
+            Self { inner: None }
+        }
+    }
+}
