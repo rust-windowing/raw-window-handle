@@ -119,6 +119,76 @@ pub trait HasDisplayHandle {
         'active: 'this;
 }
 
+impl<T: HasDisplayHandle + ?Sized> HasDisplayHandle for &T {
+    fn active(&self) -> Option<Active<'_>> {
+        (**self).active()
+    }
+
+    fn display_handle<'this, 'active>(
+        &'this self,
+        active: &'active Active<'_>,
+    ) -> DisplayHandle<'this>
+    where
+        'active: 'this,
+    {
+        (**self).display_handle(active)
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+impl<T: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::boxed::Box<T> {
+    fn active(&self) -> Option<Active<'_>> {
+        (**self).active()
+    }
+
+    fn display_handle<'this, 'active>(
+        &'this self,
+        active: &'active Active<'_>,
+    ) -> DisplayHandle<'this>
+    where
+        'active: 'this,
+    {
+        (**self).display_handle(active)
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+impl<T: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::rc::Rc<T> {
+    fn active(&self) -> Option<Active<'_>> {
+        (**self).active()
+    }
+
+    fn display_handle<'this, 'active>(
+        &'this self,
+        active: &'active Active<'_>,
+    ) -> DisplayHandle<'this>
+    where
+        'active: 'this,
+    {
+        (**self).display_handle(active)
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+impl<T: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<T> {
+    fn active(&self) -> Option<Active<'_>> {
+        (**self).active()
+    }
+
+    fn display_handle<'this, 'active>(
+        &'this self,
+        active: &'active Active<'_>,
+    ) -> DisplayHandle<'this>
+    where
+        'active: 'this,
+    {
+        (**self).display_handle(active)
+    }
+}
+
 /// The handle to the display controller of the windowing system.
 ///
 /// Get the underlying raw display handle with the `HasRawDisplayHandle` trait.
@@ -204,6 +274,60 @@ pub trait HasWindowHandle {
     ) -> WindowHandle<'this>
     where
         'active: 'this;
+}
+
+impl<T: HasWindowHandle + ?Sized> HasWindowHandle for &T {
+    fn window_handle<'this, 'active>(
+        &'this self,
+        active: &'active Active<'_>,
+    ) -> WindowHandle<'this>
+    where
+        'active: 'this,
+    {
+        (**self).window_handle(active)
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+impl<T: HasWindowHandle + ?Sized> HasWindowHandle for alloc::boxed::Box<T> {
+    fn window_handle<'this, 'active>(
+        &'this self,
+        active: &'active Active<'_>,
+    ) -> WindowHandle<'this>
+    where
+        'active: 'this,
+    {
+        (**self).window_handle(active)
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+impl<T: HasWindowHandle + ?Sized> HasWindowHandle for alloc::rc::Rc<T> {
+    fn window_handle<'this, 'active>(
+        &'this self,
+        active: &'active Active<'_>,
+    ) -> WindowHandle<'this>
+    where
+        'active: 'this,
+    {
+        (**self).window_handle(active)
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+impl<T: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<T> {
+    fn window_handle<'this, 'active>(
+        &'this self,
+        active: &'active Active<'_>,
+    ) -> WindowHandle<'this>
+    where
+        'active: 'this,
+    {
+        (**self).window_handle(active)
+    }
 }
 
 /// The handle to a window.
