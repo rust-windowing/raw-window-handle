@@ -44,8 +44,8 @@ mod windows;
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
 pub use borrowed::{
-    Active, ActiveHandle, DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle,
-    WindowHandleError,
+    Active, ActiveHandle, DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle,
+    WindowHandle,
 };
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
