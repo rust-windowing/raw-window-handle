@@ -45,6 +45,7 @@ pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
 pub use borrowed::{
     Active, ActiveHandle, DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle,
+    WindowHandleError,
 };
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
