@@ -2,6 +2,9 @@
 //!
 //! These should be 100% safe to pass around and use, no possibility of dangling or invalidity.
 
+#[cfg(all(not(feature = "std"), target_os = "android"))]
+compile_error!("Using borrowed handles on Android requires the `std` feature to be enabled.");
+
 use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::marker::PhantomData;
@@ -434,7 +437,6 @@ mod imp {
 mod imp {
     //! We need to refcount the handles, so we use an `RwLock` to do so.
 
-    extern crate std;
     use std::sync::{RwLock, RwLockReadGuard};
 
     pub(super) struct Active {
