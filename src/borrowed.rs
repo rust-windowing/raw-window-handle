@@ -323,14 +323,15 @@ fn _not_send_or_sync() {}
 #[cfg_attr(docsrs, doc(cfg(not(target_os = "android"))))]
 mod imp {
     //! We don't need to refcount the handles, so we can just use no-ops.
-
+    
+    use core::cell::UnsafeCell;
     use core::marker::PhantomData;
 
     pub(super) struct Active;
 
     #[derive(Clone)]
     pub(super) struct ActiveHandle<'a> {
-        _marker: PhantomData<&'a ()>,
+        _marker: PhantomData<&'a UnsafeCell<()>>,
     }
 
     impl Active {
@@ -353,6 +354,12 @@ mod imp {
             Self {
                 _marker: PhantomData,
             }
+        }
+    }
+
+    impl Drop for ActiveHandle<'_> {
+        fn drop(&mut self) {
+            // Done for consistency with the refcounted version.
         }
     }
 
