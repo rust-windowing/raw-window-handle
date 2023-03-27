@@ -323,7 +323,7 @@ fn _not_send_or_sync() {}
 #[cfg_attr(docsrs, doc(cfg(not(target_os = "android"))))]
 mod imp {
     //! We don't need to refcount the handles, so we can just use no-ops.
-    
+
     use core::cell::UnsafeCell;
     use core::marker::PhantomData;
 
