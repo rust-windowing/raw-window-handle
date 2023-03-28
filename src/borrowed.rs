@@ -44,11 +44,7 @@ impl Active {
     /// Set the application to be inactive.
     ///
     /// This function may block until there are no more active handles.
-    ///
-    /// # Safety
-    ///
-    /// The application must actually be inactive.
-    pub unsafe fn set_inactive(&self) {
+    pub fn set_inactive(&self) {
         self.0.set_inactive()
     }
 
@@ -346,7 +342,7 @@ mod imp {
 
         pub(super) unsafe fn set_active(&self) {}
 
-        pub(super) unsafe fn set_inactive(&self) {}
+        pub(super) fn set_inactive(&self) {}
     }
 
     impl ActiveHandle<'_> {
@@ -431,7 +427,7 @@ mod imp {
             *self.active.write().unwrap() = true;
         }
 
-        pub(super) unsafe fn set_inactive(&self) {
+        pub(super) fn set_inactive(&self) {
             *self.active.write().unwrap() = false;
         }
     }
