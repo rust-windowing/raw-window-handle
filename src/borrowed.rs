@@ -340,7 +340,7 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 ///
 /// - For all three listed platforms, it is possible for safe code in the same process to delete
 ///   the window.
-/// - For X11, it is possible for code in a different process to delete the window. In fact, it is 
+/// - For X11, it is possible for code in a different process to delete the window. In fact, it is
 ///   possible for code on a different *machine* to delete the window.
 ///
 /// It is *also* possible for the window to be replaced with another, valid-but-different window. User
@@ -392,7 +392,7 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 ///
 /// This is the primary return type of the [`HasWindowHandle`] trait. All *pointers* within this type
 /// are guaranteed to be valid and not dangling for the lifetime of the handle. This excludes window IDs
-/// like XIDs and the window ID for web platforms. See the documentation on the [`HasWindowHandle`] 
+/// like XIDs and the window ID for web platforms. See the documentation on the [`HasWindowHandle`]
 /// trait for more information about these safety requirements.
 ///
 /// This handle is guaranteed to be safe and valid. Get the underlying raw window handle with the
