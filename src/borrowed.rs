@@ -220,6 +220,10 @@ impl ActiveHandle<'_> {
 /// constructors of [`DisplayHandle`]. This is because the `HasDisplayHandle` trait is safe to implement.
 ///
 /// [`HasRawDisplayHandle`]: crate::HasRawDisplayHandle
+/// [`winit`]: https://crates.io/crates/winit
+/// [`sdl2`]: https://crates.io/crates/sdl2
+/// [`wgpu`]: https://crates.io/crates/wgpu
+/// [`glutin`]: https://crates.io/crates/glutin
 pub trait HasDisplayHandle {
     /// Get a handle to the display controller of the windowing system.
     fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError>;
@@ -347,6 +351,11 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 ///
 /// Note that these requirements are not enforced on `HasWindowHandle`, rather, they are enforced on the
 /// constructors of [`WindowHandle`]. This is because the `HasWindowHandle` trait is safe to implement.
+///
+/// [`winit`]: https://crates.io/crates/winit
+/// [`sdl2`]: https://crates.io/crates/sdl2
+/// [`wgpu`]: https://crates.io/crates/wgpu
+/// [`glutin`]: https://crates.io/crates/glutin
 pub trait HasWindowHandle {
     /// Get a handle to the window.
     fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError>;
