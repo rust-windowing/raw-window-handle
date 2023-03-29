@@ -12,6 +12,54 @@ use core::marker::PhantomData;
 use crate::{HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle};
 
 /// Keeps track of whether the application is currently active.
+///
+/// On certain platforms (e.g. Android), it is possible for the application to enter a "suspended"
+/// state. While in this state, all previously valid window handles become invalid. Therefore, in
+/// order for window handles to be valid, the application must be active.
+///
+/// On platforms where the graphical user interface is always active, this type is a ZST and all
+/// of its methods are noops. On Android, this type acts as a reference counter that keeps track
+/// of all currently active window handles. Before the application enters the suspended state, it
+/// blocks until all of the currently active window handles are dropped.
+///
+/// ## Explanation
+///
+/// On Android, there is an [Activity]-global [`ANativeWindow`] object that is used for drawing. This
+/// handle is used [within the `RawWindowHandle` type] for Android NDK, since it is necessary for GFX
+/// APIs to draw to the screen.
+///
+/// However, the [`ANativeWindow`] type can be arbitrarily invalidated by the underlying Android runtime.
+/// The reasoning for this is complicated, but this idea is exposed to native code through the
+/// [`onNativeWindowCreated`] and [`onNativeWindowDestroyed`] callbacks. To save you a click, the
+/// conditions associated with these callbacks are:
+///
+/// - [`onNativeWindowCreated`] provides a valid [`ANativeWindow`] pointer that can be used for drawing.
+/// - [`onNativeWindowDestroyed`] indicates that the previous [`ANativeWindow`] pointer is no longer
+///   valid. The documentation clarifies that, *once the function returns*, the [`ANativeWindow`] pointer
+///   can no longer be used for drawing without resulting in undefined behavior.
+///
+/// In [`winit`], these are exposed via the [`Resumed`] and [`Suspended`] events, respectively. Therefore,
+/// between the last [`Suspended`] event and the next [`Resumed`] event, it is undefined behavior to use
+/// the raw window handle. This condition makes it tricky to define an API that safely wraps the raw
+/// window handles, since an existing window handle can be made invalid at any time.
+///
+/// The Android docs specifies that the [`ANativeWindow`] pointer is still valid while the application
+/// is still in the [`onNativeWindowDestroyed`] block, and suggests that synchronization needs to take
+/// place to ensure that the pointer has been invalidated before the function returns. `Active` aims
+/// to be the solution to this problem. It keeps track of all currently active window handles, and
+/// blocks until all of them are dropped before allowing the application to enter the suspended state.
+///
+/// [Activity]: https://developer.android.com/reference/android/app/Activity
+/// [`ANativeWindow`]: https://developer.android.com/ndk/reference/group/a-native-window
+/// [within the `RawWindowHandle` type]: struct.AndroidNdkWindowHandle.html#structfield.a_native_window
+/// [`onNativeWindowCreated`]: https://developer.android.com/ndk/reference/struct/a-native-activity-callbacks#onnativewindowcreated
+/// [`onNativeWindowDestroyed`]: https://developer.android.com/ndk/reference/struct/a-native-activity-callbacks#onnativewindowdestroyed
+/// [`Resumed`]: https://docs.rs/winit/latest/winit/event/enum.Event.html#variant.Resumed
+/// [`Suspended`]: https://docs.rs/winit/latest/winit/event/enum.Event.html#variant.Suspended
+/// [`sdl2`]: https://crates.io/crates/sdl2
+/// [`RawWindowHandle`]: https://docs.rs/raw-window-handle/latest/raw_window_handle/enum.RawWindowHandle.html
+/// [`HasRawWindowHandle`]: https://docs.rs/raw-window-handle/latest/raw_window_handle/trait.HasRawWindowHandle.html
+/// [`winit`]: https://crates.io/crates/winit
 pub struct Active(imp::Active);
 
 impl fmt::Debug for Active {
@@ -21,6 +69,13 @@ impl fmt::Debug for Active {
 }
 
 /// Represents a live window handle.
+///
+/// This is carried around by the [`Active`] type, and is used to ensure that the application doesn't
+/// enter the suspended state while there are still live window handles. See documentation on the
+/// [`Active`] type for more information.
+///
+/// On non-Android platforms, this is a ZST. On Android, this is a reference counted handle that
+/// keeps the application active while it is alive.
 #[derive(Clone)]
 pub struct ActiveHandle<'a>(imp::ActiveHandle<'a>);
 
@@ -32,11 +87,39 @@ impl<'a> fmt::Debug for ActiveHandle<'a> {
 
 impl Active {
     /// Create a new `Active` tracker.
+    ///
+    /// Only one of these should exist per display connection.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use raw_window_handle::Active;
+    /// let active = Active::new();
+    /// ```
     pub const fn new() -> Self {
         Self(imp::Active::new())
     }
 
     /// Get a live window handle.
+    ///
+    /// This function returns an active handle if the application is active, and `None` otherwise.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use raw_window_handle::Active;
+    ///
+    /// // Set the application to be active.
+    /// let active = Active::new();
+    /// unsafe { active.set_active() };
+    ///
+    /// // Get a live window handle.
+    /// let handle = active.handle();
+    ///
+    /// // Drop it and set the application to be inactive.
+    /// drop(handle);
+    /// active.set_inactive();
+    /// ```
     pub fn handle(&self) -> Option<ActiveHandle<'_>> {
         self.0.handle().map(ActiveHandle)
     }
@@ -44,6 +127,19 @@ impl Active {
     /// Set the application to be inactive.
     ///
     /// This function may block until there are no more active handles.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use raw_window_handle::Active;
+    ///
+    /// // Set the application to be active.
+    /// let active = Active::new();
+    /// unsafe { active.set_active() };
+    ///
+    /// // Set the application to be inactive.
+    /// active.set_inactive();
+    /// ```
     pub fn set_inactive(&self) {
         self.0.set_inactive()
     }
@@ -52,7 +148,21 @@ impl Active {
     ///
     /// # Safety
     ///
-    /// The application must actually be active.
+    /// The application must actually be active. Setting to active when the application is not active
+    /// will result in undefined behavior.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use raw_window_handle::Active;
+    ///
+    /// // Set the application to be active.
+    /// let active = Active::new();
+    /// unsafe { active.set_active() };
+    ///
+    /// // Set the application to be inactive.
+    /// active.set_inactive();
+    /// ```
     pub unsafe fn set_active(&self) {
         self.0.set_active()
     }
@@ -61,9 +171,24 @@ impl Active {
 impl ActiveHandle<'_> {
     /// Create a new freestanding active handle.
     ///
+    /// This function acts as an "escape hatch" to allow the user to create a live window handle
+    /// without having to go through the [`Active`] type. This is useful if the user *knows* that the
+    /// application is active, and wants to create a live window handle without having to go through
+    /// the [`Active`] type.
+    ///
     /// # Safety
     ///
     /// The application must actually be active.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use raw_window_handle::ActiveHandle;
+    ///
+    /// // Create a freestanding active handle.
+    /// // SAFETY: The application must actually be active.
+    /// let handle = unsafe { ActiveHandle::new_unchecked() };
+    /// ```
     pub unsafe fn new_unchecked() -> Self {
         Self(imp::ActiveHandle::new_unchecked())
     }
@@ -71,9 +196,22 @@ impl ActiveHandle<'_> {
 
 /// A display that acts as a wrapper around a display handle.
 ///
+/// Objects that implement this trait should be able to return a [`DisplayHandle`] for the display
+/// that they are associated with. This handle should last for the lifetime of the object, and should
+/// return an error if the application is inactive.
+///
+/// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
+/// systems should implement this tait on types that already implement [`HasRawDisplayHandle`]. It
+/// should be implemented by tying the lifetime of the [`DisplayHandle`] to the lifetime of the
+/// display object.
+///
+/// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
+/// should be generic over a type that implements `HasDisplayHandle`, and should use the
+/// [`DisplayHandle`] type to access the display handle.
+///
 /// # Safety
 ///
-/// The safety requirements of [`HasRawDisplayHandle`] apply here as  well. To reiterate, the
+/// The safety requirements of [`HasRawDisplayHandle`] apply here as well. To reiterate, the
 /// [`DisplayHandle`] must contain a valid window handle for its lifetime.
 ///
 /// It is not possible to invalidate a [`DisplayHandle`] on any platform without additional unsafe code.
@@ -143,7 +281,7 @@ impl<'a> Clone for DisplayHandle<'a> {
 }
 
 impl<'a> DisplayHandle<'a> {
-    /// Borrow a `DisplayHandle` from a [`RawDisplayHandle`].
+    /// Create a `DisplayHandle` from a [`RawDisplayHandle`].
     ///
     /// # Safety
     ///
@@ -169,6 +307,23 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 }
 
 /// A handle to a window.
+///
+/// Objects that implement this trait should be able to return a [`WindowHandle`] for the window
+/// that they are associated with. This handle should last for the lifetime of the object, and should
+/// return an error if the application is inactive.
+///
+/// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
+/// systems should implement this tait on types that already implement [`HasRawWindowHandle`]. First,
+/// it should be made sure that the display type contains a unique [`Active`] ref-counted handle.
+/// To create a [`WindowHandle`], the [`Active`] should be used to create an [`ActiveHandle`] that is
+/// then used to create a [`WindowHandle`]. Finally, the raw window handle should be retrieved from
+/// the type and used to create a [`WindowHandle`].
+///
+/// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
+/// should be generic over a type that implements `HasWindowHandle`, and should use the
+/// [`WindowHandle`] type to access the window handle. The window handle should be acquired and held
+/// while the window is being used, in order to ensure that the window is not deleted while it is in
+/// use.
 ///
 /// # Safety
 ///
@@ -229,6 +384,8 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 #[non_exhaustive]
 pub enum HandleError {
     /// The handle is not currently active.
+    ///
+    /// See documentation on [`Active`] for more information.
     Inactive,
 }
 
@@ -284,7 +441,9 @@ impl<'a> WindowHandle<'a> {
     ///
     /// # Safety
     ///
-    /// The [`RawWindowHandle`] must be valid for the lifetime and the application must be `Active`.
+    /// The [`RawWindowHandle`] must be valid for the lifetime and the application must not be
+    /// suspended. The [`Active`] object that the [`ActiveHandle`] was created from must be
+    /// associated directly with the display that the window handle is associated with.
     pub unsafe fn borrow_raw(raw: RawWindowHandle, active: ActiveHandle<'a>) -> Self {
         Self {
             raw,
@@ -363,6 +522,13 @@ mod imp {
         /// Create a new `ActiveHandle`.
         ///
         /// This is safe because the handle is always active.
+        ///
+        /// # Example
+        ///
+        /// ```
+        /// use raw_window_handle::ActiveHandle;
+        /// let handle = ActiveHandle::new();
+        /// ```
         #[allow(clippy::new_without_default)]
         pub fn new() -> Self {
             // SAFETY: The handle is always active.
