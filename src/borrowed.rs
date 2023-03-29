@@ -335,13 +335,13 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// the handle.
 ///
 /// Note that this guarantee only applies to *pointers*, and not any window ID types in the handle.
-/// This includes Window IDs (XIDs) from X11, `HWND`s from Win32, and the window ID for web platforms.
-/// There is no way for Rust to enforce any kind of invariant on these types, since:
+/// This includes Window IDs (XIDs) from X11 and the window ID for web platforms. There is no way for
+/// Rust to enforce any kind of invariant on these types, since:
 ///
 /// - For all three listed platforms, it is possible for safe code in the same process to delete
 ///   the window.
-/// - For X11 and Win32, it is possible for code in a different process to delete the window.
-/// - For X11, it is possible for code on a different *machine* to delete the window.
+/// - For X11, it is possible for code in a different process to delete the window. In fact, it is 
+///   possible for code on a different *machine* to delete the window.
 ///
 /// It is *also* possible for the window to be replaced with another, valid-but-different window. User
 /// code should be aware of this possibility, and should be ready to soundly handle the possible error
@@ -388,33 +388,12 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
     }
 }
 
-/// The error type returned when a handle cannot be obtained.
-#[derive(Debug)]
-#[non_exhaustive]
-pub enum HandleError {
-    /// The handle is not currently active.
-    ///
-    /// See documentation on [`Active`] for more information.
-    Inactive,
-}
-
-impl fmt::Display for HandleError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Inactive => write!(f, "the handle is not currently active"),
-        }
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for HandleError {}
-
 /// The handle to a window.
 ///
 /// This is the primary return type of the [`HasWindowHandle`] trait. All *pointers* within this type
 /// are guaranteed to be valid and not dangling for the lifetime of the handle. This excludes window IDs
-/// like XIDs, `HWND`s, and the window ID for web platforms. See the documentation on the
-/// [`HasWindowHandle`] trait for more information about these safety requirements.
+/// like XIDs and the window ID for web platforms. See the documentation on the [`HasWindowHandle`] 
+/// trait for more information about these safety requirements.
 ///
 /// This handle is guaranteed to be safe and valid. Get the underlying raw window handle with the
 /// [`HasRawWindowHandle`] trait.
@@ -473,6 +452,27 @@ impl HasWindowHandle for WindowHandle<'_> {
         Ok(self.clone())
     }
 }
+
+/// The error type returned when a handle cannot be obtained.
+#[derive(Debug)]
+#[non_exhaustive]
+pub enum HandleError {
+    /// The handle is not currently active.
+    ///
+    /// See documentation on [`Active`] for more information.
+    Inactive,
+}
+
+impl fmt::Display for HandleError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Inactive => write!(f, "the handle is not currently active"),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for HandleError {}
 
 /// ```compile_fail
 /// use raw_window_handle::{Active, DisplayHandle, WindowHandle};
