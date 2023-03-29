@@ -201,7 +201,7 @@ impl ActiveHandle<'_> {
 /// return an error if the application is inactive.
 ///
 /// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
-/// systems should implement this tait on types that already implement [`HasRawDisplayHandle`]. It
+/// systems should implement this trait on types that already implement [`HasRawDisplayHandle`]. It
 /// should be implemented by tying the lifetime of the [`DisplayHandle`] to the lifetime of the
 /// display object.
 ///
@@ -317,7 +317,7 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// return an error if the application is inactive.
 ///
 /// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
-/// systems should implement this tait on types that already implement [`HasRawWindowHandle`]. First,
+/// systems should implement this trait on types that already implement [`HasRawWindowHandle`]. First,
 /// it should be made sure that the display type contains a unique [`Active`] ref-counted handle.
 /// To create a [`WindowHandle`], the [`Active`] should be used to create an [`ActiveHandle`] that is
 /// then used to create a [`WindowHandle`]. Finally, the raw window handle should be retrieved from
