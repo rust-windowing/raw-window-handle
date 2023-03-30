@@ -26,8 +26,8 @@ jobs:
 
   tests:
     name: Tests
-    # Note: `raw-window-handle` doesn't have any `#[cfg(...)]` guards, so
-    # we don't bother testing on other platforms
+    # `raw-window-handle` only has `cfg` guards for Android, so we just run Ubuntu
+    # and manually test Android
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -40,8 +40,19 @@ jobs:
         with:
           rust-version: ${{ matrix.rust_version }}
 
+      - run: rustup target add x86_64-linux-android
+
       - name: Check documentation
         run: cargo doc --no-deps --document-private-items
 
       - name: Run tests
         run: cargo test --verbose
+
+      - name: Run tests with std
+        run: cargo test --verbose --features std
+
+      - name: Run tests on Android
+        run: cargo test --verbose --target x86_64-linux-android
+
+      - name: Run tests on Android with std
+        run: cargo test --verbose --target x86_64-linux-android --features std
