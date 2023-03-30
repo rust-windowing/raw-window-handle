@@ -33,6 +33,8 @@ extern crate std;
 
 mod android;
 mod appkit;
+#[cfg(any(feature = "std", not(target_os = "android")))]
+#[cfg_attr(docsrs, doc(cfg(any(feature = "std", not(target_os = "android")))))]
 mod borrowed;
 mod haiku;
 mod redox;
@@ -43,6 +45,7 @@ mod windows;
 
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
+#[cfg(any(feature = "std", not(target_os = "android")))]
 pub use borrowed::{
     Active, ActiveHandle, DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle,
     WindowHandle,
