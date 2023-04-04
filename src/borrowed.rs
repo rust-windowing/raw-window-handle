@@ -26,8 +26,10 @@ use crate::{HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindow
 /// and immediately invalidate all window handles. However, it was later discovered that the
 /// handle actually remains valid, but the window does not produce any more GPU buffers. This
 /// type is a no-op and will be removed at the next major release.
+#[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
 pub struct Active(());
 
+#[allow(deprecated)]
 impl fmt::Debug for Active {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("Active { .. }")
@@ -51,6 +53,7 @@ impl<'a> fmt::Debug for ActiveHandle<'a> {
     }
 }
 
+#[allow(deprecated)]
 impl Active {
     /// Create a new `Active` tracker.
     ///
@@ -62,6 +65,7 @@ impl Active {
     /// use raw_window_handle::Active;
     /// let active = Active::new();
     /// ```
+    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub const fn new() -> Self {
         Self(())
     }
@@ -86,6 +90,7 @@ impl Active {
     /// drop(handle);
     /// active.set_inactive();
     /// ```
+    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub fn handle(&self) -> Option<ActiveHandle<'_>> {
         Some(ActiveHandle(PhantomData))
     }
@@ -106,6 +111,7 @@ impl Active {
     /// // Set the application to be inactive.
     /// active.set_inactive();
     /// ```
+    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub fn set_inactive(&self) {}
 
     /// Set the application to be active.
@@ -127,6 +133,7 @@ impl Active {
     /// // Set the application to be inactive.
     /// active.set_inactive();
     /// ```
+    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub unsafe fn set_active(&self) {}
 }
 
@@ -151,6 +158,7 @@ impl ActiveHandle<'_> {
     /// // SAFETY: The application must actually be active.
     /// let handle = unsafe { ActiveHandle::new_unchecked() };
     /// ```
+    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub unsafe fn new_unchecked() -> Self {
         Self(PhantomData)
     }
@@ -165,7 +173,7 @@ impl ActiveHandle<'_> {
     /// use raw_window_handle::ActiveHandle;
     /// let handle = ActiveHandle::new();
     /// ```
-    #[allow(clippy::new_without_default)]
+    #[allow(clippy::new_without_default, deprecated)]
     pub fn new() -> Self {
         // SAFETY: The handle is always active.
         unsafe { super::ActiveHandle::new_unchecked() }
