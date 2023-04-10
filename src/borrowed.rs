@@ -11,17 +11,6 @@ use crate::{HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindow
 
 /// Keeps track of whether the application is currently active.
 ///
-/// On certain platforms (e.g. Android), it is possible for the application to enter a "suspended"
-/// state. While in this state, all previously valid window handles become invalid. Therefore, in
-/// order for window handles to be valid, the application must be active.
-///
-/// On platforms where the graphical user interface is always active, this type is a ZST and all
-/// of its methods are noops. On Android, this type acts as a reference counter that keeps track
-/// of all currently active window handles. Before the application enters the suspended state, it
-/// blocks until all of the currently active window handles are dropped.
-///
-/// ## Explanation
-///
 /// On Android, it was previously believed that the application could enter the suspended state
 /// and immediately invalidate all window handles. However, it was later discovered that the
 /// handle actually remains valid, but the window does not produce any more GPU buffers. This
@@ -38,12 +27,10 @@ impl fmt::Debug for Active {
 
 /// Represents a live window handle.
 ///
-/// This is carried around by the [`Active`] type, and is used to ensure that the application doesn't
-/// enter the suspended state while there are still live window handles. See documentation on the
-/// [`Active`] type for more information.
-///
-/// On non-Android platforms, this is a ZST. On Android, this is a reference counted handle that
-/// keeps the application active while it is alive.
+/// On Android, it was previously believed that the application could enter the suspended state
+/// and immediately invalidate all window handles. However, it was later discovered that the
+/// handle actually remains valid, but the window does not produce any more GPU buffers. This
+/// type is a no-op and will be removed at the next major release.
 #[derive(Clone)]
 pub struct ActiveHandle<'a>(PhantomData<&'a UnsafeCell<()>>);
 
@@ -65,7 +52,6 @@ impl Active {
     /// use raw_window_handle::Active;
     /// let active = Active::new();
     /// ```
-    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub const fn new() -> Self {
         Self(())
     }
@@ -90,7 +76,6 @@ impl Active {
     /// drop(handle);
     /// active.set_inactive();
     /// ```
-    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub fn handle(&self) -> Option<ActiveHandle<'_>> {
         Some(ActiveHandle(PhantomData))
     }
@@ -111,7 +96,6 @@ impl Active {
     /// // Set the application to be inactive.
     /// active.set_inactive();
     /// ```
-    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub fn set_inactive(&self) {}
 
     /// Set the application to be active.
@@ -133,7 +117,6 @@ impl Active {
     /// // Set the application to be inactive.
     /// active.set_inactive();
     /// ```
-    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub unsafe fn set_active(&self) {}
 }
 
