@@ -2,9 +2,7 @@
 //!
 //! These should be 100% safe to pass around and use, no possibility of dangling or invalidity.
 
-#[cfg(all(not(feature = "std"), target_os = "android"))]
-compile_error!("Using borrowed handles on Android requires the `std` feature to be enabled.");
-
+use core::cell::UnsafeCell;
 use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::marker::PhantomData;
@@ -13,55 +11,14 @@ use crate::{HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindow
 
 /// Keeps track of whether the application is currently active.
 ///
-/// On certain platforms (e.g. Android), it is possible for the application to enter a "suspended"
-/// state. While in this state, all previously valid window handles become invalid. Therefore, in
-/// order for window handles to be valid, the application must be active.
-///
-/// On platforms where the graphical user interface is always active, this type is a ZST and all
-/// of its methods are noops. On Android, this type acts as a reference counter that keeps track
-/// of all currently active window handles. Before the application enters the suspended state, it
-/// blocks until all of the currently active window handles are dropped.
-///
-/// ## Explanation
-///
-/// On Android, there is an [Activity]-global [`ANativeWindow`] object that is used for drawing. This
-/// handle is used [within the `RawWindowHandle` type] for Android NDK, since it is necessary for GFX
-/// APIs to draw to the screen.
-///
-/// However, the [`ANativeWindow`] type can be arbitrarily invalidated by the underlying Android runtime.
-/// The reasoning for this is complicated, but this idea is exposed to native code through the
-/// [`onNativeWindowCreated`] and [`onNativeWindowDestroyed`] callbacks. To save you a click, the
-/// conditions associated with these callbacks are:
-///
-/// - [`onNativeWindowCreated`] provides a valid [`ANativeWindow`] pointer that can be used for drawing.
-/// - [`onNativeWindowDestroyed`] indicates that the previous [`ANativeWindow`] pointer is no longer
-///   valid. The documentation clarifies that, *once the function returns*, the [`ANativeWindow`] pointer
-///   can no longer be used for drawing without resulting in undefined behavior.
-///
-/// In [`winit`], these are exposed via the [`Resumed`] and [`Suspended`] events, respectively. Therefore,
-/// between the last [`Suspended`] event and the next [`Resumed`] event, it is undefined behavior to use
-/// the raw window handle. This condition makes it tricky to define an API that safely wraps the raw
-/// window handles, since an existing window handle can be made invalid at any time.
-///
-/// The Android docs specifies that the [`ANativeWindow`] pointer is still valid while the application
-/// is still in the [`onNativeWindowDestroyed`] block, and suggests that synchronization needs to take
-/// place to ensure that the pointer has been invalidated before the function returns. `Active` aims
-/// to be the solution to this problem. It keeps track of all currently active window handles, and
-/// blocks until all of them are dropped before allowing the application to enter the suspended state.
-///
-/// [Activity]: https://developer.android.com/reference/android/app/Activity
-/// [`ANativeWindow`]: https://developer.android.com/ndk/reference/group/a-native-window
-/// [within the `RawWindowHandle` type]: struct.AndroidNdkWindowHandle.html#structfield.a_native_window
-/// [`onNativeWindowCreated`]: https://developer.android.com/ndk/reference/struct/a-native-activity-callbacks#onnativewindowcreated
-/// [`onNativeWindowDestroyed`]: https://developer.android.com/ndk/reference/struct/a-native-activity-callbacks#onnativewindowdestroyed
-/// [`Resumed`]: https://docs.rs/winit/latest/winit/event/enum.Event.html#variant.Resumed
-/// [`Suspended`]: https://docs.rs/winit/latest/winit/event/enum.Event.html#variant.Suspended
-/// [`sdl2`]: https://crates.io/crates/sdl2
-/// [`RawWindowHandle`]: https://docs.rs/raw-window-handle/latest/raw_window_handle/enum.RawWindowHandle.html
-/// [`HasRawWindowHandle`]: https://docs.rs/raw-window-handle/latest/raw_window_handle/trait.HasRawWindowHandle.html
-/// [`winit`]: https://crates.io/crates/winit
-pub struct Active(imp::Active);
+/// On Android, it was previously believed that the application could enter the suspended state
+/// and immediately invalidate all window handles. However, it was later discovered that the
+/// handle actually remains valid, but the window does not produce any more GPU buffers. This
+/// type is a no-op and will be removed at the next major release.
+#[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
+pub struct Active(());
 
+#[allow(deprecated)]
 impl fmt::Debug for Active {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str("Active { .. }")
@@ -70,14 +27,12 @@ impl fmt::Debug for Active {
 
 /// Represents a live window handle.
 ///
-/// This is carried around by the [`Active`] type, and is used to ensure that the application doesn't
-/// enter the suspended state while there are still live window handles. See documentation on the
-/// [`Active`] type for more information.
-///
-/// On non-Android platforms, this is a ZST. On Android, this is a reference counted handle that
-/// keeps the application active while it is alive.
+/// On Android, it was previously believed that the application could enter the suspended state
+/// and immediately invalidate all window handles. However, it was later discovered that the
+/// handle actually remains valid, but the window does not produce any more GPU buffers. This
+/// type is a no-op and will be removed at the next major release.
 #[derive(Clone)]
-pub struct ActiveHandle<'a>(imp::ActiveHandle<'a>);
+pub struct ActiveHandle<'a>(PhantomData<&'a UnsafeCell<()>>);
 
 impl<'a> fmt::Debug for ActiveHandle<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -85,6 +40,7 @@ impl<'a> fmt::Debug for ActiveHandle<'a> {
     }
 }
 
+#[allow(deprecated)]
 impl Active {
     /// Create a new `Active` tracker.
     ///
@@ -97,7 +53,7 @@ impl Active {
     /// let active = Active::new();
     /// ```
     pub const fn new() -> Self {
-        Self(imp::Active::new())
+        Self(())
     }
 
     /// Get a live window handle.
@@ -121,7 +77,7 @@ impl Active {
     /// active.set_inactive();
     /// ```
     pub fn handle(&self) -> Option<ActiveHandle<'_>> {
-        self.0.handle().map(ActiveHandle)
+        Some(ActiveHandle(PhantomData))
     }
 
     /// Set the application to be inactive.
@@ -140,9 +96,7 @@ impl Active {
     /// // Set the application to be inactive.
     /// active.set_inactive();
     /// ```
-    pub fn set_inactive(&self) {
-        self.0.set_inactive()
-    }
+    pub fn set_inactive(&self) {}
 
     /// Set the application to be active.
     ///
@@ -163,9 +117,7 @@ impl Active {
     /// // Set the application to be inactive.
     /// active.set_inactive();
     /// ```
-    pub unsafe fn set_active(&self) {
-        self.0.set_active()
-    }
+    pub unsafe fn set_active(&self) {}
 }
 
 impl ActiveHandle<'_> {
@@ -189,8 +141,25 @@ impl ActiveHandle<'_> {
     /// // SAFETY: The application must actually be active.
     /// let handle = unsafe { ActiveHandle::new_unchecked() };
     /// ```
+    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
     pub unsafe fn new_unchecked() -> Self {
-        Self(imp::ActiveHandle::new_unchecked())
+        Self(PhantomData)
+    }
+
+    /// Create a new `ActiveHandle`.
+    ///
+    /// This is safe because the handle is always active.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use raw_window_handle::ActiveHandle;
+    /// let handle = ActiveHandle::new();
+    /// ```
+    #[allow(clippy::new_without_default, deprecated)]
+    pub fn new() -> Self {
+        // SAFETY: The handle is always active.
+        unsafe { super::ActiveHandle::new_unchecked() }
     }
 }
 
@@ -482,134 +451,3 @@ impl std::error::Error for HandleError {}
 /// _assert::<WindowHandle<'static>>();
 /// ```
 fn _not_send_or_sync() {}
-
-#[cfg(not(any(target_os = "android", raw_window_handle_force_refcount)))]
-#[cfg_attr(docsrs, doc(cfg(not(target_os = "android"))))]
-mod imp {
-    //! We don't need to refcount the handles, so we can just use no-ops.
-
-    use core::cell::UnsafeCell;
-    use core::marker::PhantomData;
-
-    pub(super) struct Active;
-
-    #[derive(Clone)]
-    pub(super) struct ActiveHandle<'a> {
-        _marker: PhantomData<&'a UnsafeCell<()>>,
-    }
-
-    impl Active {
-        pub(super) const fn new() -> Self {
-            Self
-        }
-
-        pub(super) fn handle(&self) -> Option<ActiveHandle<'_>> {
-            // SAFETY: The handle is always active.
-            Some(unsafe { ActiveHandle::new_unchecked() })
-        }
-
-        pub(super) unsafe fn set_active(&self) {}
-
-        pub(super) fn set_inactive(&self) {}
-    }
-
-    impl ActiveHandle<'_> {
-        pub(super) unsafe fn new_unchecked() -> Self {
-            Self {
-                _marker: PhantomData,
-            }
-        }
-    }
-
-    impl Drop for ActiveHandle<'_> {
-        fn drop(&mut self) {
-            // Done for consistency with the refcounted version.
-        }
-    }
-
-    impl super::ActiveHandle<'_> {
-        /// Create a new `ActiveHandle`.
-        ///
-        /// This is safe because the handle is always active.
-        ///
-        /// # Example
-        ///
-        /// ```
-        /// use raw_window_handle::ActiveHandle;
-        /// let handle = ActiveHandle::new();
-        /// ```
-        #[allow(clippy::new_without_default)]
-        pub fn new() -> Self {
-            // SAFETY: The handle is always active.
-            unsafe { super::ActiveHandle::new_unchecked() }
-        }
-    }
-}
-
-#[cfg(any(target_os = "android", raw_window_handle_force_refcount))]
-#[cfg_attr(docsrs, doc(cfg(any(target_os = "android"))))]
-mod imp {
-    //! We need to refcount the handles, so we use an `RwLock` to do so.
-
-    use std::sync::{RwLock, RwLockReadGuard};
-
-    pub(super) struct Active {
-        active: RwLock<bool>,
-    }
-
-    pub(super) struct ActiveHandle<'a> {
-        inner: Option<Inner<'a>>,
-    }
-
-    struct Inner<'a> {
-        _read_guard: RwLockReadGuard<'a, bool>,
-        active: &'a Active,
-    }
-
-    impl Clone for ActiveHandle<'_> {
-        fn clone(&self) -> Self {
-            Self {
-                inner: self.inner.as_ref().map(|inner| Inner {
-                    _read_guard: inner.active.active.read().unwrap(),
-                    active: inner.active,
-                }),
-            }
-        }
-    }
-
-    impl Active {
-        pub(super) const fn new() -> Self {
-            Self {
-                active: RwLock::new(false),
-            }
-        }
-
-        pub(super) fn handle(&self) -> Option<ActiveHandle<'_>> {
-            let active = self.active.read().ok()?;
-            if !*active {
-                return None;
-            }
-
-            Some(ActiveHandle {
-                inner: Some(Inner {
-                    _read_guard: active,
-                    active: self,
-                }),
-            })
-        }
-
-        pub(super) unsafe fn set_active(&self) {
-            *self.active.write().unwrap() = true;
-        }
-
-        pub(super) fn set_inactive(&self) {
-            *self.active.write().unwrap() = false;
-        }
-    }
-
-    impl ActiveHandle<'_> {
-        pub(super) unsafe fn new_unchecked() -> Self {
-            Self { inner: None }
-        }
-    }
-}

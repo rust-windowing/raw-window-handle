@@ -46,6 +46,7 @@ mod windows;
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
 #[cfg(any(feature = "std", not(target_os = "android")))]
+#[allow(deprecated)]
 pub use borrowed::{
     Active, ActiveHandle, DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle,
     WindowHandle,
