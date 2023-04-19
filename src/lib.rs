@@ -37,6 +37,7 @@ mod appkit;
 #[cfg_attr(docsrs, doc(cfg(any(feature = "std", not(target_os = "android")))))]
 mod borrowed;
 mod haiku;
+mod horizon;
 mod redox;
 mod uikit;
 mod unix;
@@ -52,6 +53,7 @@ pub use borrowed::{
     WindowHandle,
 };
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
+pub use horizon::{HorizonDisplayHandle, HorizonWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
 pub use unix::{
@@ -199,6 +201,11 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuWindowHandle),
+    /// A raw window handle for Horizon, the 3DS operating system.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Horizon under the ARMv6 architecture.
+    Horizon(HorizonWindowHandle),
 }
 
 /// Display that wraps around a raw display handle.
@@ -342,6 +349,11 @@ pub enum RawDisplayHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuDisplayHandle),
+    /// A raw display handle for Horizon, the 3DS operating system.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Horizon under the ARMv6 architecture.
+    Horizon(HorizonDisplayHandle),
 }
 
 macro_rules! from_impl {
@@ -366,6 +378,7 @@ from_impl!(RawDisplayHandle, Windows, WindowsDisplayHandle);
 from_impl!(RawDisplayHandle, Web, WebDisplayHandle);
 from_impl!(RawDisplayHandle, Android, AndroidDisplayHandle);
 from_impl!(RawDisplayHandle, Haiku, HaikuDisplayHandle);
+from_impl!(RawDisplayHandle, Horizon, HorizonDisplayHandle);
 
 from_impl!(RawWindowHandle, UiKit, UiKitWindowHandle);
 from_impl!(RawWindowHandle, AppKit, AppKitWindowHandle);
@@ -380,3 +393,4 @@ from_impl!(RawWindowHandle, WinRt, WinRtWindowHandle);
 from_impl!(RawWindowHandle, Web, WebWindowHandle);
 from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
+from_impl!(RawWindowHandle, Horizon, HorizonWindowHandle);
