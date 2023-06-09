@@ -7,7 +7,9 @@ use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::marker::PhantomData;
 
-use crate::{HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle};
+use crate::{
+    HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawHandleError, RawWindowHandle,
+};
 
 /// Keeps track of whether the application is currently active.
 ///
@@ -268,8 +270,8 @@ impl<'a> DisplayHandle<'a> {
 }
 
 unsafe impl HasRawDisplayHandle for DisplayHandle<'_> {
-    fn raw_display_handle(&self) -> RawDisplayHandle {
-        self.raw
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, RawHandleError> {
+        Ok(self.raw)
     }
 }
 
@@ -411,8 +413,8 @@ impl<'a> WindowHandle<'a> {
 }
 
 unsafe impl HasRawWindowHandle for WindowHandle<'_> {
-    fn raw_window_handle(&self) -> RawWindowHandle {
-        self.raw
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, RawHandleError> {
+        Ok(self.raw)
     }
 }
 
@@ -430,18 +432,35 @@ pub enum HandleError {
     ///
     /// See documentation on [`Active`] for more information.
     Inactive,
+
+    /// The underlying raw implementation returned an error.
+    Raw(RawHandleError),
 }
 
 impl fmt::Display for HandleError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Inactive => write!(f, "the handle is not currently active"),
+            Self::Raw(err) => fmt::Display::fmt(err, f),
         }
     }
 }
 
+impl From<RawHandleError> for HandleError {
+    fn from(err: RawHandleError) -> Self {
+        Self::Raw(err)
+    }
+}
+
 #[cfg(feature = "std")]
-impl std::error::Error for HandleError {}
+impl std::error::Error for HandleError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Inactive => None,
+            Self::Raw(err) => Some(err),
+        }
+    }
+}
 
 /// ```compile_fail
 /// use raw_window_handle::{Active, DisplayHandle, WindowHandle};
