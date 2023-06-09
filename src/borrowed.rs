@@ -7,9 +7,7 @@ use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::marker::PhantomData;
 
-use crate::{
-    HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawHandleError, RawWindowHandle,
-};
+use crate::{Error, HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle};
 
 /// Keeps track of whether the application is currently active.
 ///
@@ -197,32 +195,32 @@ impl ActiveHandle<'_> {
 /// [`glutin`]: https://crates.io/crates/glutin
 pub trait HasDisplayHandle {
     /// Get a handle to the display controller of the windowing system.
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError>;
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, Error>;
 }
 
 impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for &H {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, Error> {
         (**self).display_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::boxed::Box<H> {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, Error> {
         (**self).display_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::rc::Rc<H> {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, Error> {
         (**self).display_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, Error> {
         (**self).display_handle()
     }
 }
@@ -270,13 +268,13 @@ impl<'a> DisplayHandle<'a> {
 }
 
 unsafe impl HasRawDisplayHandle for DisplayHandle<'_> {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, RawHandleError> {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, Error> {
         Ok(self.raw)
     }
 }
 
 impl<'a> HasDisplayHandle for DisplayHandle<'a> {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, Error> {
         Ok(self.clone())
     }
 }
@@ -329,32 +327,32 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// [`glutin`]: https://crates.io/crates/glutin
 pub trait HasWindowHandle {
     /// Get a handle to the window.
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError>;
+    fn window_handle(&self) -> Result<WindowHandle<'_>, Error>;
 }
 
 impl<H: HasWindowHandle + ?Sized> HasWindowHandle for &H {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+    fn window_handle(&self) -> Result<WindowHandle<'_>, Error> {
         (**self).window_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::boxed::Box<H> {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+    fn window_handle(&self) -> Result<WindowHandle<'_>, Error> {
         (**self).window_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::rc::Rc<H> {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+    fn window_handle(&self) -> Result<WindowHandle<'_>, Error> {
         (**self).window_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+    fn window_handle(&self) -> Result<WindowHandle<'_>, Error> {
         (**self).window_handle()
     }
 }
@@ -413,52 +411,14 @@ impl<'a> WindowHandle<'a> {
 }
 
 unsafe impl HasRawWindowHandle for WindowHandle<'_> {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, RawHandleError> {
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, Error> {
         Ok(self.raw)
     }
 }
 
 impl HasWindowHandle for WindowHandle<'_> {
-    fn window_handle(&self) -> Result<Self, HandleError> {
+    fn window_handle(&self) -> Result<Self, Error> {
         Ok(self.clone())
-    }
-}
-
-/// The error type returned when a handle cannot be obtained.
-#[derive(Debug)]
-#[non_exhaustive]
-pub enum HandleError {
-    /// The handle is not currently active.
-    ///
-    /// See documentation on [`Active`] for more information.
-    Inactive,
-
-    /// The underlying raw implementation returned an error.
-    Raw(RawHandleError),
-}
-
-impl fmt::Display for HandleError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Inactive => write!(f, "the handle is not currently active"),
-            Self::Raw(err) => fmt::Display::fmt(err, f),
-        }
-    }
-}
-
-impl From<RawHandleError> for HandleError {
-    fn from(err: RawHandleError) -> Self {
-        Self::Raw(err)
-    }
-}
-
-#[cfg(feature = "std")]
-impl std::error::Error for HandleError {
-    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
-        match self {
-            Self::Inactive => None,
-            Self::Raw(err) => Some(err),
-        }
     }
 }
 

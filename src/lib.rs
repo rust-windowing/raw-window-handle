@@ -48,8 +48,7 @@ pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
 #[cfg(any(feature = "std", not(target_os = "android")))]
 #[allow(deprecated)]
 pub use borrowed::{
-    Active, ActiveHandle, DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle,
-    WindowHandle,
+    Active, ActiveHandle, DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle,
 };
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
@@ -78,25 +77,25 @@ use core::fmt;
 /// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
 /// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
 pub unsafe trait HasRawWindowHandle {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, RawHandleError>;
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, Error>;
 }
 
 unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, RawHandleError> {
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, Error> {
         (*self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, RawHandleError> {
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, Error> {
         (**self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::Arc<T> {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, RawHandleError> {
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, Error> {
         (**self).raw_window_handle()
     }
 }
@@ -218,11 +217,11 @@ pub enum RawWindowHandle {
 /// The exact handles returned by `raw_display_handle` must remain consistent between multiple calls
 /// to `raw_display_handle` as long as not indicated otherwise by platform specific events.
 pub unsafe trait HasRawDisplayHandle {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, RawHandleError>;
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, Error>;
 }
 
 unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, RawHandleError> {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, Error> {
         (*self).raw_display_handle()
     }
 }
@@ -230,7 +229,7 @@ unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::rc::Rc<T> {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, RawHandleError> {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, Error> {
         (**self).raw_display_handle()
     }
 }
@@ -238,7 +237,7 @@ unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::rc::
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::sync::Arc<T> {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, RawHandleError> {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, Error> {
         (**self).raw_display_handle()
     }
 }
@@ -349,7 +348,7 @@ pub enum RawDisplayHandle {
 /// An error that can occur while fetching a display or window handle.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub enum RawHandleError {
+pub enum Error {
     /// The underlying handle cannot be represented using the types in this crate.
     NotSupported,
 
@@ -357,7 +356,7 @@ pub enum RawHandleError {
     Unavailable,
 }
 
-impl fmt::Display for RawHandleError {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::NotSupported => write!(
@@ -370,7 +369,7 @@ impl fmt::Display for RawHandleError {
 }
 
 #[cfg(feature = "std")]
-impl std::error::Error for RawHandleError {}
+impl std::error::Error for Error {}
 
 macro_rules! from_impl {
     ($($to:ident, $enum:ident, $from:ty)*) => ($(
