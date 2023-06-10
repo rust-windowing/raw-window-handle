@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+* Remove Android-specific platform differences (#118).
+
 ## 0.5.2 (2023-03-31)
 
-* Add several types for using raw window handles safely, including `HasWindowHandle`, `WindowHandle`, `HasDisplayHandle`, `DisplayHandle` and `Active`.
+* Add several types for using raw window handles safely, including `HasWindowHandle`, `WindowHandle`, `HasDisplayHandle`, `DisplayHandle` and `Active` (#110).
 
 ## 0.5.1 (2023-03-07)
 
