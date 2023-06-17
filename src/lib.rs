@@ -33,8 +33,6 @@ extern crate std;
 
 mod android;
 mod appkit;
-#[cfg(any(feature = "std", not(target_os = "android")))]
-#[cfg_attr(docsrs, doc(cfg(any(feature = "std", not(target_os = "android")))))]
 mod borrowed;
 mod haiku;
 mod redox;
@@ -45,11 +43,7 @@ mod windows;
 
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
-#[cfg(any(feature = "std", not(target_os = "android")))]
-#[allow(deprecated)]
-pub use borrowed::{
-    Active, ActiveHandle, DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle,
-};
+pub use borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};

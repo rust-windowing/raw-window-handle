@@ -2,7 +2,6 @@
 //!
 //! These should be 100% safe to pass around and use, no possibility of dangling or invalidity.
 
-use core::cell::UnsafeCell;
 use core::fmt;
 use core::hash::{Hash, Hasher};
 use core::marker::PhantomData;
@@ -10,160 +9,6 @@ use core::marker::PhantomData;
 use crate::{
     HandleError, HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
 };
-
-/// Keeps track of whether the application is currently active.
-///
-/// On Android, it was previously believed that the application could enter the suspended state
-/// and immediately invalidate all window handles. However, it was later discovered that the
-/// handle actually remains valid, but the window does not produce any more GPU buffers. This
-/// type is a no-op and will be removed at the next major release.
-#[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
-pub struct Active(());
-
-#[allow(deprecated)]
-impl fmt::Debug for Active {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("Active { .. }")
-    }
-}
-
-/// Represents a live window handle.
-///
-/// On Android, it was previously believed that the application could enter the suspended state
-/// and immediately invalidate all window handles. However, it was later discovered that the
-/// handle actually remains valid, but the window does not produce any more GPU buffers. This
-/// type is a no-op and will be removed at the next major release.
-#[derive(Clone)]
-pub struct ActiveHandle<'a>(PhantomData<&'a UnsafeCell<()>>);
-
-impl<'a> fmt::Debug for ActiveHandle<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("ActiveHandle { .. }")
-    }
-}
-
-#[allow(deprecated)]
-impl Active {
-    /// Create a new `Active` tracker.
-    ///
-    /// Only one of these should exist per display connection.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use raw_window_handle::Active;
-    /// let active = Active::new();
-    /// ```
-    pub const fn new() -> Self {
-        Self(())
-    }
-
-    /// Get a live window handle.
-    ///
-    /// This function returns an active handle if the application is active, and `None` otherwise.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use raw_window_handle::Active;
-    ///
-    /// // Set the application to be active.
-    /// let active = Active::new();
-    /// unsafe { active.set_active() };
-    ///
-    /// // Get a live window handle.
-    /// let handle = active.handle();
-    ///
-    /// // Drop it and set the application to be inactive.
-    /// drop(handle);
-    /// active.set_inactive();
-    /// ```
-    pub fn handle(&self) -> Option<ActiveHandle<'_>> {
-        Some(ActiveHandle(PhantomData))
-    }
-
-    /// Set the application to be inactive.
-    ///
-    /// This function may block until there are no more active handles.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use raw_window_handle::Active;
-    ///
-    /// // Set the application to be active.
-    /// let active = Active::new();
-    /// unsafe { active.set_active() };
-    ///
-    /// // Set the application to be inactive.
-    /// active.set_inactive();
-    /// ```
-    pub fn set_inactive(&self) {}
-
-    /// Set the application to be active.
-    ///
-    /// # Safety
-    ///
-    /// The application must actually be active. Setting to active when the application is not active
-    /// will result in undefined behavior.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use raw_window_handle::Active;
-    ///
-    /// // Set the application to be active.
-    /// let active = Active::new();
-    /// unsafe { active.set_active() };
-    ///
-    /// // Set the application to be inactive.
-    /// active.set_inactive();
-    /// ```
-    pub unsafe fn set_active(&self) {}
-}
-
-impl ActiveHandle<'_> {
-    /// Create a new freestanding active handle.
-    ///
-    /// This function acts as an "escape hatch" to allow the user to create a live window handle
-    /// without having to go through the [`Active`] type. This is useful if the user *knows* that the
-    /// application is active, and wants to create a live window handle without having to go through
-    /// the [`Active`] type.
-    ///
-    /// # Safety
-    ///
-    /// The application must actually be active.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use raw_window_handle::ActiveHandle;
-    ///
-    /// // Create a freestanding active handle.
-    /// // SAFETY: The application must actually be active.
-    /// let handle = unsafe { ActiveHandle::new_unchecked() };
-    /// ```
-    #[deprecated = "Will be removed at next major release, use ActiveHandle::new() for now"]
-    pub unsafe fn new_unchecked() -> Self {
-        Self(PhantomData)
-    }
-
-    /// Create a new `ActiveHandle`.
-    ///
-    /// This is safe because the handle is always active.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use raw_window_handle::ActiveHandle;
-    /// let handle = ActiveHandle::new();
-    /// ```
-    #[allow(clippy::new_without_default, deprecated)]
-    pub fn new() -> Self {
-        // SAFETY: The handle is always active.
-        unsafe { super::ActiveHandle::new_unchecked() }
-    }
-}
 
 /// A display that acts as a wrapper around a display handle.
 ///
@@ -371,7 +216,6 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 #[derive(Clone)]
 pub struct WindowHandle<'a> {
     raw: RawWindowHandle,
-    _active: ActiveHandle<'a>,
     _marker: PhantomData<&'a *const ()>,
 }
 
@@ -400,13 +244,10 @@ impl<'a> WindowHandle<'a> {
     ///
     /// # Safety
     ///
-    /// The [`RawWindowHandle`] must be valid for the lifetime and the application must not be
-    /// suspended. The [`Active`] object that the [`ActiveHandle`] was created from must be
-    /// associated directly with the display that the window handle is associated with.
-    pub unsafe fn borrow_raw(raw: RawWindowHandle, active: ActiveHandle<'a>) -> Self {
+    /// The [`RawWindowHandle`] must be valid for the lifetime provided.
+    pub unsafe fn borrow_raw(raw: RawWindowHandle) -> Self {
         Self {
             raw,
-            _active: active,
             _marker: PhantomData,
         }
     }
