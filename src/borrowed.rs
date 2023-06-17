@@ -133,11 +133,7 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// return an error if the application is inactive.
 ///
 /// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
-/// systems should implement this trait on types that already implement [`HasRawWindowHandle`]. First,
-/// it should be made sure that the display type contains a unique [`Active`] ref-counted handle.
-/// To create a [`WindowHandle`], the [`Active`] should be used to create an [`ActiveHandle`] that is
-/// then used to create a [`WindowHandle`]. Finally, the raw window handle should be retrieved from
-/// the type and used to create a [`WindowHandle`].
+/// systems should implement this trait on types that already implement [`HasRawWindowHandle`]. 
 ///
 /// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
 /// should be generic over a type that implements `HasWindowHandle`, and should use the
@@ -162,8 +158,6 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// It is *also* possible for the window to be replaced with another, valid-but-different window. User
 /// code should be aware of this possibility, and should be ready to soundly handle the possible error
 /// conditions that can arise from this.
-///
-/// In addition, the window handle must not be invalidated for the duration of the [`ActiveHandle`] token.
 ///
 /// Note that these requirements are not enforced on `HasWindowHandle`, rather, they are enforced on the
 /// constructors of [`WindowHandle`]. This is because the `HasWindowHandle` trait is safe to implement.
@@ -266,9 +260,8 @@ impl HasWindowHandle for WindowHandle<'_> {
 }
 
 /// ```compile_fail
-/// use raw_window_handle::{Active, DisplayHandle, WindowHandle};
+/// use raw_window_handle::{DisplayHandle, WindowHandle};
 /// fn _assert<T: Send + Sync>() {}
-/// _assert::<Active<'static>>();
 /// _assert::<DisplayHandle<'static>>();
 /// _assert::<WindowHandle<'static>>();
 /// ```
