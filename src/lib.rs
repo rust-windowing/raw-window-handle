@@ -350,9 +350,28 @@ pub enum RawDisplayHandle {
 #[non_exhaustive]
 pub enum HandleError {
     /// The underlying handle cannot be represented using the types in this crate.
+    /// 
+    /// This may be returned if the underlying window system does not support any of the 
+    /// representative C window handles in this crate. For instance, if you were using a pure Rust
+    /// library to set up X11 (like [`x11rb`]), you would not be able to use any of the
+    /// [`RawWindowHandle`] variants, as they all represent C types.
+    /// 
+    /// Another example would be a system that isn't supported by `raw-window-handle` yet,
+    /// like some game consoles.
+    /// 
+    /// In the event that this error is returned, you should try to use the underlying window
+    /// system's native API to get the handle you need.
     NotSupported,
 
     /// The underlying handle is not available.
+    /// 
+    /// In some cases the underlying window handle may become temporarily unusable. For example, on
+    /// Android, the native window pointer can arbitrarily be replaced or removed by the system. In
+    /// this case, returning a window handle would be disingenuous, as it would not be usable. A
+    /// similar situation can occur on Wayland for the layer shell windows.
+    /// 
+    /// In the event that this error is returned, you should wait until the handle becomes available
+    /// again.
     Unavailable,
 }
 
@@ -361,9 +380,9 @@ impl fmt::Display for HandleError {
         match self {
             Self::NotSupported => write!(
                 f,
-                "The underlying handle cannot be represented using the types in this crate"
+                "the underlying handle cannot be represented using the types in this crate"
             ),
-            Self::Unavailable => write!(f, "The underlying handle is not available"),
+            Self::Unavailable => write!(f, "the underlying handle is not available"),
         }
     }
 }
