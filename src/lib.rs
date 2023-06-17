@@ -48,8 +48,7 @@ pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
 #[cfg(any(feature = "std", not(target_os = "android")))]
 #[allow(deprecated)]
 pub use borrowed::{
-    Active, ActiveHandle, DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle,
-    WindowHandle,
+    Active, ActiveHandle, DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle,
 };
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
@@ -60,6 +59,8 @@ pub use unix::{
 };
 pub use web::{WebDisplayHandle, WebWindowHandle};
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
+
+use core::fmt;
 
 /// Window that wraps around a raw window handle.
 ///
@@ -76,25 +77,25 @@ pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 /// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
 /// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
 pub unsafe trait HasRawWindowHandle {
-    fn raw_window_handle(&self) -> RawWindowHandle;
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError>;
 }
 
 unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
-    fn raw_window_handle(&self) -> RawWindowHandle {
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         (*self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
-    fn raw_window_handle(&self) -> RawWindowHandle {
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         (**self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::Arc<T> {
-    fn raw_window_handle(&self) -> RawWindowHandle {
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         (**self).raw_window_handle()
     }
 }
@@ -216,11 +217,11 @@ pub enum RawWindowHandle {
 /// The exact handles returned by `raw_display_handle` must remain consistent between multiple calls
 /// to `raw_display_handle` as long as not indicated otherwise by platform specific events.
 pub unsafe trait HasRawDisplayHandle {
-    fn raw_display_handle(&self) -> RawDisplayHandle;
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError>;
 }
 
 unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
-    fn raw_display_handle(&self) -> RawDisplayHandle {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
         (*self).raw_display_handle()
     }
 }
@@ -228,7 +229,7 @@ unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::rc::Rc<T> {
-    fn raw_display_handle(&self) -> RawDisplayHandle {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
         (**self).raw_display_handle()
     }
 }
@@ -236,7 +237,7 @@ unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::rc::
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::sync::Arc<T> {
-    fn raw_display_handle(&self) -> RawDisplayHandle {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
         (**self).raw_display_handle()
     }
 }
@@ -343,6 +344,32 @@ pub enum RawDisplayHandle {
     /// This variant is used on HaikuOS.
     Haiku(HaikuDisplayHandle),
 }
+
+/// An error that can occur while fetching a display or window handle.
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub enum HandleError {
+    /// The underlying handle cannot be represented using the types in this crate.
+    NotSupported,
+
+    /// The underlying handle is not available.
+    Unavailable,
+}
+
+impl fmt::Display for HandleError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::NotSupported => write!(
+                f,
+                "The underlying handle cannot be represented using the types in this crate"
+            ),
+            Self::Unavailable => write!(f, "The underlying handle is not available"),
+        }
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for HandleError {}
 
 macro_rules! from_impl {
     ($($to:ident, $enum:ident, $from:ty)*) => ($(
