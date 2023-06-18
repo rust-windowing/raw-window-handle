@@ -133,7 +133,7 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// return an error if the application is inactive.
 ///
 /// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
-/// systems should implement this trait on types that already implement [`HasRawWindowHandle`]. 
+/// systems should implement this trait on types that already implement [`HasRawWindowHandle`].
 ///
 /// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
 /// should be generic over a type that implements `HasWindowHandle`, and should use the
