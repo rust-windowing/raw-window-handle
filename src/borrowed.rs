@@ -3,7 +3,6 @@
 //! These should be 100% safe to pass around and use, no possibility of dangling or invalidity.
 
 use core::fmt;
-use core::hash::{Hash, Hasher};
 use core::marker::PhantomData;
 
 use crate::{
@@ -79,7 +78,7 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
 ///
 /// Get the underlying raw display handle with the [`HasRawDisplayHandle`] trait.
 #[repr(transparent)]
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct DisplayHandle<'a> {
     raw: RawDisplayHandle,
     _marker: PhantomData<&'a *const ()>,
@@ -88,15 +87,6 @@ pub struct DisplayHandle<'a> {
 impl fmt::Debug for DisplayHandle<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("DisplayHandle").field(&self.raw).finish()
-    }
-}
-
-impl<'a> Clone for DisplayHandle<'a> {
-    fn clone(&self) -> Self {
-        Self {
-            raw: self.raw,
-            _marker: PhantomData,
-        }
     }
 }
 
@@ -122,7 +112,7 @@ unsafe impl HasRawDisplayHandle for DisplayHandle<'_> {
 
 impl<'a> HasDisplayHandle for DisplayHandle<'a> {
     fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
-        Ok(self.clone())
+        Ok(*self)
     }
 }
 
@@ -207,7 +197,7 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 ///
 /// This handle is guaranteed to be safe and valid. Get the underlying raw window handle with the
 /// [`HasRawWindowHandle`] trait.
-#[derive(Clone)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub struct WindowHandle<'a> {
     raw: RawWindowHandle,
     _marker: PhantomData<&'a *const ()>,
@@ -216,20 +206,6 @@ pub struct WindowHandle<'a> {
 impl fmt::Debug for WindowHandle<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("WindowHandle").field(&self.raw).finish()
-    }
-}
-
-impl PartialEq for WindowHandle<'_> {
-    fn eq(&self, other: &Self) -> bool {
-        self.raw == other.raw
-    }
-}
-
-impl Eq for WindowHandle<'_> {}
-
-impl Hash for WindowHandle<'_> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.raw.hash(state);
     }
 }
 
@@ -255,7 +231,7 @@ unsafe impl HasRawWindowHandle for WindowHandle<'_> {
 
 impl HasWindowHandle for WindowHandle<'_> {
     fn window_handle(&self) -> Result<Self, HandleError> {
-        Ok(self.clone())
+        Ok(*self)
     }
 }
 
