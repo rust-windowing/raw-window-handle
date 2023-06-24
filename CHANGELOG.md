@@ -4,6 +4,7 @@
 
 * **Breaking:** `HasRaw(Display/Window)Handle::raw_(display/window)_handle` returns a result indicating if fetching the window handle failed (#122).
 * **Breaking:** Remove the `Active/ActiveHandle` types from the public API (#126).
+* **Breaking:** Remove `AppKitWindowHandle::ns_window` and `UiKitWindowHandle::ui_window` since they can be retrived from the view (#129).
 
 ## 0.5.2 (2023-03-31)
 
