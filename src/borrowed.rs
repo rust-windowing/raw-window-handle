@@ -26,8 +26,13 @@ use crate::{
 ///
 /// # Safety
 ///
-/// The safety requirements of [`HasRawDisplayHandle`] apply here as well. To reiterate, the
-/// [`DisplayHandle`] must contain a valid window handle for its lifetime.
+/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+/// implementer of this trait to ensure that condition is upheld.
+///
+/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
+/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
+/// try to derive the field from other fields the implementer *does* provide via whatever methods the
+/// platform provides.
 ///
 /// It is not possible to invalidate a [`DisplayHandle`] on any platform without additional unsafe code.
 ///
@@ -95,7 +100,8 @@ impl<'a> DisplayHandle<'a> {
     ///
     /// # Safety
     ///
-    /// The `RawDisplayHandle` must be valid for the lifetime.
+    /// The `RawDisplayHandle` must be valid for the lifetime. See the documentation on
+    /// [`HasDisplayHandle`] for more information.
     pub unsafe fn borrow_raw(raw: RawDisplayHandle) -> Self {
         Self {
             raw,
@@ -104,7 +110,7 @@ impl<'a> DisplayHandle<'a> {
     }
 }
 
-unsafe impl HasRawDisplayHandle for DisplayHandle<'_> {
+impl HasRawDisplayHandle for DisplayHandle<'_> {
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
         Ok(self.raw)
     }
@@ -132,6 +138,14 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// use.
 ///
 /// # Safety
+///
+/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+/// implementer of this trait to ensure that condition is upheld.
+///
+/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
+/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
+/// try to derive the field from other fields the implementer *does* provide via whatever methods the
+/// platform provides.
 ///
 /// All pointers within the resulting [`WindowHandle`] must be valid and not dangling for the lifetime of
 /// the handle.
@@ -214,7 +228,8 @@ impl<'a> WindowHandle<'a> {
     ///
     /// # Safety
     ///
-    /// The [`RawWindowHandle`] must be valid for the lifetime provided.
+    /// The [`RawWindowHandle`] must be valid for the lifetime provided. See the documentation on
+    /// [`HasWindowHandle`] for more information.
     pub unsafe fn borrow_raw(raw: RawWindowHandle) -> Self {
         Self {
             raw,
@@ -223,7 +238,7 @@ impl<'a> WindowHandle<'a> {
     }
 }
 
-unsafe impl HasRawWindowHandle for WindowHandle<'_> {
+impl HasRawWindowHandle for WindowHandle<'_> {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         Ok(self.raw)
     }

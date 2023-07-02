@@ -4,6 +4,7 @@
 
 * **Breaking:** `HasRaw(Display/Window)Handle::raw_(display/window)_handle` returns a result indicating if fetching the window handle failed (#122).
 * **Breaking:** Remove the `Active/ActiveHandle` types from the public API (#126).
+* **Breaking:** It is now safe to implement `HasRaw(Display/Window)Handle` (#130).
 
 ## 0.5.2 (2023-03-31)
 

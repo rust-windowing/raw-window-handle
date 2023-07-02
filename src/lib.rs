@@ -60,35 +60,30 @@ use core::fmt;
 ///
 /// # Safety
 ///
-/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
-/// implementer of this trait to ensure that condition is upheld.
+/// The window handle returned by this trait is generally unsafe to manipulate. For instance,
+/// passing the window to any platform specific APIs can result in undefined behavior. Less
+/// general guarantees are placed on the return type for [`HasWindowHandle`].
 ///
-/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
-/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
-/// try to derive the field from other fields the implementer *does* provide via whatever methods the
-/// platform provides.
-///
-/// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
-/// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
-pub unsafe trait HasRawWindowHandle {
+/// However, one potential use case is using the raw handle as a key in a hash map.
+pub trait HasRawWindowHandle {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError>;
 }
 
-unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
+impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         (*self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
+impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         (**self).raw_window_handle()
     }
 }
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::Arc<T> {
+impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::Arc<T> {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         (**self).raw_window_handle()
     }
@@ -200,21 +195,16 @@ pub enum RawWindowHandle {
 ///
 /// # Safety
 ///
-/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
-/// implementer of this trait to ensure that condition is upheld.
+/// The display handle returned by this crate is generally unsafe to manipulate. For instance,
+/// passing the display to any platform specific APIs can result in undefined behavior. Less
+/// general guarantees are placed on the return type for [`HasDisplayHandle`].
 ///
-/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
-/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
-/// try to derive the field from other fields the implementer *does* provide via whatever methods the
-/// platform provides.
-///
-/// The exact handles returned by `raw_display_handle` must remain consistent between multiple calls
-/// to `raw_display_handle` as long as not indicated otherwise by platform specific events.
-pub unsafe trait HasRawDisplayHandle {
+/// However, one potential use case is using the raw handle as a key in a hash map.
+pub trait HasRawDisplayHandle {
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError>;
 }
 
-unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
+impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
         (*self).raw_display_handle()
     }
@@ -222,7 +212,7 @@ unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::rc::Rc<T> {
+impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::rc::Rc<T> {
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
         (**self).raw_display_handle()
     }
@@ -230,7 +220,7 @@ unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::rc::
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::sync::Arc<T> {
+impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::sync::Arc<T> {
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
         (**self).raw_display_handle()
     }
