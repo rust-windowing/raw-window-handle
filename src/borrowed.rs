@@ -50,6 +50,12 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for &H {
     }
 }
 
+impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for &mut H {
+    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+        (**self).display_handle()
+    }
+}
+
 #[cfg(feature = "alloc")]
 impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::boxed::Box<H> {
     fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
@@ -162,6 +168,12 @@ pub trait HasWindowHandle {
 }
 
 impl<H: HasWindowHandle + ?Sized> HasWindowHandle for &H {
+    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+        (**self).window_handle()
+    }
+}
+
+impl<H: HasWindowHandle + ?Sized> HasWindowHandle for &mut H {
     fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
         (**self).window_handle()
     }
