@@ -79,6 +79,11 @@ unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
         (*self).raw_window_handle()
     }
 }
+unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a mut T {
+    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
+        (**self).raw_window_handle()
+    }
+}
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
@@ -217,6 +222,12 @@ pub unsafe trait HasRawDisplayHandle {
 unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
         (*self).raw_display_handle()
+    }
+}
+
+unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a mut T {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
+        (**self).raw_display_handle()
     }
 }
 
