@@ -45,13 +45,15 @@ impl Win32WindowHandle {
     /// #
     /// let window: HWND;
     /// # window = HWND(0);
+    /// let mut handle = Win32WindowHandle::new(window.0);
+    /// // Optionally set the GWLP_HINSTANCE.
     /// # #[cfg(only_for_showcase)]
     /// let hinstance = unsafe { GetWindowLongPtrW(window, GWLP_HINSTANCE) };
     /// # let hinstance = 0;
-    /// let mut handle = Win32WindowHandle::new(window.0, hinstance);
+    /// handle.hinstance = hinstance;
     /// ```
-    pub fn new(hwnd: isize, hinstance: isize) -> Self {
-        Self { hwnd, hinstance }
+    pub fn new(hwnd: isize) -> Self {
+        Self { hwnd, hinstance: 0 }
     }
 }
 
