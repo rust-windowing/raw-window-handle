@@ -30,18 +30,15 @@ impl UiKitDisplayHandle {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct UiKitWindowHandle {
-    /// A pointer to an `UIWindow` object.
-    pub ui_window: *mut c_void,
     /// A pointer to an `UIView` object.
     pub ui_view: *mut c_void,
-    /// A pointer to an `UIViewController` object.
+    /// A pointer to an `UIViewController` object, if the view has one.
     pub ui_view_controller: *mut c_void,
 }
 
 impl UiKitWindowHandle {
     pub fn empty() -> Self {
         Self {
-            ui_window: ptr::null_mut(),
             ui_view: ptr::null_mut(),
             ui_view_controller: ptr::null_mut(),
         }
