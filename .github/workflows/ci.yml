@@ -39,7 +39,6 @@ jobs:
       - uses: hecrj/setup-rust-action@v1
         with:
           rust-version: ${{ matrix.rust_version }}
-
       - run: rustup target add wasm32-unknown-unknown
 
       - name: Check documentation
@@ -52,3 +51,4 @@ jobs:
 
       - name: Run tests for wasm32-unknown-unknown
         run: cargo hack check --target wasm32-unknown-unknown --feature-powerset
+

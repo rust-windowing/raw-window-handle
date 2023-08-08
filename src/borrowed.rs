@@ -2,12 +2,11 @@
 //!
 //! These should be 100% safe to pass around and use, no possibility of dangling or invalidity.
 
+use core::borrow::Borrow;
 use core::fmt;
 use core::marker::PhantomData;
 
-use crate::{
-    HandleError, HasRawDisplayHandle, HasRawWindowHandle, RawDisplayHandle, RawWindowHandle,
-};
+use crate::{HandleError, RawDisplayHandle, RawWindowHandle};
 
 /// A display that acts as a wrapper around a display handle.
 ///
@@ -16,7 +15,7 @@ use crate::{
 /// return an error if the application is inactive.
 ///
 /// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
-/// systems should implement this trait on types that already implement [`HasRawDisplayHandle`]. It
+/// systems should implement this trait on types that represent the top-level display server. It
 /// should be implemented by tying the lifetime of the [`DisplayHandle`] to the lifetime of the
 /// display object.
 ///
@@ -26,15 +25,22 @@ use crate::{
 ///
 /// # Safety
 ///
-/// The safety requirements of [`HasRawDisplayHandle`] apply here as well. To reiterate, the
-/// [`DisplayHandle`] must contain a valid window handle for its lifetime.
+/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+/// implementer of this trait to ensure that condition is upheld.
+///
+/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
+/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
+/// try to derive the field from other fields the implementer *does* provide via whatever methods the
+/// platform provides.
+///
+/// The exact handles returned by `raw_display_handle` must remain consistent between multiple calls
+/// to `raw_display_handle` as long as not indicated otherwise by platform specific events.
 ///
 /// It is not possible to invalidate a [`DisplayHandle`] on any platform without additional unsafe code.
 ///
 /// Note that these requirements are not enforced on `HasDisplayHandle`, rather, they are enforced on the
 /// constructors of [`DisplayHandle`]. This is because the `HasDisplayHandle` trait is safe to implement.
 ///
-/// [`HasRawDisplayHandle`]: crate::HasRawDisplayHandle
 /// [`winit`]: https://crates.io/crates/winit
 /// [`sdl2`]: https://crates.io/crates/sdl2
 /// [`wgpu`]: https://crates.io/crates/wgpu
@@ -57,6 +63,7 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for &mut H {
 }
 
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::boxed::Box<H> {
     fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
         (**self).display_handle()
@@ -64,6 +71,7 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::boxed::Box<H> {
 }
 
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::rc::Rc<H> {
     fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
         (**self).display_handle()
@@ -71,6 +79,7 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::rc::Rc<H> {
 }
 
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
     fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
         (**self).display_handle()
@@ -81,8 +90,6 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
 ///
 /// This is the primary return type of the [`HasDisplayHandle`] trait. It is guaranteed to contain
 /// a valid platform-specific display handle for its lifetime.
-///
-/// Get the underlying raw display handle with the [`HasRawDisplayHandle`] trait.
 #[repr(transparent)]
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct DisplayHandle<'a> {
@@ -108,11 +115,28 @@ impl<'a> DisplayHandle<'a> {
             _marker: PhantomData,
         }
     }
+
+    /// Get the underlying raw display handle.
+    pub fn as_raw(&self) -> RawDisplayHandle {
+        self.raw
+    }
 }
 
-unsafe impl HasRawDisplayHandle for DisplayHandle<'_> {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
-        Ok(self.raw)
+impl AsRef<RawDisplayHandle> for DisplayHandle<'_> {
+    fn as_ref(&self) -> &RawDisplayHandle {
+        &self.raw
+    }
+}
+
+impl Borrow<RawDisplayHandle> for DisplayHandle<'_> {
+    fn borrow(&self) -> &RawDisplayHandle {
+        &self.raw
+    }
+}
+
+impl From<DisplayHandle<'_>> for RawDisplayHandle {
+    fn from(handle: DisplayHandle<'_>) -> Self {
+        handle.raw
     }
 }
 
@@ -129,7 +153,7 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// return an error if the application is inactive.
 ///
 /// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
-/// systems should implement this trait on types that already implement [`HasRawWindowHandle`].
+/// systems should implement this trait on types that represent windows.
 ///
 /// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
 /// should be generic over a type that implements `HasWindowHandle`, and should use the
@@ -139,8 +163,16 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 ///
 /// # Safety
 ///
-/// All pointers within the resulting [`WindowHandle`] must be valid and not dangling for the lifetime of
-/// the handle.
+/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+/// implementer of this trait to ensure that condition is upheld.
+///
+/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
+/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
+/// try to derive the field from other fields the implementer *does* provide via whatever methods the
+/// platform provides.
+///
+/// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
+/// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
 ///
 /// Note that this guarantee only applies to *pointers*, and not any window ID types in the handle.
 /// This includes Window IDs (XIDs) from X11 and the window ID for web platforms. There is no way for
@@ -180,6 +212,7 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for &mut H {
 }
 
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::boxed::Box<H> {
     fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
         (**self).window_handle()
@@ -187,6 +220,7 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::boxed::Box<H> {
 }
 
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::rc::Rc<H> {
     fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
         (**self).window_handle()
@@ -194,6 +228,7 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::rc::Rc<H> {
 }
 
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
 impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
     fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
         (**self).window_handle()
@@ -207,8 +242,7 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 /// like XIDs and the window ID for web platforms. See the documentation on the [`HasWindowHandle`]
 /// trait for more information about these safety requirements.
 ///
-/// This handle is guaranteed to be safe and valid. Get the underlying raw window handle with the
-/// [`HasRawWindowHandle`] trait.
+/// This handle is guaranteed to be safe and valid.
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct WindowHandle<'a> {
     raw: RawWindowHandle,
@@ -233,11 +267,34 @@ impl<'a> WindowHandle<'a> {
             _marker: PhantomData,
         }
     }
+
+    /// Get the underlying raw window handle.
+    pub fn as_raw(&self) -> RawWindowHandle {
+        self.raw
+    }
 }
 
 unsafe impl HasRawWindowHandle for WindowHandle<'_> {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         Ok(self.raw)
+    }
+}
+
+impl AsRef<RawWindowHandle> for WindowHandle<'_> {
+    fn as_ref(&self) -> &RawWindowHandle {
+        &self.raw
+    }
+}
+
+impl Borrow<RawWindowHandle> for WindowHandle<'_> {
+    fn borrow(&self) -> &RawWindowHandle {
+        &self.raw
+    }
+}
+
+impl From<WindowHandle<'_>> for RawWindowHandle {
+    fn from(handle: WindowHandle<'_>) -> Self {
+        handle.raw
     }
 }
 
