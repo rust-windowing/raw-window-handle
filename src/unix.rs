@@ -1,4 +1,5 @@
 use core::ffi::{c_int, c_ulong, c_void};
+use core::num::NonZeroU32;
 use core::ptr::NonNull;
 
 /// Raw display handle for Xlib.
@@ -114,9 +115,9 @@ impl XcbDisplayHandle {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XcbWindowHandle {
     /// An X11 `xcb_window_t`.
-    pub window: u32, // Based on xproto.h
-    /// An X11 `xcb_visualid_t`, or 0 if unknown.
-    pub visual_id: u32,
+    pub window: NonZeroU32, // Based on xproto.h
+    /// An X11 `xcb_visualid_t`.
+    pub visual_id: Option<NonZeroU32>,
 }
 
 impl XcbWindowHandle {
@@ -126,18 +127,19 @@ impl XcbWindowHandle {
     /// # Example
     ///
     /// ```
+    /// # use core::num::NonZeroU32;
     /// # use raw_window_handle::XcbWindowHandle;
     /// #
-    /// let window: u32;
-    /// # window = 0;
+    /// let window: NonZeroU32;
+    /// # window = NonZeroU32::new(1).unwrap();
     /// let mut handle = XcbWindowHandle::new(window);
     /// // Optionally set the visual ID.
-    /// handle.visual_id = 0;
+    /// handle.visual_id = None;
     /// ```
-    pub fn new(window: u32) -> Self {
+    pub fn new(window: NonZeroU32) -> Self {
         Self {
             window,
-            visual_id: 0,
+            visual_id: None,
         }
     }
 }
