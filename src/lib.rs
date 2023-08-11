@@ -120,7 +120,7 @@ unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::
 /// [`RawWindowHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
     /// A raw window handle for UIKit (Apple's non-macOS windowing library).
     ///
@@ -326,7 +326,7 @@ pub enum RawDisplayHandle {
     ///
     /// ## Availability Hints
     /// This variant is present regardless of windowing backend and likely to be used with
-    /// EGL_MESA_platfrom_gbm or EGL_KHR_platfrom_gbm.
+    /// EGL_MESA_platform_gbm or EGL_KHR_platform_gbm.
     Gbm(GbmDisplayHandle),
     /// A raw display handle for Win32.
     ///
