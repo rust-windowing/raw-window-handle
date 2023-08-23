@@ -7,7 +7,10 @@ use core::ptr::NonNull;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XlibDisplayHandle {
     /// A pointer to an Xlib `Display`.
-    pub display: NonNull<c_void>,
+    ///
+    /// It is strongly recommended to set this value, however it may be set to
+    /// `None` to request the default display when using EGL.
+    pub display: Option<NonNull<c_void>>,
 
     /// An X11 screen to use with this display handle.
     ///
@@ -32,9 +35,9 @@ impl XlibDisplayHandle {
     /// let screen;
     /// # display = NonNull::from(&()).cast();
     /// # screen = 0;
-    /// let handle = XlibDisplayHandle::new(display, screen);
+    /// let handle = XlibDisplayHandle::new(Some(display), screen);
     /// ```
-    pub fn new(display: NonNull<c_void>, screen: c_int) -> Self {
+    pub fn new(display: Option<NonNull<c_void>>, screen: c_int) -> Self {
         Self { display, screen }
     }
 }
@@ -78,7 +81,10 @@ impl XlibWindowHandle {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XcbDisplayHandle {
     /// A pointer to an X server `xcb_connection_t`.
-    pub connection: NonNull<c_void>,
+    ///
+    /// It is strongly recommended to set this value, however it may be set to
+    /// `None` to request the default display when using EGL.
+    pub connection: Option<NonNull<c_void>>,
 
     /// An X11 screen to use with this display handle.
     ///
@@ -103,9 +109,9 @@ impl XcbDisplayHandle {
     /// let screen;
     /// # connection = NonNull::from(&()).cast();
     /// # screen = 0;
-    /// let handle = XcbDisplayHandle::new(connection, screen);
+    /// let handle = XcbDisplayHandle::new(Some(connection), screen);
     /// ```
-    pub fn new(connection: NonNull<c_void>, screen: c_int) -> Self {
+    pub fn new(connection: Option<NonNull<c_void>>, screen: c_int) -> Self {
         Self { connection, screen }
     }
 }
