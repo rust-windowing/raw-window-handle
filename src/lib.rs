@@ -60,7 +60,7 @@ use core::fmt;
 ///
 /// # Safety
 ///
-/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+/// Users can safely assume that pointers and non-zero fields are valid, and it is up to the
 /// implementer of this trait to ensure that condition is upheld.
 ///
 /// Despite that qualification, implementers should still make a best-effort attempt to fill in all
@@ -205,7 +205,7 @@ pub enum RawWindowHandle {
 ///
 /// # Safety
 ///
-/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+/// Users can safely assume that pointers and non-zero fields are valid, and it is up to the
 /// implementer of this trait to ensure that condition is upheld.
 ///
 /// Despite that qualification, implementers should still make a best-effort attempt to fill in all
