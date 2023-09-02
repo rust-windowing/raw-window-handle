@@ -80,31 +80,9 @@ pub unsafe trait HasRawWindowHandle {
 }
 
 #[allow(deprecated)]
-unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a T {
+unsafe impl<T: HasWindowHandle + ?Sized> HasRawWindowHandle for T {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
-        (*self).raw_window_handle()
-    }
-}
-#[allow(deprecated)]
-unsafe impl<'a, T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for &'a mut T {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
-        (**self).raw_window_handle()
-    }
-}
-#[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-#[allow(deprecated)]
-unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::rc::Rc<T> {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
-        (**self).raw_window_handle()
-    }
-}
-#[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-#[allow(deprecated)]
-unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::Arc<T> {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
-        (**self).raw_window_handle()
+        self.window_handle().map(Into::into)
     }
 }
 
@@ -244,34 +222,9 @@ pub unsafe trait HasRawDisplayHandle {
 }
 
 #[allow(deprecated)]
-unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a T {
+unsafe impl<T: HasDisplayHandle + ?Sized> HasRawDisplayHandle for T {
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
-        (*self).raw_display_handle()
-    }
-}
-
-#[allow(deprecated)]
-unsafe impl<'a, T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for &'a mut T {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
-        (**self).raw_display_handle()
-    }
-}
-
-#[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-#[allow(deprecated)]
-unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::rc::Rc<T> {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
-        (**self).raw_display_handle()
-    }
-}
-
-#[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-#[allow(deprecated)]
-unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::sync::Arc<T> {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
-        (**self).raw_display_handle()
+        self.display_handle().map(Into::into)
     }
 }
 

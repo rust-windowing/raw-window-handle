@@ -82,13 +82,6 @@ pub struct DisplayHandle<'a> {
     _marker: PhantomData<&'a *const ()>,
 }
 
-#[allow(deprecated)]
-unsafe impl crate::HasRawDisplayHandle for DisplayHandle<'_> {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
-        Ok(self.raw)
-    }
-}
-
 impl fmt::Debug for DisplayHandle<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("DisplayHandle").field(&self.raw).finish()
