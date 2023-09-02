@@ -23,21 +23,6 @@ use crate::{HandleError, RawDisplayHandle, RawWindowHandle};
 /// should be generic over a type that implements `HasDisplayHandle`, and should use the
 /// [`DisplayHandle`] type to access the display handle.
 ///
-/// # Safety
-///
-/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
-/// implementer of this trait to ensure that condition is upheld.
-///
-/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
-/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
-/// try to derive the field from other fields the implementer *does* provide via whatever methods the
-/// platform provides.
-///
-/// The exact handles returned by `raw_display_handle` must remain consistent between multiple calls
-/// to `raw_display_handle` as long as not indicated otherwise by platform specific events.
-///
-/// It is not possible to invalidate a [`DisplayHandle`] on any platform without additional unsafe code.
-///
 /// Note that these requirements are not enforced on `HasDisplayHandle`, rather, they are enforced on the
 /// constructors of [`DisplayHandle`]. This is because the `HasDisplayHandle` trait is safe to implement.
 ///
@@ -115,7 +100,15 @@ impl<'a> DisplayHandle<'a> {
     ///
     /// # Safety
     ///
-    /// The `RawDisplayHandle` must be valid for the lifetime.
+    /// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+    /// implementer of this trait to ensure that condition is upheld.
+    ///
+    /// Despite that qualification, implementors should still make a best-effort attempt to fill in all
+    /// available fields. If an implementation doesn't, and a downstream user needs the field, it should
+    /// try to derive the field from other fields the implementer *does* provide via whatever methods the
+    /// platform provides.
+    ///
+    /// It is not possible to invalidate a [`DisplayHandle`] on any platform without additional unsafe code.
     pub unsafe fn borrow_raw(raw: RawDisplayHandle) -> Self {
         Self {
             raw,
@@ -167,35 +160,6 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// [`WindowHandle`] type to access the window handle. The window handle should be acquired and held
 /// while the window is being used, in order to ensure that the window is not deleted while it is in
 /// use.
-///
-/// # Safety
-///
-/// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
-/// implementer of this trait to ensure that condition is upheld.
-///
-/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
-/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
-/// try to derive the field from other fields the implementer *does* provide via whatever methods the
-/// platform provides.
-///
-/// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
-/// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
-///
-/// Note that this guarantee only applies to *pointers*, and not any window ID types in the handle.
-/// This includes Window IDs (XIDs) from X11 and the window ID for web platforms. There is no way for
-/// Rust to enforce any kind of invariant on these types, since:
-///
-/// - For all three listed platforms, it is possible for safe code in the same process to delete
-///   the window.
-/// - For X11, it is possible for code in a different process to delete the window. In fact, it is
-///   possible for code on a different *machine* to delete the window.
-///
-/// It is *also* possible for the window to be replaced with another, valid-but-different window. User
-/// code should be aware of this possibility, and should be ready to soundly handle the possible error
-/// conditions that can arise from this.
-///
-/// Note that these requirements are not enforced on `HasWindowHandle`, rather, they are enforced on the
-/// constructors of [`WindowHandle`]. This is because the `HasWindowHandle` trait is safe to implement.
 ///
 /// [`winit`]: https://crates.io/crates/winit
 /// [`sdl2`]: https://crates.io/crates/sdl2
@@ -267,7 +231,26 @@ impl<'a> WindowHandle<'a> {
     ///
     /// # Safety
     ///
-    /// The [`RawWindowHandle`] must be valid for the lifetime provided.
+    /// Users can safely assume that non-`null`/`0` fields are valid handles, and it is up to the
+    /// implementer of this trait to ensure that condition is upheld.
+    ///
+    /// Despite that qualification, implementers should still make a best-effort attempt to fill in all
+    /// available fields. If an implementation doesn't, and a downstream user needs the field, it should
+    /// try to derive the field from other fields the implementer *does* provide via whatever methods the
+    /// platform provides.
+    ///
+    /// Note that this guarantee only applies to *pointers*, and not any window ID types in the handle.
+    /// This includes Window IDs (XIDs) from X11 and the window ID for web platforms. There is no way for
+    /// Rust to enforce any kind of invariant on these types, since:
+    ///
+    /// - For all three listed platforms, it is possible for safe code in the same process to delete
+    ///   the window.
+    /// - For X11, it is possible for code in a different process to delete the window. In fact, it is
+    ///   possible for code on a different *machine* to delete the window.
+    ///
+    /// It is *also* possible for the window to be replaced with another, valid-but-different window. User
+    /// code should be aware of this possibility, and should be ready to soundly handle the possible error
+    /// conditions that can arise from this.
     pub unsafe fn borrow_raw(raw: RawWindowHandle) -> Self {
         Self {
             raw,
