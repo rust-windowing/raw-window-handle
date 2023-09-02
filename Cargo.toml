@@ -22,7 +22,7 @@ std = ["alloc"]
 # be removed entirely tomorrow.
 # 
 # The point being: rely on this at your own peril.
-unstable_web_handles = ["wasm-bindgen", "std"]
+unstable_web_handles_wbg_02 = ["wasm-bindgen", "std"]
 
 [target.'cfg(target_family = "wasm")'.dependencies.wasm-bindgen]
 version = "0.2.87"

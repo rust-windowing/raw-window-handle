@@ -124,7 +124,7 @@ impl Wbg02OffscreenCanvasWindowHandle {
 /// This type represents an object stored in the [`wasm-bindgen`] object table. It represents some kind
 /// of underlying web object, such as an `HtmlCanvasElement` or an [`OffscreenCanvas`].
 ///
-/// For WASM targets, with the unstable `unstable_web_handles` feature enabled, this type contains
+/// For WASM targets, with the unstable `unstable_web_handles_wbg_02` feature enabled, this type contains
 /// an index into the table corresponding to a JavaScript object. In other cases, this type is
 /// uninhabited.
 ///
@@ -132,30 +132,30 @@ impl Wbg02OffscreenCanvasWindowHandle {
 /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
 #[derive(Clone, PartialEq)]
 pub struct Wbg02Object {
-    /// For when `unstable_web_handles` is enabled, this is the index of the object in the
+    /// For when `unstable_web_handles_wbg_02` is enabled, this is the index of the object in the
     /// `wasm-bindgen` table.
-    #[cfg(all(target_family = "wasm", feature = "unstable_web_handles"))]
+    #[cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02"))]
     idx: wasm_bindgen::JsValue,
 
     /// In other cases, this type is uninhabited.
-    #[cfg(not(all(target_family = "wasm", feature = "unstable_web_handles")))]
+    #[cfg(not(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))]
     _uninhabited: core::convert::Infallible,
 }
 
 impl fmt::Debug for Wbg02Object {
     fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        #[cfg(all(target_family = "wasm", feature = "unstable_web_handles"))]
+        #[cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02"))]
         {
             _f.debug_tuple("Wbg02Object").field(&self.idx).finish()
         }
 
-        #[cfg(not(all(target_family = "wasm", feature = "unstable_web_handles")))]
+        #[cfg(not(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))]
         match self._uninhabited {}
     }
 }
 
-#[cfg(all(target_family = "wasm", feature = "unstable_web_handles"))]
-/// These implementations are only available when `unstable_web_handles` is enabled.
+#[cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02"))]
+/// These implementations are only available when `unstable_web_handles_wbg_02` is enabled.
 impl Wbg02Object {
     /// Create a new `Wbg02Object` from a [`wasm-bindgen`] object.
     ///
@@ -165,7 +165,7 @@ impl Wbg02Object {
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     #[cfg_attr(
         docsrs,
-        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles")))
+        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))
     )]
     pub fn new(idx: wasm_bindgen::JsValue) -> Self {
         Self { idx }
@@ -179,7 +179,7 @@ impl Wbg02Object {
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     #[cfg_attr(
         docsrs,
-        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles")))
+        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))
     )]
     pub fn idx(&self) -> &wasm_bindgen::JsValue {
         &self.idx
@@ -193,7 +193,7 @@ impl Wbg02Object {
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     #[cfg_attr(
         docsrs,
-        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles")))
+        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))
     )]
     pub fn into_idx(self) -> wasm_bindgen::JsValue {
         self.idx
