@@ -3,7 +3,7 @@ use core::ptr::NonNull;
 
 /// Raw display handle for the Web.
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebDisplayHandle {}
 
 impl WebDisplayHandle {
@@ -23,7 +23,7 @@ impl WebDisplayHandle {
 
 /// Raw window handle for the Web.
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebWindowHandle {
     /// An ID value inserted into the [data attributes] of the canvas element as '`raw-handle`'.
     ///
@@ -56,16 +56,17 @@ impl WebWindowHandle {
 ///
 /// ## Construction
 /// ```no_run
-/// # use raw_window_handle::{Wbg02CanvasWindowHandle, Wbg02Object};
-/// # fn get_canvas() -> Wbg02Object { unimplemented!() }
-/// let obj: Wbg02Object = get_canvas();
+/// # use raw_window_handle::Wbg02CanvasWindowHandle;
+/// # use core::{ffi::c_void, ptr::NonNull};
+/// # fn get_canvas() -> NonNull<c_void> { unimplemented!() }
+/// let obj: NonNull<c_void> = get_canvas();
 /// let mut window_handle = Wbg02CanvasWindowHandle::new(obj);
 /// /* set fields */
 /// ```
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Wbg02CanvasWindowHandle {
     /// The object representing the [`HtmlCanvasElement`].
     ///
@@ -133,16 +134,17 @@ impl Wbg02CanvasWindowHandle {
 ///
 /// ## Construction
 /// ```no_run
-/// # use raw_window_handle::{Wbg02OffscreenCanvasWindowHandle, Wbg02Object};
-/// # fn get_offscreen_canvas() -> Wbg02Object { unimplemented!() }
-/// let obj: Wbg02Object = get_offscreen_canvas();
+/// # use raw_window_handle::Wbg02OffscreenCanvasWindowHandle;
+/// # use core::{ffi::c_void, ptr::NonNull};
+/// # fn get_offscreen_canvas() -> NonNull<c_void> { unimplemented!() }
+/// let obj: NonNull<c_void> = get_offscreen_canvas();
 /// let mut window_handle = Wbg02OffscreenCanvasWindowHandle::new(obj);
 /// /* set fields */
 /// ```
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Wbg02OffscreenCanvasWindowHandle {
     /// The object representing the [`OffscreenCanvas`].
     ///

@@ -3,7 +3,7 @@ use core::ptr::NonNull;
 
 /// Raw display handle for AppKit.
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AppKitDisplayHandle {}
 
 impl AppKitDisplayHandle {
@@ -23,7 +23,7 @@ impl AppKitDisplayHandle {
 
 /// Raw window handle for AppKit.
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AppKitWindowHandle {
     /// A pointer to an `NSView` object.
     pub ns_view: NonNull<c_void>,

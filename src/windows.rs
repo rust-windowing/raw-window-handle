@@ -6,7 +6,7 @@ use core::ptr::NonNull;
 ///
 /// It can be used regardless of Windows window backend.
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WindowsDisplayHandle {}
 
 impl WindowsDisplayHandle {
@@ -26,7 +26,7 @@ impl WindowsDisplayHandle {
 
 /// Raw window handle for Win32.
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Win32WindowHandle {
     /// A Win32 `HWND` handle.
     pub hwnd: NonZeroIsize,
@@ -64,7 +64,7 @@ impl Win32WindowHandle {
 
 /// Raw window handle for WinRT.
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WinRtWindowHandle {
     /// A WinRT `CoreWindow` handle.
     pub core_window: NonNull<c_void>,
