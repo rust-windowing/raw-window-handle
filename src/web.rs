@@ -60,8 +60,19 @@ impl WebWindowHandle {
 pub struct WebCanvasWindowHandle {
     /// A pointer to the [`JsValue`] of an [`HtmlCanvasElement`].
     ///
+    /// Note: This uses [`c_void`] to avoid depending on `wasm-bindgen`
+    /// directly.
+    ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
+    //
+    // SAFETY: Not using `JsValue` is sound because `wasm-bindgen` guarantees
+    // that there's only one version of itself in any given binary, and hence
+    // we can't have a type-confusion where e.g. one library used `JsValue`
+    // from `v0.2` of `wasm-bindgen`, and another used `JsValue` from `v1.0`;
+    // the binary will simply fail to compile!
+    //
+    // Reference: TODO
     pub obj: NonNull<c_void>,
 }
 
@@ -124,8 +135,13 @@ impl WebCanvasWindowHandle {
 pub struct WebOffscreenCanvasWindowHandle {
     /// A pointer to the [`JsValue`] of an [`OffscreenCanvas`].
     ///
+    /// Note: This uses [`c_void`] to avoid depending on `wasm-bindgen`
+    /// directly.
+    ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
+    //
+    // SAFETY: See WebCanvasWindowHandle.
     pub obj: NonNull<c_void>,
 }
 
