@@ -1,4 +1,5 @@
-use core::fmt;
+use core::ffi::c_void;
+use core::ptr::NonNull;
 
 /// Raw display handle for the Web.
 #[non_exhaustive]
@@ -69,19 +70,62 @@ pub struct Wbg02CanvasWindowHandle {
     /// The object representing the [`HtmlCanvasElement`].
     ///
     /// It is implied that this object is registered in the [`wasm-bindgen`] table and is an instance
-    /// of [`HtmlCanvasElement`].
+    /// of [`HtmlCanvasElement`]. The pointer is a direct reference to a [`JsValue`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    pub obj: Wbg02Object,
+    /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+    pub obj: NonNull<c_void>,
 }
 
 impl Wbg02CanvasWindowHandle {
     /// Create a new handle to an [`HtmlCanvasElement`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
-    pub fn new(obj: Wbg02Object) -> Self {
+    pub fn new(obj: NonNull<c_void>) -> Self {
         Self { obj }
+    }
+}
+
+#[cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02"))]
+/// These implementations are only available when `unstable_web_handles_wbg_02` is enabled.
+impl Wbg02CanvasWindowHandle {
+    /// Create a new `Wbg02CanvasWindowHandle` from a [`wasm-bindgen`] object.
+    ///
+    /// This function is unstable. Its signature may be changed or even removed outright without a
+    /// breaking version change.
+    ///
+    /// # Safety
+    ///
+    /// The [`JsValue`] must refer to an [`HtmlCanvasElement`], and the lifetime must be longer than
+    /// the `Wbg02CanvasWindowHandle` lives for.
+    ///
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))
+    )]
+    pub unsafe fn from_wasm_bindgen_0_2(js_value: &wasm_bindgen::JsValue) -> Self {
+        Self::new(NonNull::from(js_value).cast())
+    }
+
+    /// Convert to the underlying [`wasm-bindgen`] index.
+    ///
+    /// This function is unstable. Its signature may be changed or even removed outright without a
+    /// breaking version change.
+    ///
+    /// # Safety
+    ///
+    /// The lifetime from the `from_wasm_bindgen_0_2` function must still be valid, and the
+    /// underlying pointer must still be a [`wasm_bindgen`] object.
+    ///
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))
+    )]
+    pub unsafe fn as_wasm_bindgen_0_2(&self) -> &wasm_bindgen::JsValue {
+        self.obj.cast().as_ref()
     }
 }
 
@@ -103,86 +147,43 @@ pub struct Wbg02OffscreenCanvasWindowHandle {
     /// The object representing the [`OffscreenCanvas`].
     ///
     /// It is implied that this object is registered in the [`wasm-bindgen`] table and is an instance
-    /// of [`OffscreenCanvas`].
+    /// of [`OffscreenCanvas`]. This is a pointer to the actual [`JsValue`] object.
     ///
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    pub obj: Wbg02Object,
+    /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+    pub obj: NonNull<c_void>,
 }
 
 impl Wbg02OffscreenCanvasWindowHandle {
     /// Create a new handle to an [`OffscreenCanvas`].
     ///
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
-    pub fn new(obj: Wbg02Object) -> Self {
+    pub fn new(obj: NonNull<c_void>) -> Self {
         Self { obj }
-    }
-}
-
-/// An object currently stored in [`wasm-bindgen`].
-///
-/// This type represents an object stored in the [`wasm-bindgen`] object table. It represents some kind
-/// of underlying web object, such as an `HtmlCanvasElement` or an [`OffscreenCanvas`].
-///
-/// For WASM targets, with the unstable `unstable_web_handles_wbg_02` feature enabled, this type contains
-/// an index into the table corresponding to a JavaScript object. In other cases, this type is
-/// uninhabited.
-///
-/// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-/// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
-#[derive(Clone, PartialEq)]
-pub struct Wbg02Object {
-    /// For when `unstable_web_handles_wbg_02` is enabled, this is the index of the object in the
-    /// `wasm-bindgen` table.
-    #[cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02"))]
-    idx: wasm_bindgen::JsValue,
-
-    /// In other cases, this type is uninhabited.
-    #[cfg(not(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))]
-    _uninhabited: core::convert::Infallible,
-}
-
-impl fmt::Debug for Wbg02Object {
-    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        #[cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02"))]
-        {
-            _f.debug_tuple("Wbg02Object").field(&self.idx).finish()
-        }
-
-        #[cfg(not(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))]
-        match self._uninhabited {}
     }
 }
 
 #[cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02"))]
 /// These implementations are only available when `unstable_web_handles_wbg_02` is enabled.
-impl Wbg02Object {
-    /// Create a new `Wbg02Object` from a [`wasm-bindgen`] object.
+impl Wbg02OffscreenCanvasWindowHandle {
+    /// Create a new `Wbg02OffscreenCanvasWindowHandle` from a [`wasm-bindgen`] object.
     ///
     /// This function is unstable. Its signature may be changed or even removed outright without a
     /// breaking version change.
+    ///
+    /// # Safety
+    ///
+    /// The [`JsValue`] must refer to an [`OffscreenCanvas`], and the lifetime must be longer than
+    /// the `Wbg02OffscreenCanvasWindowHandle` lives for.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     #[cfg_attr(
         docsrs,
         doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))
     )]
-    pub fn new(idx: wasm_bindgen::JsValue) -> Self {
-        Self { idx }
-    }
-
-    /// Get the index of the object in the [`wasm-bindgen`] table.
-    ///
-    /// This function is unstable. Its signature may be changed or even removed outright without a
-    /// breaking version change.
-    ///
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    #[cfg_attr(
-        docsrs,
-        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))
-    )]
-    pub fn idx(&self) -> &wasm_bindgen::JsValue {
-        &self.idx
+    pub unsafe fn from_wasm_bindgen_0_2(js_value: &wasm_bindgen::JsValue) -> Self {
+        Self::new(NonNull::from(js_value).cast())
     }
 
     /// Convert to the underlying [`wasm-bindgen`] index.
@@ -190,12 +191,17 @@ impl Wbg02Object {
     /// This function is unstable. Its signature may be changed or even removed outright without a
     /// breaking version change.
     ///
+    /// # Safety
+    ///
+    /// The lifetime from the `from_wasm_bindgen_0_2` function must still be valid, and the
+    /// underlying pointer must still be a [`wasm_bindgen`] object.
+    ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     #[cfg_attr(
         docsrs,
         doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles_wbg_02")))
     )]
-    pub fn into_idx(self) -> wasm_bindgen::JsValue {
-        self.idx
+    pub unsafe fn as_wasm_bindgen_0_2(&self) -> &wasm_bindgen::JsValue {
+        self.obj.cast().as_ref()
     }
 }
