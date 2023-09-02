@@ -45,7 +45,7 @@ jobs:
       - name: Check documentation
         run: cargo doc --no-deps --document-private-items
 
-      - run: taiki-e/install-action@cargo-hack
+      - uses: taiki-e/install-action@cargo-hack
 
       - name: Run tests
         run: cargo hack test --feature-powerset
