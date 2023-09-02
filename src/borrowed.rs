@@ -97,6 +97,13 @@ pub struct DisplayHandle<'a> {
     _marker: PhantomData<&'a *const ()>,
 }
 
+#[allow(deprecated)]
+unsafe impl crate::HasRawDisplayHandle for DisplayHandle<'_> {
+    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
+        Ok(self.raw)
+    }
+}
+
 impl fmt::Debug for DisplayHandle<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("DisplayHandle").field(&self.raw).finish()
@@ -270,11 +277,12 @@ impl<'a> WindowHandle<'a> {
 
     /// Get the underlying raw window handle.
     pub fn as_raw(&self) -> RawWindowHandle {
-        self.raw
+        self.raw.clone()
     }
 }
 
-unsafe impl HasRawWindowHandle for WindowHandle<'_> {
+#[allow(deprecated)]
+unsafe impl crate::HasRawWindowHandle for WindowHandle<'_> {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
         Ok(self.raw)
     }
