@@ -3,7 +3,7 @@ use core::ptr::NonNull;
 
 /// Raw display handle for Android.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct AndroidDisplayHandle {}
 
 impl AndroidDisplayHandle {
@@ -23,7 +23,7 @@ impl AndroidDisplayHandle {
 
 /// Raw window handle for Android NDK.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct AndroidNdkWindowHandle {
     /// A pointer to an `ANativeWindow`.
     pub a_native_window: NonNull<c_void>,

@@ -1,5 +1,6 @@
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![allow(clippy::new_without_default)]
 
 //! Interoperability library for Rust Windowing applications.
 //!
@@ -122,7 +123,7 @@ unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::
 /// [`RawWindowHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum RawWindowHandle {
     /// A raw window handle for UIKit (Apple's non-macOS windowing library).
     ///
@@ -290,7 +291,7 @@ unsafe impl<T: HasRawDisplayHandle + ?Sized> HasRawDisplayHandle for alloc::sync
 /// [`RawDisplayHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum RawDisplayHandle {
     /// A raw display handle for UIKit (Apple's non-macOS windowing library).
     ///

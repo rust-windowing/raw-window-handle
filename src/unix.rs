@@ -4,7 +4,7 @@ use core::ptr::NonNull;
 
 /// Raw display handle for Xlib.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct XlibDisplayHandle {
     /// A pointer to an Xlib `Display`.
     ///
@@ -44,7 +44,7 @@ impl XlibDisplayHandle {
 
 /// Raw window handle for Xlib.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct XlibWindowHandle {
     /// An Xlib `Window`.
     pub window: c_ulong,
@@ -78,7 +78,7 @@ impl XlibWindowHandle {
 
 /// Raw display handle for Xcb.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct XcbDisplayHandle {
     /// A pointer to an X server `xcb_connection_t`.
     ///
@@ -118,7 +118,7 @@ impl XcbDisplayHandle {
 
 /// Raw window handle for Xcb.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct XcbWindowHandle {
     /// An X11 `xcb_window_t`.
     pub window: NonZeroU32, // Based on xproto.h
@@ -152,7 +152,7 @@ impl XcbWindowHandle {
 
 /// Raw display handle for Wayland.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct WaylandDisplayHandle {
     /// A pointer to a `wl_display`.
     pub display: NonNull<c_void>,
@@ -180,7 +180,7 @@ impl WaylandDisplayHandle {
 
 /// Raw window handle for Wayland.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct WaylandWindowHandle {
     /// A pointer to a `wl_surface`.
     pub surface: NonNull<c_void>,
@@ -208,7 +208,7 @@ impl WaylandWindowHandle {
 
 /// Raw display handle for the Linux Kernel Mode Set/Direct Rendering Manager.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DrmDisplayHandle {
     /// The drm file descriptor.
     // TODO: Use `std::os::fd::RawFd`?
@@ -235,7 +235,7 @@ impl DrmDisplayHandle {
 
 /// Raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct DrmWindowHandle {
     /// The primary drm plane handle.
     pub plane: u32,
@@ -261,7 +261,7 @@ impl DrmWindowHandle {
 
 /// Raw display handle for the Linux Generic Buffer Manager.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct GbmDisplayHandle {
     /// The gbm device.
     pub gbm_device: NonNull<c_void>,
@@ -289,7 +289,7 @@ impl GbmDisplayHandle {
 
 /// Raw window handle for the Linux Generic Buffer Manager.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct GbmWindowHandle {
     /// The gbm surface.
     pub gbm_surface: NonNull<c_void>,

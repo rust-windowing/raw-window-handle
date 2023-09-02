@@ -3,7 +3,7 @@ use core::ptr::NonNull;
 
 /// Raw display handle for UIKit.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct UiKitDisplayHandle {}
 
 impl UiKitDisplayHandle {
@@ -23,7 +23,7 @@ impl UiKitDisplayHandle {
 
 /// Raw window handle for UIKit.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct UiKitWindowHandle {
     /// A pointer to an `UIView` object.
     pub ui_view: NonNull<c_void>,

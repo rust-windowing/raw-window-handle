@@ -3,7 +3,7 @@ use core::ptr::NonNull;
 
 /// Raw display handle for Haiku.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct HaikuDisplayHandle {}
 
 impl HaikuDisplayHandle {
@@ -23,7 +23,7 @@ impl HaikuDisplayHandle {
 
 /// Raw window handle for Haiku.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct HaikuWindowHandle {
     /// A pointer to a BWindow object
     pub b_window: NonNull<c_void>,

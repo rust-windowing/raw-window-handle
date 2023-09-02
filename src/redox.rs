@@ -3,7 +3,7 @@ use core::ptr::NonNull;
 
 /// Raw display handle for the Redox operating system.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct OrbitalDisplayHandle {}
 
 impl OrbitalDisplayHandle {
@@ -23,7 +23,7 @@ impl OrbitalDisplayHandle {
 
 /// Raw window handle for the Redox operating system.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct OrbitalWindowHandle {
     /// A pointer to an orbclient window.
     // TODO(madsmtm): I think this is a file descriptor, so perhaps it should

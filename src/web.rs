@@ -1,6 +1,8 @@
+use core::fmt;
+
 /// Raw display handle for the Web.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct WebDisplayHandle {}
 
 impl WebDisplayHandle {
@@ -20,7 +22,7 @@ impl WebDisplayHandle {
 
 /// Raw window handle for the Web.
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct WebWindowHandle {
     /// An ID value inserted into the [data attributes] of the canvas element as '`raw-handle`'.
     ///
@@ -60,24 +62,21 @@ impl WebWindowHandle {
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Wbg02CanvasWindowHandle {
-    /// The index of the canvas element in the [`wasm-bindgen`] table.
+    /// The object representing the [`HtmlCanvasElement`].
     ///
-    /// If this index if non-zero, it is implied that it represents an [`HtmlCanvasElement`]
-    /// that is registered in the [`wasm-bindgen`] table. It can be converted to and from the
-    /// [`HtmlCanvasElement`] using [`wasm-bindgen`]'s [`FromWasmAbi`] and [`IntoWasmAbi`] traits.
+    /// It is implied that this object is registered in the [`wasm-bindgen`] table and is an instance
+    /// of [`HtmlCanvasElement`].
     ///
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
-    /// [`FromWasmAbi`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/convert/trait.FromWasmAbi.html
-    /// [`IntoWasmAbi`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/convert/trait.IntoWasmAbi.html
-    pub idx: u32,
+    pub obj: Wbg02Object,
 }
 
 impl Wbg02CanvasWindowHandle {
-    pub fn empty() -> Self {
-        Self { idx: 0 }
+    /// Create a new handle to an [`HtmlCanvasElement`].
+    pub fn new(obj: Wbg02Object) -> Self {
+        Self { obj }
     }
 }
 
@@ -92,23 +91,89 @@ impl Wbg02CanvasWindowHandle {
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Wbg02OffscreenCanvasWindowHandle {
-    /// The index of the canvas element in the [`wasm-bindgen`] table.
+    /// The object representing the [`OffscreenCanvas`].
     ///
-    /// If this index if non-zero, it is implied that it represents an [`OffscreenCanvas`]
-    /// that is registered in the [`wasm-bindgen`] table. It can be converted to and from the
-    /// [`OffscreenCanvas`] using [`wasm-bindgen`]'s [`FromWasmAbi`] and [`IntoWasmAbi`] traits.
+    /// It is implied that this object is registered in the [`wasm-bindgen`] table and is an instance
+    /// of [`OffscreenCanvas`].
     ///
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
-    /// [`FromWasmAbi`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/convert/trait.FromWasmAbi.html
-    /// [`IntoWasmAbi`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/convert/trait.IntoWasmAbi.html
-    pub idx: u32,
+    pub obj: Wbg02Object,
 }
 
 impl Wbg02OffscreenCanvasWindowHandle {
-    pub fn empty() -> Self {
-        Self { idx: 0 }
+    /// Create a new handle to an [`OffscreenCanvas`].
+    pub fn new(obj: Wbg02Object) -> Self {
+        Self { obj }
+    }
+}
+
+/// An object currently stored in [`wasm-bindgen`].
+///
+/// This type represents an object stored in the [`wasm-bindgen`] object table. It represents some kind
+/// of underlying web object, such as an `HtmlCanvasElement` or an [`OffscreenCanvas`].
+///
+/// For WASM targets, with the unstable `unstable_web_handles` feature enabled, this type contains
+/// an index into the table corresponding to a JavaScript object. In other cases, this type is
+/// uninhabited.
+///
+/// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+/// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
+#[derive(Clone, PartialEq)]
+pub struct Wbg02Object {
+    /// For when `unstable_web_handles` is enabled, this is the index of the object in the
+    /// `wasm-bindgen` table.
+    #[cfg(all(target_family = "wasm", feature = "unstable_web_handles"))]
+    idx: wasm_bindgen::JsValue,
+
+    /// In other cases, this type is uninhabited.
+    #[cfg(not(all(target_family = "wasm", feature = "unstable_web_handles")))]
+    _uninhabited: core::convert::Infallible,
+}
+
+impl fmt::Debug for Wbg02Object {
+    fn fmt(&self, _f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        #[cfg(all(target_family = "wasm", feature = "unstable_web_handles"))]
+        {
+            _f.debug_tuple("Wbg02Object").field(&self.idx).finish()
+        }
+
+        #[cfg(not(all(target_family = "wasm", feature = "unstable_web_handles")))]
+        match self._uninhabited {}
+    }
+}
+
+#[cfg(all(target_family = "wasm", feature = "unstable_web_handles"))]
+/// These implementations are only available when `unstable_web_handles` is enabled.
+impl Wbg02Object {
+    /// Create a new `Wbg02Object` from a [`wasm-bindgen`] object.
+    ///
+    /// This function is unstable. Its signature may be changed or even removed outright without a
+    /// breaking version change.
+    ///
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    pub fn new(idx: wasm_bindgen::JsValue) -> Self {
+        Self { idx }
+    }
+
+    /// Get the index of the object in the [`wasm-bindgen`] table.
+    ///
+    /// This function is unstable. Its signature may be changed or even removed outright without a
+    /// breaking version change.
+    ///
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    pub fn idx(&self) -> &wasm_bindgen::JsValue {
+        &self.idx
+    }
+
+    /// Convert to the underlying [`wasm-bindgen`] index.
+    ///
+    /// This function is unstable. Its signature may be changed or even removed outright without a
+    /// breaking version change.
+    ///
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    pub fn into_idx(self) -> wasm_bindgen::JsValue {
+        self.idx
     }
 }
