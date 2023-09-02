@@ -54,9 +54,11 @@ impl WebWindowHandle {
 /// Raw window handle for a Web canvas registered via [`wasm-bindgen`].
 ///
 /// ## Construction
-/// ```
-/// # use raw_window_handle::Wbg02CanvasWindowHandle;
-/// let mut window_handle = Wbg02CanvasWindowHandle::empty();
+/// ```no_run
+/// # use raw_window_handle::{Wbg02CanvasWindowHandle, Wbg02Object};
+/// # fn get_canvas() -> Wbg02Object { unimplemented!() }
+/// let obj: Wbg02Object = get_canvas();
+/// let mut window_handle = Wbg02CanvasWindowHandle::new(obj);
 /// /* set fields */
 /// ```
 ///
@@ -70,11 +72,14 @@ pub struct Wbg02CanvasWindowHandle {
     /// of [`HtmlCanvasElement`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     pub obj: Wbg02Object,
 }
 
 impl Wbg02CanvasWindowHandle {
     /// Create a new handle to an [`HtmlCanvasElement`].
+    ///
+    /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
     pub fn new(obj: Wbg02Object) -> Self {
         Self { obj }
     }
@@ -83,9 +88,11 @@ impl Wbg02CanvasWindowHandle {
 /// Raw window handle for a Web offscreen canvas registered via [`wasm-bindgen`].
 ///
 /// ## Construction
-/// ```
-/// # use raw_window_handle::Wbg02OffscreenCanvasWindowHandle;
-/// let mut window_handle = Wbg02OffscreenCanvasWindowHandle::empty();
+/// ```no_run
+/// # use raw_window_handle::{Wbg02OffscreenCanvasWindowHandle, Wbg02Object};
+/// # fn get_offscreen_canvas() -> Wbg02Object { unimplemented!() }
+/// let obj: Wbg02Object = get_offscreen_canvas();
+/// let mut window_handle = Wbg02OffscreenCanvasWindowHandle::new(obj);
 /// /* set fields */
 /// ```
 ///
@@ -99,11 +106,14 @@ pub struct Wbg02OffscreenCanvasWindowHandle {
     /// of [`OffscreenCanvas`].
     ///
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     pub obj: Wbg02Object,
 }
 
 impl Wbg02OffscreenCanvasWindowHandle {
     /// Create a new handle to an [`OffscreenCanvas`].
+    ///
+    /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
     pub fn new(obj: Wbg02Object) -> Self {
         Self { obj }
     }
@@ -153,6 +163,10 @@ impl Wbg02Object {
     /// breaking version change.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles")))
+    )]
     pub fn new(idx: wasm_bindgen::JsValue) -> Self {
         Self { idx }
     }
@@ -163,6 +177,10 @@ impl Wbg02Object {
     /// breaking version change.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles")))
+    )]
     pub fn idx(&self) -> &wasm_bindgen::JsValue {
         &self.idx
     }
@@ -173,6 +191,10 @@ impl Wbg02Object {
     /// breaking version change.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    #[cfg_attr(
+        docsrs,
+        doc(cfg(all(target_family = "wasm", feature = "unstable_web_handles")))
+    )]
     pub fn into_idx(self) -> wasm_bindgen::JsValue {
         self.idx
     }

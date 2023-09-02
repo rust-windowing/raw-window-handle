@@ -53,7 +53,8 @@ pub use unix::{
     WaylandWindowHandle, XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle,
 };
 pub use web::{
-    Wbg02CanvasWindowHandle, Wbg02OffscreenCanvasWindowHandle, WebDisplayHandle, WebWindowHandle,
+    Wbg02CanvasWindowHandle, Wbg02Object, Wbg02OffscreenCanvasWindowHandle, WebDisplayHandle,
+    WebWindowHandle,
 };
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 
