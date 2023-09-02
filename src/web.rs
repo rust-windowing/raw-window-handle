@@ -71,14 +71,19 @@ impl WebCanvasWindowHandle {
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
     ///
-    /// ## Example
-    /// ```no_run
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
     /// # use raw_window_handle::WebCanvasWindowHandle;
-    /// # use core::{ffi::c_void, ptr::NonNull};
-    /// # fn get_canvas() -> NonNull<c_void> { unimplemented!() }
-    /// let obj: NonNull<c_void> = get_canvas();
-    /// let mut window_handle = WebCanvasWindowHandle::new(obj);
-    /// /* set fields */
+    /// # type HtmlCanvasElement = ();
+    /// # type JsValue = ();
+    /// let canvas: &HtmlCanvasElement;
+    /// # canvas = &();
+    /// let value: &JsValue = &canvas; // Deref to `JsValue`
+    /// let obj: NonNull<c_void> = NonNull::from(value).cast();
+    /// let mut handle = WebCanvasWindowHandle::new(obj);
     /// ```
     pub fn new(obj: NonNull<c_void>) -> Self {
         Self { obj }
@@ -140,17 +145,22 @@ pub struct WebOffscreenCanvasWindowHandle {
 impl WebOffscreenCanvasWindowHandle {
     /// Create a new handle to a pointer to an [`OffscreenCanvas`].
     ///
-    /// ## Construction
-    /// ```no_run
-    /// # use raw_window_handle::WebOffscreenCanvasWindowHandle;
-    /// # use core::{ffi::c_void, ptr::NonNull};
-    /// # fn get_offscreen_canvas() -> NonNull<c_void> { unimplemented!() }
-    /// let obj: NonNull<c_void> = get_offscreen_canvas();
-    /// let mut window_handle = WebOffscreenCanvasWindowHandle::new(obj);
-    /// /* set fields */
-    /// ```
-    ///
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::WebOffscreenCanvasWindowHandle;
+    /// # type OffscreenCanvas = ();
+    /// # type JsValue = ();
+    /// let canvas: &OffscreenCanvas;
+    /// # canvas = &();
+    /// let value: &JsValue = &canvas; // Deref to `JsValue`
+    /// let obj: NonNull<c_void> = NonNull::from(value).cast();
+    /// let mut handle = WebOffscreenCanvasWindowHandle::new(obj);
+    /// ```
     pub fn new(obj: NonNull<c_void>) -> Self {
         Self { obj }
     }
