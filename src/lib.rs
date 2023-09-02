@@ -1,6 +1,7 @@
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::new_without_default)]
+#![deny(unsafe_op_in_unsafe_fn)]
 
 //! Interoperability library for Rust Windowing applications.
 //!

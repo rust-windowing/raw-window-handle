@@ -58,16 +58,15 @@ impl WebWindowHandle {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebCanvasWindowHandle {
-    /// The pointer to the [`JsValue`] of an [`HtmlCanvasElement`].
+    /// A pointer to the [`JsValue`] of an [`HtmlCanvasElement`].
     ///
-    /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+    /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
     pub obj: NonNull<c_void>,
 }
 
 impl WebCanvasWindowHandle {
-    /// Create a new handle to a pointer to [`HtmlCanvasElement`].
+    /// Create a new handle from a pointer to [`HtmlCanvasElement`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
     ///
@@ -97,53 +96,41 @@ impl WebCanvasWindowHandle {
 )]
 /// These implementations are only available when `wasm-bindgen-0-2` is enabled.
 impl WebCanvasWindowHandle {
-    /// Create a new `Wbg02CanvasWindowHandle` from a [`wasm-bindgen`] object.
+    /// Create a new `WebCanvasWindowHandle` from a [`wasm_bindgen::JsValue`].
     ///
-    /// This function is unstable. Its signature may be changed or even removed outright without a
-    /// breaking version change.
-    ///
-    /// # Safety
-    ///
-    /// The [`JsValue`] must refer to an [`HtmlCanvasElement`], and the lifetime must be longer than
-    /// the `Wbg02CanvasWindowHandle` lives for.
-    ///
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    /// The `JsValue` should refer to a `HtmlCanvasElement`, and the lifetime
+    /// of the value should be at least as long as the lifetime of this.
     pub fn from_wasm_bindgen_0_2(js_value: &wasm_bindgen::JsValue) -> Self {
         Self::new(NonNull::from(js_value).cast())
     }
 
-    /// Convert to the underlying [`wasm-bindgen`] index.
-    ///
-    /// This function is unstable. Its signature may be changed or even removed outright without a
-    /// breaking version change.
+    /// Convert to the underlying [`wasm_bindgen::JsValue`].
     ///
     /// # Safety
     ///
-    /// The lifetime from the `from_wasm_bindgen_0_2` function must still be valid, and the
-    /// underlying pointer must still be a [`wasm_bindgen`] object.
-    ///
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    /// The inner pointer must be valid. This is ensured if this handle was
+    /// borrowed from [`WindowHandle`][crate::WindowHandle].
     pub unsafe fn as_wasm_bindgen_0_2(&self) -> &wasm_bindgen::JsValue {
-        self.obj.cast().as_ref()
+        unsafe { self.obj.cast().as_ref() }
     }
 }
 
-/// Raw window handle for a Web offscreen canvas registered via [`wasm-bindgen`].
+/// Raw window handle for a Web offscreen canvas registered via
+/// [`wasm-bindgen`].
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebOffscreenCanvasWindowHandle {
-    /// The pointer to the [`JsValue`] of an [`OffscreenElement`].
+    /// A pointer to the [`JsValue`] of an [`OffscreenCanvas`].
     ///
-    /// [`OffscreenElement`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenElement.html
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+    /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
     pub obj: NonNull<c_void>,
 }
 
 impl WebOffscreenCanvasWindowHandle {
-    /// Create a new handle to a pointer to an [`OffscreenCanvas`].
+    /// Create a new handle from a pointer to an [`OffscreenCanvas`].
     ///
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
     ///
@@ -173,33 +160,22 @@ impl WebOffscreenCanvasWindowHandle {
 )]
 /// These implementations are only available when `wasm-bindgen-0-2` is enabled.
 impl WebOffscreenCanvasWindowHandle {
-    /// Create a new `Wbg02OffscreenCanvasWindowHandle` from a [`wasm-bindgen`] object.
+    /// Create a new `WebOffscreenCanvasWindowHandle` from a
+    /// [`wasm_bindgen::JsValue`].
     ///
-    /// This function is unstable. Its signature may be changed or even removed outright without a
-    /// breaking version change.
-    ///
-    /// # Safety
-    ///
-    /// The [`JsValue`] must refer to an [`OffscreenCanvas`], and the lifetime must be longer than
-    /// the `Wbg02OffscreenCanvasWindowHandle` lives for.
-    ///
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    /// The `JsValue` should refer to a `HtmlCanvasElement`, and the lifetime
+    /// of the value should be at least as long as the lifetime of this.
     pub fn from_wasm_bindgen_0_2(js_value: &wasm_bindgen::JsValue) -> Self {
         Self::new(NonNull::from(js_value).cast())
     }
 
-    /// Convert to the underlying [`wasm-bindgen`] index.
-    ///
-    /// This function is unstable. Its signature may be changed or even removed outright without a
-    /// breaking version change.
+    /// Convert to the underlying [`wasm_bindgen::JsValue`].
     ///
     /// # Safety
     ///
-    /// The lifetime from the `from_wasm_bindgen_0_2` function must still be valid, and the
-    /// underlying pointer must still be a [`wasm_bindgen`] object.
-    ///
-    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    /// The inner pointer must be valid. This is ensured if this handle was
+    /// borrowed from [`WindowHandle`][crate::WindowHandle].
     pub unsafe fn as_wasm_bindgen_0_2(&self) -> &wasm_bindgen::JsValue {
-        self.obj.cast().as_ref()
+        unsafe { self.obj.cast().as_ref() }
     }
 }
