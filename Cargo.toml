@@ -15,14 +15,8 @@ rust-version = "1.64"
 alloc = []
 std = ["alloc"]
 
-# Unstable feature to allow the use of `wasm-bindgen` in the `wasm` target.
-# 
-# This is radioactive semver-wise. Do not rely on this in stable code. Any code enabled by this
-# feature can be changed or removed in a breaking way at any time. In fact, this feature could
-# be removed entirely tomorrow.
-# 
-# The point being: rely on this at your own peril.
-unstable_web_handles_wbg_02 = ["wasm-bindgen", "std"]
+# Allow conversion methods to/from WASM types using `wasm-bindgen` v0.2.
+wasm-bindgen-0-2 = ["wasm-bindgen", "std"]
 
 [target.'cfg(target_family = "wasm")'.dependencies.wasm-bindgen]
 version = "0.2.87"

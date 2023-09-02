@@ -57,7 +57,7 @@ impl WebWindowHandle {
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Wbg02CanvasWindowHandle {
+pub struct WebCanvasWindowHandle {
     /// The pointer to the [`JsValue`] of an [`HtmlCanvasElement`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
@@ -66,18 +66,18 @@ pub struct Wbg02CanvasWindowHandle {
     pub obj: NonNull<c_void>,
 }
 
-impl Wbg02CanvasWindowHandle {
+impl WebCanvasWindowHandle {
     /// Create a new handle to a pointer to [`HtmlCanvasElement`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
     ///
     /// ## Example
     /// ```no_run
-    /// # use raw_window_handle::Wbg02CanvasWindowHandle;
+    /// # use raw_window_handle::WebCanvasWindowHandle;
     /// # use core::{ffi::c_void, ptr::NonNull};
     /// # fn get_canvas() -> NonNull<c_void> { unimplemented!() }
     /// let obj: NonNull<c_void> = get_canvas();
-    /// let mut window_handle = Wbg02CanvasWindowHandle::new(obj);
+    /// let mut window_handle = WebCanvasWindowHandle::new(obj);
     /// /* set fields */
     /// ```
     pub fn new(obj: NonNull<c_void>) -> Self {
@@ -85,13 +85,13 @@ impl Wbg02CanvasWindowHandle {
     }
 }
 
-#[cfg(all(target_family = "wasm", feature = "unstable-wasm-bindgen-0-2"))]
+#[cfg(all(target_family = "wasm", feature = "wasm-bindgen-0-2"))]
 #[cfg_attr(
     docsrs,
-    doc(cfg(all(target_family = "wasm", feature = "unstable-wasm-bindgen-0-2")))
+    doc(cfg(all(target_family = "wasm", feature = "wasm-bindgen-0-2")))
 )]
-/// These implementations are only available when `unstable-wasm-bindgen-0-2` is enabled.
-impl Wbg02CanvasWindowHandle {
+/// These implementations are only available when `wasm-bindgen-0-2` is enabled.
+impl WebCanvasWindowHandle {
     /// Create a new `Wbg02CanvasWindowHandle` from a [`wasm-bindgen`] object.
     ///
     /// This function is unstable. Its signature may be changed or even removed outright without a
@@ -128,7 +128,7 @@ impl Wbg02CanvasWindowHandle {
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Wbg02OffscreenCanvasWindowHandle {
+pub struct WebOffscreenCanvasWindowHandle {
     /// The pointer to the [`JsValue`] of an [`OffscreenElement`].
     ///
     /// [`OffscreenElement`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenElement.html
@@ -137,16 +137,16 @@ pub struct Wbg02OffscreenCanvasWindowHandle {
     pub obj: NonNull<c_void>,
 }
 
-impl Wbg02OffscreenCanvasWindowHandle {
+impl WebOffscreenCanvasWindowHandle {
     /// Create a new handle to a pointer to an [`OffscreenCanvas`].
     ///
     /// ## Construction
     /// ```no_run
-    /// # use raw_window_handle::Wbg02OffscreenCanvasWindowHandle;
+    /// # use raw_window_handle::WebOffscreenCanvasWindowHandle;
     /// # use core::{ffi::c_void, ptr::NonNull};
     /// # fn get_offscreen_canvas() -> NonNull<c_void> { unimplemented!() }
     /// let obj: NonNull<c_void> = get_offscreen_canvas();
-    /// let mut window_handle = Wbg02OffscreenCanvasWindowHandle::new(obj);
+    /// let mut window_handle = WebOffscreenCanvasWindowHandle::new(obj);
     /// /* set fields */
     /// ```
     ///
@@ -156,13 +156,13 @@ impl Wbg02OffscreenCanvasWindowHandle {
     }
 }
 
-#[cfg(all(target_family = "wasm", feature = "unstable-wasm-bindgen-0-2"))]
+#[cfg(all(target_family = "wasm", feature = "wasm-bindgen-0-2"))]
 #[cfg_attr(
     docsrs,
-    doc(cfg(all(target_family = "wasm", feature = "unstable-wasm-bindgen-0-2")))
+    doc(cfg(all(target_family = "wasm", feature = "wasm-bindgen-0-2")))
 )]
-/// These implementations are only available when `unstable-wasm-bindgen-0-2` is enabled.
-impl Wbg02OffscreenCanvasWindowHandle {
+/// These implementations are only available when `wasm-bindgen-0-2` is enabled.
+impl WebOffscreenCanvasWindowHandle {
     /// Create a new `Wbg02OffscreenCanvasWindowHandle` from a [`wasm-bindgen`] object.
     ///
     /// This function is unstable. Its signature may be changed or even removed outright without a

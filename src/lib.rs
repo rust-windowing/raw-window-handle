@@ -53,7 +53,7 @@ pub use unix::{
     WaylandWindowHandle, XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle,
 };
 pub use web::{
-    Wbg02CanvasWindowHandle, Wbg02OffscreenCanvasWindowHandle, WebDisplayHandle, WebWindowHandle,
+    WebCanvasWindowHandle, WebDisplayHandle, WebOffscreenCanvasWindowHandle, WebWindowHandle,
 };
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 
@@ -198,14 +198,14 @@ pub enum RawWindowHandle {
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    Wgb02Canvas(Wbg02CanvasWindowHandle),
+    WebCanvas(WebCanvasWindowHandle),
     /// A raw window handle for a Web offscreen canvas registered via [`wasm-bindgen`].
     ///
     /// ## Availability Hints
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    Wgb02OffscreenCanvas(Wbg02OffscreenCanvasWindowHandle),
+    WebOffscreenCanvas(WebOffscreenCanvasWindowHandle),
     /// A raw window handle for Android NDK.
     ///
     /// ## Availability Hints
