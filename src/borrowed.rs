@@ -84,7 +84,7 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
 ///
 /// Get the underlying raw display handle with the [`HasRawDisplayHandle`] trait.
 #[repr(transparent)]
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 pub struct DisplayHandle<'a> {
     raw: RawDisplayHandle,
     _marker: PhantomData<&'a *const ()>,
@@ -112,7 +112,7 @@ impl<'a> DisplayHandle<'a> {
 
 unsafe impl HasRawDisplayHandle for DisplayHandle<'_> {
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
-        Ok(self.raw.clone())
+        Ok(self.raw)
     }
 }
 
@@ -209,7 +209,7 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 ///
 /// This handle is guaranteed to be safe and valid. Get the underlying raw window handle with the
 /// [`HasRawWindowHandle`] trait.
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 pub struct WindowHandle<'a> {
     raw: RawWindowHandle,
     _marker: PhantomData<&'a *const ()>,
@@ -237,7 +237,7 @@ impl<'a> WindowHandle<'a> {
 
 unsafe impl HasRawWindowHandle for WindowHandle<'_> {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
-        Ok(self.raw.clone())
+        Ok(self.raw)
     }
 }
 
