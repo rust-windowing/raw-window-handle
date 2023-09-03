@@ -209,7 +209,7 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 ///
 /// This handle is guaranteed to be safe and valid. Get the underlying raw window handle with the
 /// [`HasRawWindowHandle`] trait.
-#[derive(PartialEq, Eq, Hash, Clone)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct WindowHandle<'a> {
     raw: RawWindowHandle,
     _marker: PhantomData<&'a *const ()>,
@@ -237,13 +237,13 @@ impl<'a> WindowHandle<'a> {
 
 unsafe impl HasRawWindowHandle for WindowHandle<'_> {
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
-        Ok(self.raw.clone())
+        Ok(self.raw)
     }
 }
 
 impl HasWindowHandle for WindowHandle<'_> {
     fn window_handle(&self) -> Result<Self, HandleError> {
-        Ok(self.clone())
+        Ok(*self)
     }
 }
 

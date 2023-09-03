@@ -40,19 +40,15 @@ jobs:
         with:
           rust-version: ${{ matrix.rust_version }}
 
-      - run: rustup target add x86_64-linux-android
+      - run: rustup target add wasm32-unknown-unknown
 
       - name: Check documentation
         run: cargo doc --no-deps --document-private-items
 
+      - uses: taiki-e/install-action@cargo-hack
+
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo hack test --feature-powerset
 
-      - name: Run tests with std
-        run: cargo test --verbose --features std
-
-      - name: Check on Android
-        run: cargo check --verbose --target x86_64-linux-android
-
-      - name: Check on Android with std
-        run: cargo check --verbose --target x86_64-linux-android --features std
+      - name: Run tests for wasm32-unknown-unknown
+        run: cargo hack check --target wasm32-unknown-unknown --feature-powerset

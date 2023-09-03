@@ -1,5 +1,7 @@
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![allow(clippy::new_without_default)]
+#![deny(unsafe_op_in_unsafe_fn)]
 
 //! Interoperability library for Rust Windowing applications.
 //!
@@ -51,7 +53,9 @@ pub use unix::{
     DrmDisplayHandle, DrmWindowHandle, GbmDisplayHandle, GbmWindowHandle, WaylandDisplayHandle,
     WaylandWindowHandle, XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle,
 };
-pub use web::{WebDisplayHandle, WebWindowHandle};
+pub use web::{
+    WebCanvasWindowHandle, WebDisplayHandle, WebOffscreenCanvasWindowHandle, WebWindowHandle,
+};
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 
 use core::fmt;
@@ -120,7 +124,7 @@ unsafe impl<T: HasRawWindowHandle + ?Sized> HasRawWindowHandle for alloc::sync::
 /// [`RawWindowHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
 #[non_exhaustive]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
     /// A raw window handle for UIKit (Apple's non-macOS windowing library).
     ///
@@ -189,6 +193,20 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
     Web(WebWindowHandle),
+    /// A raw window handle for a Web canvas registered via [`wasm-bindgen`].
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
+    ///
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    WebCanvas(WebCanvasWindowHandle),
+    /// A raw window handle for a Web offscreen canvas registered via [`wasm-bindgen`].
+    ///
+    /// ## Availability Hints
+    /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
+    ///
+    /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+    WebOffscreenCanvas(WebOffscreenCanvasWindowHandle),
     /// A raw window handle for Android NDK.
     ///
     /// ## Availability Hints
@@ -431,5 +449,11 @@ from_impl!(RawWindowHandle, Gbm, GbmWindowHandle);
 from_impl!(RawWindowHandle, Win32, Win32WindowHandle);
 from_impl!(RawWindowHandle, WinRt, WinRtWindowHandle);
 from_impl!(RawWindowHandle, Web, WebWindowHandle);
+from_impl!(RawWindowHandle, WebCanvas, WebCanvasWindowHandle);
+from_impl!(
+    RawWindowHandle,
+    WebOffscreenCanvas,
+    WebOffscreenCanvasWindowHandle
+);
 from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
