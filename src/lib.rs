@@ -449,5 +449,11 @@ from_impl!(RawWindowHandle, Gbm, GbmWindowHandle);
 from_impl!(RawWindowHandle, Win32, Win32WindowHandle);
 from_impl!(RawWindowHandle, WinRt, WinRtWindowHandle);
 from_impl!(RawWindowHandle, Web, WebWindowHandle);
+from_impl!(RawWindowHandle, WebCanvas, WebCanvasWindowHandle);
+from_impl!(
+    RawWindowHandle,
+    WebOffscreenCanvas,
+    WebOffscreenCanvasWindowHandle
+);
 from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
