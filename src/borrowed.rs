@@ -257,13 +257,6 @@ impl<'a> WindowHandle<'a> {
     }
 }
 
-#[allow(deprecated)]
-unsafe impl crate::HasRawWindowHandle for WindowHandle<'_> {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
-        Ok(self.raw)
-    }
-}
-
 impl AsRef<RawWindowHandle> for WindowHandle<'_> {
     fn as_ref(&self) -> &RawWindowHandle {
         &self.raw
