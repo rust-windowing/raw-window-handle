@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.6.0 (2023-XX-XX)
+## 0.6.0 (2023-09-30)
 
 * **Breaking:** Raw pointer handles now use `NonNull` where appropriate, to avoid null pointer dereferences.
 * **Breaking:** Renamed `empty` methods to `new`, and take parameters in most of those, to better match normal Rust semantics.
