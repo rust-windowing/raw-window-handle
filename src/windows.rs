@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::num::NonZeroIsize;
 use core::ptr::NonNull;
 
@@ -54,6 +55,7 @@ pub struct Win32WindowHandle {
     pub hwnd: NonZeroIsize,
     /// The `GWLP_HINSTANCE` associated with this type's `HWND`.
     pub hinstance: Option<NonZeroIsize>,
+    _marker: PhantomData<*const ()>,
 }
 
 impl Win32WindowHandle {
@@ -80,6 +82,7 @@ impl Win32WindowHandle {
         Self {
             hwnd,
             hinstance: None,
+            _marker: PhantomData,
         }
     }
 }

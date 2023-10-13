@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
@@ -55,6 +56,7 @@ pub struct WebWindowHandle {
     ///
     /// [data attributes]: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/data-*
     pub id: u32,
+    _marker: PhantomData<*const ()>,
 }
 
 impl WebWindowHandle {
@@ -70,7 +72,10 @@ impl WebWindowHandle {
     /// let handle = WebWindowHandle::new(id);
     /// ```
     pub fn new(id: u32) -> Self {
-        Self { id }
+        Self {
+            id,
+            _marker: PhantomData,
+        }
     }
 }
 
