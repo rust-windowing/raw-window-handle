@@ -44,6 +44,10 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for AppKit.
+///
+/// Note that `NSView` can only be accessed from the main thread of the
+/// application. This struct is `!Send` and `!Sync` to help with ensuring
+/// that.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AppKitWindowHandle {
