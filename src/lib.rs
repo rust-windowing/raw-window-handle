@@ -471,4 +471,13 @@ mod tests {
         assert_not_impl_any!(AndroidNdkWindowHandle: Send, Sync);
         assert_not_impl_any!(HaikuWindowHandle: Send, Sync);
     }
+
+    #[allow(deprecated, unused)]
+    fn assert_object_safe(
+        _: &dyn HasRawWindowHandle,
+        _: &dyn HasRawDisplayHandle,
+        _: &dyn HasWindowHandle,
+        _: &dyn HasDisplayHandle,
+    ) {
+    }
 }
