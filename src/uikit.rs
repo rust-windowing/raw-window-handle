@@ -22,6 +22,15 @@ impl UiKitDisplayHandle {
 }
 
 /// Raw window handle for UIKit.
+///
+/// Note that while this is `Send + Sync`, it is only usable from the main
+/// thread. Any usage of `UIView` and `UIViewController` outside the main
+/// thread may be undefined behaviour, unless explicitly documented
+/// otherwise.
+///
+/// You must check whether the thread is the main thread before accessing
+/// this, and if it is not, you should execute your code to access the view
+/// and view controller on the main thread instead using `libdispatch`.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct UiKitWindowHandle {
@@ -30,6 +39,12 @@ pub struct UiKitWindowHandle {
     /// A pointer to an `UIViewController` object, if the view has one.
     pub ui_view_controller: Option<NonNull<c_void>>,
 }
+
+// SAFETY: Only accessible from the main thread.
+//
+// Acts as-if the view is wrapped in `MainThreadBound<T>`.
+unsafe impl Send for UiKitWindowHandle {}
+unsafe impl Sync for UiKitWindowHandle {}
 
 impl UiKitWindowHandle {
     /// Create a new handle to a view.

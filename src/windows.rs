@@ -63,12 +63,19 @@ impl Win32WindowHandle {
 }
 
 /// Raw window handle for WinRT.
+///
+/// This handle is `Send + Sync`, but it is unknown whether that is actually
+/// sound.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WinRtWindowHandle {
     /// A WinRT `CoreWindow` handle.
     pub core_window: NonNull<c_void>,
 }
+
+// SAFETY: Unknown.
+unsafe impl Send for WinRtWindowHandle {}
+unsafe impl Sync for WinRtWindowHandle {}
 
 impl WinRtWindowHandle {
     /// Create a new handle to a window.

@@ -76,6 +76,10 @@ pub struct WebCanvasWindowHandle {
     pub obj: NonNull<c_void>,
 }
 
+// SAFETY: Only accessible from the main thread.
+unsafe impl Send for WebCanvasWindowHandle {}
+unsafe impl Sync for WebCanvasWindowHandle {}
+
 impl WebCanvasWindowHandle {
     /// Create a new handle from a pointer to [`HtmlCanvasElement`].
     ///
@@ -121,6 +125,8 @@ impl WebCanvasWindowHandle {
     ///
     /// The inner pointer must be valid. This is ensured if this handle was
     /// borrowed from [`WindowHandle`][crate::WindowHandle].
+    ///
+    /// Additionally, the current thread must be the main thread.
     pub unsafe fn as_wasm_bindgen_0_2(&self) -> &wasm_bindgen::JsValue {
         unsafe { self.obj.cast().as_ref() }
     }
@@ -130,6 +136,10 @@ impl WebCanvasWindowHandle {
 /// [`wasm-bindgen`].
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+///
+/// Note that while this is `Send + Sync`, it is only usable from the main
+/// thread. Any usage of `JsValue` outside the main thread is undefined
+/// behaviour.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebOffscreenCanvasWindowHandle {
@@ -144,6 +154,10 @@ pub struct WebOffscreenCanvasWindowHandle {
     // SAFETY: See WebCanvasWindowHandle.
     pub obj: NonNull<c_void>,
 }
+
+// SAFETY: Only accessible from the main thread.
+unsafe impl Send for WebOffscreenCanvasWindowHandle {}
+unsafe impl Sync for WebOffscreenCanvasWindowHandle {}
 
 impl WebOffscreenCanvasWindowHandle {
     /// Create a new handle from a pointer to an [`OffscreenCanvas`].
@@ -191,6 +205,8 @@ impl WebOffscreenCanvasWindowHandle {
     ///
     /// The inner pointer must be valid. This is ensured if this handle was
     /// borrowed from [`WindowHandle`][crate::WindowHandle].
+    ///
+    /// Additionally, the current thread must be the main thread.
     pub unsafe fn as_wasm_bindgen_0_2(&self) -> &wasm_bindgen::JsValue {
         unsafe { self.obj.cast().as_ref() }
     }

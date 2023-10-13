@@ -420,3 +420,44 @@ from_impl!(
 );
 from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
+
+#[cfg(test)]
+mod tests {
+    use core::panic::{RefUnwindSafe, UnwindSafe};
+
+    use super::*;
+
+    #[test]
+    fn auto_traits() {
+        fn assert_send_sync<T: Send + Sync>() {}
+        fn assert_unwindsafe<T: UnwindSafe + RefUnwindSafe>() {}
+        fn assert_unpin<T: Unpin>() {}
+
+        assert_send_sync::<RawDisplayHandle>();
+        assert_send_sync::<DisplayHandle<'_>>();
+        assert_unwindsafe::<RawDisplayHandle>();
+        assert_unwindsafe::<DisplayHandle<'_>>();
+        assert_unpin::<RawDisplayHandle>();
+        assert_unpin::<DisplayHandle<'_>>();
+
+        assert_send_sync::<RawWindowHandle>();
+        assert_send_sync::<WindowHandle<'_>>();
+        assert_unwindsafe::<RawWindowHandle>();
+        assert_unwindsafe::<WindowHandle<'_>>();
+        assert_unpin::<RawWindowHandle>();
+        assert_unpin::<WindowHandle<'_>>();
+
+        assert_send_sync::<HandleError>();
+        assert_unwindsafe::<HandleError>();
+        assert_unpin::<HandleError>();
+    }
+
+    #[allow(deprecated, unused)]
+    fn assert_object_safe(
+        _: &dyn HasRawWindowHandle,
+        _: &dyn HasRawDisplayHandle,
+        _: &dyn HasWindowHandle,
+        _: &dyn HasDisplayHandle,
+    ) {
+    }
+}

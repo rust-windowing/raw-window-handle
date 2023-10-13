@@ -20,6 +20,12 @@ pub struct XlibDisplayHandle {
     pub screen: c_int,
 }
 
+// SAFETY: Xlib `Display` is thread safe.
+//
+// TODO: Documentation for this?
+unsafe impl Send for XlibDisplayHandle {}
+unsafe impl Sync for XlibDisplayHandle {}
+
 impl XlibDisplayHandle {
     /// Create a new handle to a display.
     ///
@@ -94,6 +100,12 @@ pub struct XcbDisplayHandle {
     pub screen: c_int,
 }
 
+// SAFETY: `xcb_connection_t` is thread safe.
+//
+// TODO: Documentation for this?
+unsafe impl Send for XcbDisplayHandle {}
+unsafe impl Sync for XcbDisplayHandle {}
+
 impl XcbDisplayHandle {
     /// Create a new handle to a connection and screen.
     ///
@@ -158,6 +170,12 @@ pub struct WaylandDisplayHandle {
     pub display: NonNull<c_void>,
 }
 
+// SAFETY: `wl_display` is thread safe.
+//
+// TODO: Documentation for this?
+unsafe impl Send for WaylandDisplayHandle {}
+unsafe impl Sync for WaylandDisplayHandle {}
+
 impl WaylandDisplayHandle {
     /// Create a new display handle.
     ///
@@ -185,6 +203,12 @@ pub struct WaylandWindowHandle {
     /// A pointer to a `wl_surface`.
     pub surface: NonNull<c_void>,
 }
+
+// SAFETY: `wl_surface` is thread safe.
+//
+// TODO: Documentation for this?
+unsafe impl Send for WaylandWindowHandle {}
+unsafe impl Sync for WaylandWindowHandle {}
 
 impl WaylandWindowHandle {
     /// Create a new handle to a surface.
@@ -267,6 +291,12 @@ pub struct GbmDisplayHandle {
     pub gbm_device: NonNull<c_void>,
 }
 
+// SAFETY: GBM is thread safe.
+//
+// TODO: Documentation for this?
+unsafe impl Send for GbmDisplayHandle {}
+unsafe impl Sync for GbmDisplayHandle {}
+
 impl GbmDisplayHandle {
     /// Create a new handle to a device.
     ///
@@ -294,6 +324,12 @@ pub struct GbmWindowHandle {
     /// The gbm surface.
     pub gbm_surface: NonNull<c_void>,
 }
+
+// SAFETY: GBM is thread safe.
+//
+// TODO: Documentation for this?
+unsafe impl Send for GbmWindowHandle {}
+unsafe impl Sync for GbmWindowHandle {}
 
 impl GbmWindowHandle {
     /// Create a new handle to a surface.

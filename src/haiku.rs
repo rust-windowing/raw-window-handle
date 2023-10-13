@@ -31,6 +31,12 @@ pub struct HaikuWindowHandle {
     pub b_direct_window: Option<NonNull<c_void>>,
 }
 
+// SAFETY: `BWindow` and `BDirectWindow` are thread safe.
+//
+// TODO: Documentation for this.
+unsafe impl Send for HaikuWindowHandle {}
+unsafe impl Sync for HaikuWindowHandle {}
+
 impl HaikuWindowHandle {
     /// Create a new handle to a window.
     ///

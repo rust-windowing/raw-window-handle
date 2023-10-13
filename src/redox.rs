@@ -31,6 +31,13 @@ pub struct OrbitalWindowHandle {
     pub window: NonNull<c_void>,
 }
 
+// SAFETY: `orbclient`` windows are essentially just a file descriptor, and
+// are hence thread safe.
+//
+// TODO: Documentation for this.
+unsafe impl Send for OrbitalWindowHandle {}
+unsafe impl Sync for OrbitalWindowHandle {}
+
 impl OrbitalWindowHandle {
     /// Create a new handle to a window.
     ///

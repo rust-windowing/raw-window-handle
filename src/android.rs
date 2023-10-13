@@ -29,6 +29,10 @@ pub struct AndroidNdkWindowHandle {
     pub a_native_window: NonNull<c_void>,
 }
 
+// SAFETY: `ndk::native_window::NativeWindow` is `Send + Sync`.
+unsafe impl Send for AndroidNdkWindowHandle {}
+unsafe impl Sync for AndroidNdkWindowHandle {}
+
 impl AndroidNdkWindowHandle {
     /// Create a new handle to an `ANativeWindow`.
     ///
