@@ -420,3 +420,64 @@ from_impl!(
 );
 from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
+
+#[cfg(test)]
+mod tests {
+    use core::panic::{RefUnwindSafe, UnwindSafe};
+    use static_assertions::{assert_impl_all, assert_not_impl_any};
+
+    use super::*;
+
+    #[test]
+    fn auto_traits() {
+        assert_impl_all!(RawDisplayHandle: UnwindSafe, RefUnwindSafe, Unpin);
+        assert_not_impl_any!(RawDisplayHandle: Send, Sync);
+        assert_impl_all!(DisplayHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
+        assert_not_impl_any!(DisplayHandle<'_>: Send, Sync);
+        assert_impl_all!(RawWindowHandle: UnwindSafe, RefUnwindSafe, Unpin);
+        assert_not_impl_any!(RawWindowHandle: Send, Sync);
+        assert_impl_all!(WindowHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
+        assert_not_impl_any!(WindowHandle<'_>: Send, Sync);
+        assert_impl_all!(HandleError: Send, Sync, UnwindSafe, RefUnwindSafe, Unpin);
+
+        // TODO: Unsure if some of these should not actually be Send + Sync
+        assert_impl_all!(UiKitDisplayHandle: Send, Sync);
+        assert_impl_all!(AppKitDisplayHandle: Send, Sync);
+        assert_impl_all!(OrbitalDisplayHandle: Send, Sync);
+        assert_not_impl_any!(XlibDisplayHandle: Send, Sync);
+        assert_not_impl_any!(XcbDisplayHandle: Send, Sync);
+        assert_not_impl_any!(WaylandDisplayHandle: Send, Sync);
+        assert_impl_all!(DrmDisplayHandle: Send, Sync);
+        assert_not_impl_any!(GbmDisplayHandle: Send, Sync);
+        assert_impl_all!(WindowsDisplayHandle: Send, Sync);
+        assert_impl_all!(WebDisplayHandle: Send, Sync);
+        assert_impl_all!(AndroidDisplayHandle: Send, Sync);
+        assert_impl_all!(HaikuDisplayHandle: Send, Sync);
+
+        // TODO: Unsure if some of these should not actually be Send + Sync
+        assert_not_impl_any!(UiKitWindowHandle: Send, Sync);
+        assert_not_impl_any!(AppKitWindowHandle: Send, Sync);
+        assert_not_impl_any!(OrbitalWindowHandle: Send, Sync);
+        assert_impl_all!(XlibWindowHandle: Send, Sync);
+        assert_impl_all!(XcbWindowHandle: Send, Sync);
+        assert_not_impl_any!(WaylandWindowHandle: Send, Sync);
+        assert_impl_all!(DrmWindowHandle: Send, Sync);
+        assert_not_impl_any!(GbmWindowHandle: Send, Sync);
+        assert_impl_all!(Win32WindowHandle: Send, Sync);
+        assert_not_impl_any!(WinRtWindowHandle: Send, Sync);
+        assert_impl_all!(WebWindowHandle: Send, Sync);
+        assert_not_impl_any!(WebCanvasWindowHandle: Send, Sync);
+        assert_not_impl_any!(WebOffscreenCanvasWindowHandle: Send, Sync);
+        assert_not_impl_any!(AndroidNdkWindowHandle: Send, Sync);
+        assert_not_impl_any!(HaikuWindowHandle: Send, Sync);
+    }
+
+    #[allow(deprecated, unused)]
+    fn assert_object_safe(
+        _: &dyn HasRawWindowHandle,
+        _: &dyn HasRawDisplayHandle,
+        _: &dyn HasWindowHandle,
+        _: &dyn HasDisplayHandle,
+    ) {
+    }
+}

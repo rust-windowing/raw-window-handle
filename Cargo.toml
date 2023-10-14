@@ -24,6 +24,9 @@ default-features = false
 features = ["std"]
 optional = true
 
+[dev-dependencies]
+static_assertions = "1.1.0"
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
