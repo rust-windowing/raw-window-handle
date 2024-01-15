@@ -25,12 +25,12 @@ impl UiKitDisplayHandle {
 
 impl DisplayHandle<'static> {
     /// Create a UiKit-based display handle.
-    /// 
+    ///
     /// As no data is borrowed by this handle, it is completely safe to create. This function
     /// may be useful to windowing framework implementations that want to avoid unsafe code.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// ```
     /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
     /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
@@ -39,9 +39,7 @@ impl DisplayHandle<'static> {
     /// ```
     pub fn uikit() -> Self {
         // SAFETY: No data is borrowed.
-        unsafe {
-            Self::borrow_raw(UiKitDisplayHandle::new().into())
-        }
+        unsafe { Self::borrow_raw(UiKitDisplayHandle::new().into()) }
     }
 }
 
