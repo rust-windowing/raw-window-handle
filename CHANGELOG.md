@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Improve documentation on AppKit and UIKit handles.
+* Deprecated `UiKitWindowHandle::ui_view_controller`, retrieve this from the UIView's responder chain instead.
 
 ## 0.6.2 (2024-05-17)
 
