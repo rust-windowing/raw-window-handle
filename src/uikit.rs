@@ -44,6 +44,45 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for UIKit.
+///
+/// Note that `UIView` can only be accessed from the main thread of the
+/// application. This struct is `!Send` and `!Sync` to help with ensuring
+/// that.
+///
+/// # Example
+///
+/// Getting the view from a [`WindowHandle`][crate::WindowHandle].
+///
+/// ```no_run
+/// # fn inner() {
+/// #![cfg(any(target_os = "ios", target_os = "tvos", target_os = "watchos", target_os = "xros"))]
+/// # #[cfg(requires_objc2)]
+/// use icrate::Foundation::is_main_thread;
+/// # #[cfg(requires_objc2)]
+/// use objc2::rc::Id;
+/// // TODO: Use `icrate::UIKit::UIView` when available
+/// # #[cfg(requires_objc2)]
+/// use objc2::runtime::NSObject;
+/// use raw_window_handle::{WindowHandle, RawWindowHandle};
+///
+/// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
+/// # handle = unimplemented!();
+/// match handle.as_raw() {
+///     # #[cfg(requires_objc2)]
+///     RawWindowHandle::UIKit(handle) => {
+///         assert!(is_main_thread(), "can only access UIKit handles on the main thread");
+///         let ui_view = handle.ui_view.as_ptr();
+///         // SAFETY: The pointer came from `WindowHandle`, which ensures
+///         // that the `UiKitWindowHandle` contains a valid pointer to an
+///         // `UIView`.
+///         // Unwrap is fine, since the pointer came from `NonNull`.
+///         let ui_view: Id<NSObject> = unsafe { Id::retain(ui_view.cast()) }.unwrap();
+///         // Do something with the UIView here.
+///     }
+///     handle => unreachable!("unknown handle {handle:?} for platform"),
+/// }
+/// # }
+/// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct UiKitWindowHandle {
