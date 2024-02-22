@@ -48,6 +48,41 @@ impl DisplayHandle<'static> {
 /// Note that `NSView` can only be accessed from the main thread of the
 /// application. This struct is `!Send` and `!Sync` to help with ensuring
 /// that.
+///
+/// # Example
+///
+/// Getting the view from a [`WindowHandle`][crate::WindowHandle].
+///
+/// ```no_run
+/// # fn inner() {
+/// #![cfg(target_os = "macos")]
+/// # #[cfg(requires_objc2)]
+/// use icrate::AppKit::NSView;
+/// # #[cfg(requires_objc2)]
+/// use icrate::Foundation::is_main_thread;
+/// # #[cfg(requires_objc2)]
+/// use objc2::rc::Id;
+/// use raw_window_handle::{WindowHandle, RawWindowHandle};
+///
+/// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
+/// # handle = unimplemented!();
+/// match handle.as_raw() {
+///     # #[cfg(requires_objc2)]
+///     RawWindowHandle::AppKit(handle) => {
+///         assert!(is_main_thread(), "can only access AppKit handles on the main thread");
+///         let ns_view = handle.ns_view.as_ptr();
+///         // SAFETY: The pointer came from `WindowHandle`, which ensures
+///         // that the `AppKitWindowHandle` contains a valid pointer to an
+///         // `NSView`.
+///         // Unwrap is fine, since the pointer came from `NonNull`.
+///         let ns_view: Id<NSView> = unsafe { Id::retain(ns_view.cast()) }.unwrap();
+///         // Do something with the NSView here, like getting the `NSWindow`
+///         let ns_window = ns_view.window().expect("view was not installed in a window");
+///     }
+///     handle => unreachable!("unknown handle {handle:?} for platform"),
+/// }
+/// # }
+/// ```
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AppKitWindowHandle {
