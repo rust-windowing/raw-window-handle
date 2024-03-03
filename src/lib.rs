@@ -159,7 +159,7 @@ pub enum RawWindowHandle {
     ///
     /// ## Availability Hints
     /// This variant is present regardless of windowing backend and likely to be used with
-    /// EGL_MESA_platfrom_gbm or EGL_KHR_platfrom_gbm.
+    /// EGL_MESA_platform_gbm or EGL_KHR_platform_gbm.
     Gbm(GbmWindowHandle),
     /// A raw window handle for Win32.
     ///
