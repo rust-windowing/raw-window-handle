@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust_version: ["1.64", stable, nightly]
+        rust_version: ["1.64", "1.73", stable, nightly]
 
     steps:
       - uses: actions/checkout@v2
@@ -51,4 +51,9 @@ jobs:
 
       - name: Run tests for wasm32-unknown-unknown
         run: cargo hack check --target wasm32-unknown-unknown --feature-powerset
+        if: matrix.rust_version != "1.64"
+
+      - name: Run tests for wasm32-unknown-unknown
+        run: cargo hack check --target wasm32-unknown-unknown --feature-powerset --skip wasm-bindgen-0-2
+        if: matrix.rust_version -= "1.64"
 
