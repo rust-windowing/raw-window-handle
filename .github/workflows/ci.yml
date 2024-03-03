@@ -51,9 +51,9 @@ jobs:
 
       - name: Run tests for wasm32-unknown-unknown
         run: cargo hack check --target wasm32-unknown-unknown --feature-powerset
-        if: matrix.rust_version != "1.64"
+        if: matrix.rust_version != '1.64'
 
       - name: Run tests for wasm32-unknown-unknown
         run: cargo hack check --target wasm32-unknown-unknown --feature-powerset --skip wasm-bindgen-0-2
-        if: matrix.rust_version -= "1.64"
+        if: matrix.rust_version == '1.64'
 
