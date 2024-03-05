@@ -42,7 +42,7 @@ jobs:
       - run: rustup target add wasm32-unknown-unknown
 
       - name: Pin deps that break MSRV
-        if: matrix.rust_version == '1.64.0'
+        if: matrix.rust_version == '1.64'
         run: |
           cargo update -p exr --precise 1.71.0
           cargo update -p ahash --precise 0.8.7
