@@ -44,8 +44,6 @@ jobs:
       - name: Pin deps that break MSRV
         if: matrix.rust_version == '1.64'
         run: |
-          cargo update -p exr --precise 1.71.0
-          cargo update -p ahash --precise 0.8.7
           cargo update -p bumpalo --precise 3.14.0
 
       - name: Check documentation
