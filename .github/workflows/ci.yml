@@ -21,10 +21,13 @@ jobs:
         with:
           rust-version: stable
           components: rustfmt
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: typos-cli
       - name: Check Formatting
         run: cargo fmt --all -- --check
-      - name: Check Spelling
-        run: npx -y cspell --no-progress --no-summary '**/*.rs' '**/*.md'
+      - name: Run Typos
+        run: typos
 
   tests:
     name: Tests
