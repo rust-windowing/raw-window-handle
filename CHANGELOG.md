@@ -40,7 +40,7 @@
 
 ## 0.4.1 (2021-11-19)
 
-* Added an impl of `HasRawWindowHandle` for `&T`, `Rc<T>`, and `Arc<T>`. The implementations for `Rc<T>` and `Arc<T>` require the `alloc` feature.
+* Added an impl of `HasRawWindowHandle` for `&T`, `Rc<T>`, and `Arc<T>`. The impls for `Rc<T>` and `Arc<T>` require the `alloc` feature.
 
 ## 0.4.0 (2021-11-15)
 
