@@ -13,7 +13,7 @@ env:
 
 jobs:
   fmt:
-    name: Check Formatting
+    name: Tidy Code
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -21,11 +21,17 @@ jobs:
         with:
           rust-version: stable
           components: rustfmt
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: typos-cli
       - name: Check Formatting
         run: cargo fmt --all -- --check
+      - name: Run Typos
+        run: typos
 
   tests:
     name: Tests
+    needs: fmt
     # `raw-window-handle` only has `cfg` guards for Android, so we just run Ubuntu
     # and manually test Android
     runs-on: ubuntu-latest
