@@ -60,7 +60,7 @@ impl Win32WindowHandle {
     /// Create a new handle to a window.
     ///
     /// # Safety
-    /// 
+    ///
     /// It is assumed that the Win32 handle belongs to the current thread. This
     /// is necessary for the handle to be considered "valid" in all cases.
     ///
