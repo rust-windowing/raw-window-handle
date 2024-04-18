@@ -57,9 +57,9 @@ impl DisplayHandle<'static> {
 /// # fn inner() {
 /// #![cfg(target_os = "macos")]
 /// # #[cfg(requires_objc2)]
-/// use icrate::AppKit::NSView;
+/// use objc2_app_kit::NSView;
 /// # #[cfg(requires_objc2)]
-/// use icrate::Foundation::is_main_thread;
+/// use objc2_foundation::is_main_thread;
 /// # #[cfg(requires_objc2)]
 /// use objc2::rc::Id;
 /// use raw_window_handle::{WindowHandle, RawWindowHandle};
