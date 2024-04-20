@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1 (2024-04-20)
+
+- Add safe constructors for window handles. This may be useful for implementing
+  windowing systems with zero unsafe code. (#159)
+- Improve documentation for Apple window handles. (#160)
+- Add a clarification as to what circumstances Windows handles are considered
+  "valid" under. (#163)
+
 ## 0.6.0 (2023-09-30)
 
 * **Breaking:** Raw pointer handles now use `NonNull` where appropriate, to avoid null pointer dereferences.
