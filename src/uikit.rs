@@ -57,12 +57,11 @@ impl DisplayHandle<'static> {
 /// # fn inner() {
 /// #![cfg(any(target_os = "ios", target_os = "tvos", target_os = "watchos", target_os = "xros"))]
 /// # #[cfg(requires_objc2)]
-/// use icrate::Foundation::is_main_thread;
+/// use objc2_foundation::is_main_thread;
 /// # #[cfg(requires_objc2)]
 /// use objc2::rc::Id;
-/// // TODO: Use `icrate::UIKit::UIView` when available
 /// # #[cfg(requires_objc2)]
-/// use objc2::runtime::NSObject;
+/// use objc2_ui_kit::UIView;
 /// use raw_window_handle::{WindowHandle, RawWindowHandle};
 ///
 /// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
@@ -76,7 +75,7 @@ impl DisplayHandle<'static> {
 ///         // that the `UiKitWindowHandle` contains a valid pointer to an
 ///         // `UIView`.
 ///         // Unwrap is fine, since the pointer came from `NonNull`.
-///         let ui_view: Id<NSObject> = unsafe { Id::retain(ui_view.cast()) }.unwrap();
+///         let ui_view: Id<UIView> = unsafe { Id::retain(ui_view.cast()) }.unwrap();
 ///         // Do something with the UIView here.
 ///     }
 ///     handle => unreachable!("unknown handle {handle:?} for platform"),
