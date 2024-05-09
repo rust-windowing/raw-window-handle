@@ -135,7 +135,7 @@ pub enum RawWindowHandle {
     /// A raw window handle for the OpenHarmony OS NDK
     ///
     /// ## Availability Hints
-    /// This variant is used on OpenHarmony OS ( `target_env = "ohos"`).
+    /// This variant is used on OpenHarmony OS (`target_env = "ohos"`).
     OhosNdk(OhosNdkWindowHandle),
     /// A raw window handle for Xlib.
     ///
@@ -288,7 +288,7 @@ pub enum RawDisplayHandle {
     /// A raw display handle for OpenHarmony OS NDK
     ///
     /// ## Availability Hints
-    /// This variant is used on OpenHarmony OS ( `target_env = "ohos"`).
+    /// This variant is used on OpenHarmony OS (`target_env = "ohos"`).
     Ohos(OhosDisplayHandle),
     /// A raw display handle for Xlib.
     ///
