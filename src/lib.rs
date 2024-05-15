@@ -37,6 +37,7 @@ mod android;
 mod appkit;
 mod borrowed;
 mod haiku;
+mod ohos;
 mod redox;
 mod uikit;
 mod unix;
@@ -47,6 +48,7 @@ pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
 pub use borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
+pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
 pub use unix::{
@@ -130,6 +132,11 @@ pub enum RawWindowHandle {
     /// This variant is used by the Orbital Windowing System in the Redox
     /// operating system.
     Orbital(OrbitalWindowHandle),
+    /// A raw window handle for the OpenHarmony OS NDK
+    ///
+    /// ## Availability Hints
+    /// This variant is used on OpenHarmony OS (`target_env = "ohos"`).
+    OhosNdk(OhosNdkWindowHandle),
     /// A raw window handle for Xlib.
     ///
     /// ## Availability Hints
@@ -278,6 +285,11 @@ pub enum RawDisplayHandle {
     /// This variant is used by the Orbital Windowing System in the Redox
     /// operating system.
     Orbital(OrbitalDisplayHandle),
+    /// A raw display handle for OpenHarmony OS NDK
+    ///
+    /// ## Availability Hints
+    /// This variant is used on OpenHarmony OS (`target_env = "ohos"`).
+    Ohos(OhosDisplayHandle),
     /// A raw display handle for Xlib.
     ///
     /// ## Availability Hints
@@ -391,6 +403,7 @@ macro_rules! from_impl {
 from_impl!(RawDisplayHandle, UiKit, UiKitDisplayHandle);
 from_impl!(RawDisplayHandle, AppKit, AppKitDisplayHandle);
 from_impl!(RawDisplayHandle, Orbital, OrbitalDisplayHandle);
+from_impl!(RawDisplayHandle, Ohos, OhosDisplayHandle);
 from_impl!(RawDisplayHandle, Xlib, XlibDisplayHandle);
 from_impl!(RawDisplayHandle, Xcb, XcbDisplayHandle);
 from_impl!(RawDisplayHandle, Wayland, WaylandDisplayHandle);
@@ -404,6 +417,7 @@ from_impl!(RawDisplayHandle, Haiku, HaikuDisplayHandle);
 from_impl!(RawWindowHandle, UiKit, UiKitWindowHandle);
 from_impl!(RawWindowHandle, AppKit, AppKitWindowHandle);
 from_impl!(RawWindowHandle, Orbital, OrbitalWindowHandle);
+from_impl!(RawWindowHandle, OhosNdk, OhosNdkWindowHandle);
 from_impl!(RawWindowHandle, Xlib, XlibWindowHandle);
 from_impl!(RawWindowHandle, Xcb, XcbWindowHandle);
 from_impl!(RawWindowHandle, Wayland, WaylandWindowHandle);
@@ -444,6 +458,7 @@ mod tests {
         assert_impl_all!(UiKitDisplayHandle: Send, Sync);
         assert_impl_all!(AppKitDisplayHandle: Send, Sync);
         assert_impl_all!(OrbitalDisplayHandle: Send, Sync);
+        assert_impl_all!(OhosDisplayHandle: Send, Sync);
         assert_not_impl_any!(XlibDisplayHandle: Send, Sync);
         assert_not_impl_any!(XcbDisplayHandle: Send, Sync);
         assert_not_impl_any!(WaylandDisplayHandle: Send, Sync);
@@ -458,6 +473,7 @@ mod tests {
         assert_not_impl_any!(UiKitWindowHandle: Send, Sync);
         assert_not_impl_any!(AppKitWindowHandle: Send, Sync);
         assert_not_impl_any!(OrbitalWindowHandle: Send, Sync);
+        assert_not_impl_any!(OhosNdkWindowHandle: Send, Sync);
         assert_impl_all!(XlibWindowHandle: Send, Sync);
         assert_impl_all!(XcbWindowHandle: Send, Sync);
         assert_not_impl_any!(WaylandWindowHandle: Send, Sync);
