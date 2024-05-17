@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.2 (2024-05-17)
+
+* Add OpenHarmony OS support (#164)
+* Minor Documentation updates
+
 ## 0.6.1 (2024-04-20)
 
 - Add safe constructors for window handles. This may be useful for implementing
