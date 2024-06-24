@@ -57,11 +57,11 @@ impl DisplayHandle<'static> {
 /// # fn inner() {
 /// #![cfg(target_os = "macos")]
 /// # #[cfg(requires_objc2)]
+/// use objc2::MainThreadMarker;
+/// # #[cfg(requires_objc2)]
+/// use objc2::rc::Retained;
+/// # #[cfg(requires_objc2)]
 /// use objc2_app_kit::NSView;
-/// # #[cfg(requires_objc2)]
-/// use objc2_foundation::is_main_thread;
-/// # #[cfg(requires_objc2)]
-/// use objc2::rc::Id;
 /// use raw_window_handle::{WindowHandle, RawWindowHandle};
 ///
 /// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
@@ -69,13 +69,13 @@ impl DisplayHandle<'static> {
 /// match handle.as_raw() {
 ///     # #[cfg(requires_objc2)]
 ///     RawWindowHandle::AppKit(handle) => {
-///         assert!(is_main_thread(), "can only access AppKit handles on the main thread");
+///         assert!(MainThreadMarker::new().is_some(), "can only access AppKit handles on the main thread");
 ///         let ns_view = handle.ns_view.as_ptr();
 ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
 ///         // that the `AppKitWindowHandle` contains a valid pointer to an
 ///         // `NSView`.
 ///         // Unwrap is fine, since the pointer came from `NonNull`.
-///         let ns_view: Id<NSView> = unsafe { Id::retain(ns_view.cast()) }.unwrap();
+///         let ns_view: Retained<NSView> = unsafe { Retained::retain(ns_view.cast()) }.unwrap();
 ///         // Do something with the NSView here, like getting the `NSWindow`
 ///         let ns_window = ns_view.window().expect("view was not installed in a window");
 ///     }

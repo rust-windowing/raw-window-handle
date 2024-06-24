@@ -57,9 +57,9 @@ impl DisplayHandle<'static> {
 /// # fn inner() {
 /// #![cfg(any(target_os = "ios", target_os = "tvos", target_os = "watchos", target_os = "xros"))]
 /// # #[cfg(requires_objc2)]
-/// use objc2_foundation::is_main_thread;
+/// use objc2::MainThreadMarker;
 /// # #[cfg(requires_objc2)]
-/// use objc2::rc::Id;
+/// use objc2::rc::Retained;
 /// # #[cfg(requires_objc2)]
 /// use objc2_ui_kit::UIView;
 /// use raw_window_handle::{WindowHandle, RawWindowHandle};
@@ -69,13 +69,13 @@ impl DisplayHandle<'static> {
 /// match handle.as_raw() {
 ///     # #[cfg(requires_objc2)]
 ///     RawWindowHandle::UIKit(handle) => {
-///         assert!(is_main_thread(), "can only access UIKit handles on the main thread");
+///         assert!(MainThreadMarker::new().is_some(), "can only access UIKit handles on the main thread");
 ///         let ui_view = handle.ui_view.as_ptr();
 ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
 ///         // that the `UiKitWindowHandle` contains a valid pointer to an
 ///         // `UIView`.
 ///         // Unwrap is fine, since the pointer came from `NonNull`.
-///         let ui_view: Id<UIView> = unsafe { Id::retain(ui_view.cast()) }.unwrap();
+///         let ui_view: Retained<UIView> = unsafe { Retained::retain(ui_view.cast()) }.unwrap();
 ///         // Do something with the UIView here.
 ///     }
 ///     handle => unreachable!("unknown handle {handle:?} for platform"),
