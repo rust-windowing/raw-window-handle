@@ -213,6 +213,7 @@ pub struct DrmDisplayHandle {
     /// The drm file descriptor.
     // TODO: Use `std::os::fd::RawFd`?
     pub fd: i32,
+    pub connector_id: u32,
 }
 
 impl DrmDisplayHandle {
@@ -228,8 +229,8 @@ impl DrmDisplayHandle {
     /// # fd = 0;
     /// let handle = DrmDisplayHandle::new(fd);
     /// ```
-    pub fn new(fd: i32) -> Self {
-        Self { fd }
+    pub fn new(fd: i32, connector_id: u32) -> Self {
+        Self { fd, connector_id }
     }
 }
 
