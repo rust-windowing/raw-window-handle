@@ -213,7 +213,6 @@ pub struct DrmDisplayHandle {
     /// The drm file descriptor.
     // TODO: Use `std::os::fd::RawFd`?
     pub fd: i32,
-    pub connector_id: u32,
 }
 
 impl DrmDisplayHandle {
@@ -226,13 +225,11 @@ impl DrmDisplayHandle {
     /// # use raw_window_handle::DrmDisplayHandle;
     /// #
     /// let fd: i32;
-    /// let connector_id: u32;
     /// # fd = 0;
-    /// # connector_id = 0;
-    /// let handle = DrmDisplayHandle::new(fd, connector_id);
+    /// let handle = DrmDisplayHandle::new(fd);
     /// ```
-    pub fn new(fd: i32, connector_id: u32) -> Self {
-        Self { fd, connector_id }
+    pub fn new(fd: i32) -> Self {
+        Self { fd }
     }
 }
 
@@ -242,6 +239,7 @@ impl DrmDisplayHandle {
 pub struct DrmWindowHandle {
     /// The primary drm plane handle.
     pub plane: u32,
+    pub connector_id: Option<NonZeroU32>,
 }
 
 impl DrmWindowHandle {
@@ -258,7 +256,10 @@ impl DrmWindowHandle {
     /// let handle = DrmWindowHandle::new(plane);
     /// ```
     pub fn new(plane: u32) -> Self {
-        Self { plane }
+        Self {
+            plane,
+            connector_id: None,
+        }
     }
 }
 
