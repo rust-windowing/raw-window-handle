@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+* Add optional connector_id field to DrmWindowHandle (#170)
+
 ## 0.6.2 (2024-05-17)
 
 * Add OpenHarmony OS support (#164)
