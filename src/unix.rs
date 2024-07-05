@@ -239,6 +239,7 @@ impl DrmDisplayHandle {
 pub struct DrmWindowHandle {
     /// The primary drm plane handle.
     pub plane: u32,
+    /// An optional handle to chosen drm connector
     pub connector_id: Option<NonZeroU32>,
 }
 
