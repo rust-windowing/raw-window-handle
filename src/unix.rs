@@ -226,8 +226,10 @@ impl DrmDisplayHandle {
     /// # use raw_window_handle::DrmDisplayHandle;
     /// #
     /// let fd: i32;
+    /// let connector_id: u32;
     /// # fd = 0;
-    /// let handle = DrmDisplayHandle::new(fd);
+    /// # connector_id = 0;
+    /// let handle = DrmDisplayHandle::new(fd, connector_id);
     /// ```
     pub fn new(fd: i32, connector_id: u32) -> Self {
         Self { fd, connector_id }
