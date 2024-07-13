@@ -275,7 +275,7 @@ impl DrmWindowHandle {
     /// let plane: u32;
     /// # plane = 0;
     /// let connector_id: NonZeroU32;
-    /// # connect_id = unsafe { NonZeroU32::new_unchecked(1) };
+    /// # connector_id = unsafe { NonZeroU32::new_unchecked(1) };
     /// let handle = DrmWindowHandle::new_with_connector_id(plane, connector_id);
     /// ```
     pub fn new_with_connector_id(plane: u32, connector_id: NonZeroU32) -> Self {
