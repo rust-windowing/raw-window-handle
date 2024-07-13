@@ -239,6 +239,8 @@ impl DrmDisplayHandle {
 pub struct DrmWindowHandle {
     /// The primary drm plane handle.
     pub plane: u32,
+    /// An optional handle to chosen drm connector
+    pub connector_id: Option<NonZeroU32>,
 }
 
 impl DrmWindowHandle {
@@ -255,7 +257,32 @@ impl DrmWindowHandle {
     /// let handle = DrmWindowHandle::new(plane);
     /// ```
     pub fn new(plane: u32) -> Self {
-        Self { plane }
+        Self {
+            plane,
+            connector_id: None,
+        }
+    }
+
+    /// Create a new handle to a plane and associated connector_id.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::DrmWindowHandle;
+    /// # use core::num::NonZeroU32;
+    /// #
+    /// let plane: u32;
+    /// # plane = 0;
+    /// let connector_id: NonZeroU32;
+    /// # connector_id = unsafe { NonZeroU32::new_unchecked(1) };
+    /// let handle = DrmWindowHandle::new_with_connector_id(plane, connector_id);
+    /// ```
+    pub fn new_with_connector_id(plane: u32, connector_id: NonZeroU32) -> Self {
+        Self {
+            plane,
+            connector_id: Some(connector_id),
+        }
     }
 }
 
