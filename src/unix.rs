@@ -262,6 +262,28 @@ impl DrmWindowHandle {
             connector_id: None,
         }
     }
+
+    /// Create a new handle to a plane and associated connector_id.
+    ///
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::DrmWindowHandle;
+    /// # use core::num::NonZeroU32;
+    /// #
+    /// let plane: u32;
+    /// # plane = 0;
+    /// let connector_id: NonZeroU32;
+    /// # connect_id = unsafe { NonZeroU32::new_unchecked(1) };
+    /// let handle = DrmWindowHandle::new_with_connector_id(plane, connector_id);
+    /// ```
+    pub fn new_with_connector_id(plane: u32, connector_id: NonZeroU32) -> Self {
+        Self {
+            plane,
+            connector_id: Some(connector_id),
+        }
+    }
 }
 
 /// Raw display handle for the Linux Generic Buffer Manager.
