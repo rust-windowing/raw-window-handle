@@ -97,15 +97,18 @@ impl UiKitWindowHandle {
     ///
     /// # Example
     ///
-    /// ```
-    /// # use core::ptr::NonNull;
-    /// # use raw_window_handle::UiKitWindowHandle;
-    /// # type UIView = ();
-    /// #
-    /// let view: &UIView;
-    /// # view = &();
-    /// let mut handle = UiKitWindowHandle::new(NonNull::from(view).cast());
-    /// // Optionally set the view controller.
+    /// Create a handle from a `UIView`.
+    ///
+    /// ```ignore
+    /// use std::ptr::NonNull;
+    /// use objc2::rc::Retained;
+    /// use objc2_ui_kit::UIView;
+    /// use raw_window_handle::UiKitWindowHandle;
+    ///
+    /// let ui_view: Retained<UIView> = ...;
+    /// let ui_view: NonNull<UIView> = NonNull::from(&*ui_view);
+    /// let mut handle = UiKitWindowHandle::new(ui_view.cast());
+    /// // Optionally, set the view controller too.
     /// handle.ui_view_controller = None;
     /// ```
     pub fn new(ui_view: NonNull<c_void>) -> Self {

@@ -96,14 +96,18 @@ impl AppKitWindowHandle {
     ///
     /// # Example
     ///
-    /// ```
-    /// # use core::ptr::NonNull;
-    /// # use raw_window_handle::AppKitWindowHandle;
-    /// # type NSView = ();
-    /// #
-    /// let view: &NSView;
-    /// # view = &();
-    /// let handle = AppKitWindowHandle::new(NonNull::from(view).cast());
+    /// Create a handle from the content view of a `NSWindow`.
+    ///
+    /// ```ignore
+    /// use std::ptr::NonNull;
+    /// use objc2::rc::Retained;
+    /// use objc2_app_kit::{NSWindow, NSView};
+    /// use raw_window_handle::AppKitWindowHandle;
+    ///
+    /// let ns_window: Retained<NSWindow> = ...;
+    /// let ns_view: Retained<NSView> = window.contentView();
+    /// let ns_view: NonNull<NSView> = NonNull::from(&*ns_view);
+    /// let handle = AppKitWindowHandle::new(ns_view.cast());
     /// ```
     pub fn new(ns_view: NonNull<c_void>) -> Self {
         Self { ns_view }
