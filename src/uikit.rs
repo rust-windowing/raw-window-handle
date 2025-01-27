@@ -88,6 +88,32 @@ pub struct UiKitWindowHandle {
     /// A pointer to an `UIView` object.
     pub ui_view: NonNull<c_void>,
     /// A pointer to an `UIViewController` object, if the view has one.
+    ///
+    /// This is deprecated, the controller should be retrieved by traversing the `UIView`'s\
+    /// responder chain instead:
+    ///
+    /// ```ignore
+    /// use objc2::rc::Retained;
+    /// use objc2_ui_kit::{UIResponder, UIView, UIViewController};
+    ///
+    /// let view: Retained<UIView> = ...;
+    ///
+    /// let mut current_responder: Retained<UIResponder> = view.into_super();
+    /// let mut found_controller = None;
+    /// while let Some(responder) = unsafe { current_responder.nextResponder() } {
+    ///     match responder.downcast::<UIViewController>() {
+    ///         Ok(controller) => {
+    ///             found_controller = Some(controller);
+    ///             break;
+    ///         }
+    ///         // Search next.
+    ///         Err(responder) => current_responder = responder,
+    ///     }
+    /// }
+    ///
+    /// // Use found_controller here.
+    /// ```
+    #[deprecated = "retrieve the view controller from the UIView's responder chain instead"]
     pub ui_view_controller: Option<NonNull<c_void>>,
 }
 
@@ -107,11 +133,10 @@ impl UiKitWindowHandle {
     ///
     /// let ui_view: Retained<UIView> = ...;
     /// let ui_view: NonNull<UIView> = NonNull::from(&*ui_view);
-    /// let mut handle = UiKitWindowHandle::new(ui_view.cast());
-    /// // Optionally, set the view controller too.
-    /// handle.ui_view_controller = None;
+    /// let handle = UiKitWindowHandle::new(ui_view.cast());
     /// ```
     pub fn new(ui_view: NonNull<c_void>) -> Self {
+        #[allow(deprecated)]
         Self {
             ui_view,
             ui_view_controller: None,
