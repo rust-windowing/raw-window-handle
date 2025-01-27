@@ -114,17 +114,17 @@ pub enum RawWindowHandle {
     /// A raw window handle for UIKit (Apple's non-macOS windowing library).
     ///
     /// ## Availability Hints
-    /// This variant is likely to be used on iOS, tvOS, (in theory) watchOS, and
-    /// Mac Catalyst (`$arch-apple-ios-macabi` targets, which can notably use
-    /// UIKit *or* AppKit), as these are the targets that (currently) support
-    /// UIKit.
+    /// This variant is used on iOS, tvOS, watchOS, visionOS, and Mac
+    /// Catalyst, as these are the targets that (currently) support UIKit.
+    ///
+    /// Note that Mac Catalyst (`$arch-apple-ios-macabi` targets), can use
+    /// UIKit *or* AppKit.
     UiKit(UiKitWindowHandle),
     /// A raw window handle for AppKit.
     ///
     /// ## Availability Hints
-    /// This variant is likely to be used on macOS, although Mac Catalyst
-    /// (`$arch-apple-ios-macabi` targets, which can notably use UIKit *or*
-    /// AppKit) can also use it despite being `target_os = "ios"`.
+    /// This variant is used on macOS, although Mac Catalyst can also use it
+    /// despite being `target_os = "ios"`.
     AppKit(AppKitWindowHandle),
     /// A raw window handle for the Redox operating system.
     ///
@@ -267,17 +267,17 @@ pub enum RawDisplayHandle {
     /// A raw display handle for UIKit (Apple's non-macOS windowing library).
     ///
     /// ## Availability Hints
-    /// This variant is likely to be used on iOS, tvOS, (in theory) watchOS, and
-    /// Mac Catalyst (`$arch-apple-ios-macabi` targets, which can notably use
-    /// UIKit *or* AppKit), as these are the targets that (currently) support
-    /// UIKit.
+    /// This variant is used on iOS, tvOS, watchOS, visionOS, and Mac
+    /// Catalyst, as these are the targets that (currently) support UIKit.
+    ///
+    /// Note that Mac Catalyst (`$arch-apple-ios-macabi` targets), can use
+    /// UIKit *or* AppKit.
     UiKit(UiKitDisplayHandle),
     /// A raw display handle for AppKit.
     ///
     /// ## Availability Hints
-    /// This variant is likely to be used on macOS, although Mac Catalyst
-    /// (`$arch-apple-ios-macabi` targets, which can notably use UIKit *or*
-    /// AppKit) can also use it despite being `target_os = "ios"`.
+    /// This variant is used on macOS, although Mac Catalyst can also use it
+    /// despite being `target_os = "ios"`.
     AppKit(AppKitDisplayHandle),
     /// A raw display handle for the Redox operating system.
     ///
