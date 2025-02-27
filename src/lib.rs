@@ -479,9 +479,9 @@ mod tests {
         assert_not_impl_any!(WaylandWindowHandle: Send, Sync);
         assert_impl_all!(DrmWindowHandle: Send, Sync);
         assert_not_impl_any!(GbmWindowHandle: Send, Sync);
-        assert_impl_all!(Win32WindowHandle: Send, Sync);
+        assert_not_impl_any!(Win32WindowHandle: Send, Sync);
         assert_not_impl_any!(WinRtWindowHandle: Send, Sync);
-        assert_impl_all!(WebWindowHandle: Send, Sync);
+        assert_not_impl_any!(WebWindowHandle: Send, Sync);
         assert_not_impl_any!(WebCanvasWindowHandle: Send, Sync);
         assert_not_impl_any!(WebOffscreenCanvasWindowHandle: Send, Sync);
         assert_not_impl_any!(AndroidNdkWindowHandle: Send, Sync);
