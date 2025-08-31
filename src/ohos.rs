@@ -63,6 +63,7 @@ impl DisplayHandle<'static> {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OhosNdkWindowHandle {
+    /// A pointer to an `OHNativeWindow`.
     pub native_window: NonNull<c_void>,
 }
 

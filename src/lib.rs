@@ -1,6 +1,11 @@
 #![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(clippy::new_without_default)]
+#![warn(clippy::missing_safety_doc)]
+#![warn(missing_doc_code_examples)]
+#![warn(missing_copy_implementations)]
+#![warn(missing_debug_implementations)]
+#![warn(missing_docs)]
 #![deny(unsafe_op_in_unsafe_fn)]
 
 //! Interoperability library for Rust Windowing applications.
@@ -78,6 +83,7 @@ use core::fmt;
 /// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
 #[deprecated = "Use `HasWindowHandle` instead"]
 pub unsafe trait HasRawWindowHandle {
+    #[allow(missing_docs)]
     fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError>;
 }
 
@@ -225,6 +231,7 @@ pub enum RawWindowHandle {
 /// to `raw_display_handle` as long as not indicated otherwise by platform specific events.
 #[deprecated = "Use `HasDisplayHandle` instead"]
 pub unsafe trait HasRawDisplayHandle {
+    #[allow(missing_docs)]
     fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError>;
 }
 
