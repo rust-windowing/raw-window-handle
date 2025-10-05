@@ -39,6 +39,7 @@ mod borrowed;
 mod haiku;
 mod ohos;
 mod redox;
+mod uefi;
 mod uikit;
 mod unix;
 mod web;
@@ -50,6 +51,7 @@ pub use borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandl
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
+pub use uefi::{UefiDisplayHandle, UefiWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
 pub use unix::{
     DrmDisplayHandle, DrmWindowHandle, GbmDisplayHandle, GbmWindowHandle, WaylandDisplayHandle,
@@ -207,6 +209,11 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuWindowHandle),
+    /// A window handle for UEFI.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on UEFI.
+    Uefi(UefiWindowHandle),
 }
 
 /// Display that wraps around a raw display handle.
@@ -341,6 +348,11 @@ pub enum RawDisplayHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuDisplayHandle),
+    /// A raw display handle for UEFI.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on UEFI.
+    Uefi(UefiDisplayHandle),
 }
 
 /// An error that can occur while fetching a display or window handle.
@@ -413,6 +425,7 @@ from_impl!(RawDisplayHandle, Windows, WindowsDisplayHandle);
 from_impl!(RawDisplayHandle, Web, WebDisplayHandle);
 from_impl!(RawDisplayHandle, Android, AndroidDisplayHandle);
 from_impl!(RawDisplayHandle, Haiku, HaikuDisplayHandle);
+from_impl!(RawDisplayHandle, Uefi, UefiDisplayHandle);
 
 from_impl!(RawWindowHandle, UiKit, UiKitWindowHandle);
 from_impl!(RawWindowHandle, AppKit, AppKitWindowHandle);
@@ -434,6 +447,7 @@ from_impl!(
 );
 from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
+from_impl!(RawWindowHandle, Uefi, UefiWindowHandle);
 
 #[cfg(test)]
 mod tests {
