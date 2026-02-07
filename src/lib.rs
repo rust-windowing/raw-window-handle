@@ -482,8 +482,8 @@ mod tests {
         assert_impl_all!(Win32WindowHandle: Send, Sync);
         assert_not_impl_any!(WinRtWindowHandle: Send, Sync);
         assert_impl_all!(WebWindowHandle: Send, Sync);
-        assert_not_impl_any!(WebCanvasWindowHandle: Send, Sync);
-        assert_not_impl_any!(WebOffscreenCanvasWindowHandle: Send, Sync);
+        assert_impl_all!(WebCanvasWindowHandle: Send, Sync);
+        assert_impl_all!(WebOffscreenCanvasWindowHandle: Send, Sync);
         assert_not_impl_any!(AndroidNdkWindowHandle: Send, Sync);
         assert_not_impl_any!(HaikuWindowHandle: Send, Sync);
     }
