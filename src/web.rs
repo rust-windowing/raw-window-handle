@@ -1,3 +1,5 @@
+use core::marker::PhantomData;
+
 use super::DisplayHandle;
 
 /// Raw display handle for the Web.
@@ -81,7 +83,10 @@ pub struct WebCanvasWindowHandle {
     ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
-    pub obj: u32,
+    pub obj: usize,
+
+    /// Makes this type `!Send` and `!Sync`.
+    _marker: PhantomData<*mut ()>,
 }
 
 impl WebCanvasWindowHandle {
@@ -93,12 +98,15 @@ impl WebCanvasWindowHandle {
     ///
     /// ```
     /// # use raw_window_handle::WebCanvasWindowHandle;
-    /// let value: u32;
+    /// let value: usize;
     /// # value = 0;
     /// let mut handle = WebCanvasWindowHandle::new(value);
     /// ```
-    pub fn new(obj: u32) -> Self {
-        Self { obj }
+    pub fn new(obj: usize) -> Self {
+        Self {
+            obj,
+            _marker: PhantomData,
+        }
     }
 }
 
@@ -113,7 +121,10 @@ pub struct WebOffscreenCanvasWindowHandle {
     ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
-    pub obj: u32,
+    pub obj: usize,
+
+    /// Makes this type `!Send` and `!Sync`.
+    _marker: PhantomData<*mut ()>,
 }
 
 impl WebOffscreenCanvasWindowHandle {
@@ -125,11 +136,14 @@ impl WebOffscreenCanvasWindowHandle {
     ///
     /// ```
     /// # use raw_window_handle::WebOffscreenCanvasWindowHandle;
-    /// let value: u32;
+    /// let value: usize;
     /// # value = 0;
     /// let mut handle = WebOffscreenCanvasWindowHandle::new(value);
     /// ```
-    pub fn new(obj: u32) -> Self {
-        Self { obj }
+    pub fn new(obj: usize) -> Self {
+        Self {
+            obj,
+            _marker: PhantomData,
+        }
     }
 }
