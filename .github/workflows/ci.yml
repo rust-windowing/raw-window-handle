@@ -47,11 +47,6 @@ jobs:
           rust-version: ${{ matrix.rust_version }}
       - run: rustup target add wasm32-unknown-unknown
 
-      - name: Pin deps that break MSRV
-        if: matrix.rust_version == '1.64'
-        run: |
-          cargo update -p bumpalo --precise 3.14.0
-
       - name: Check documentation
         run: cargo doc --no-deps --document-private-items
 
