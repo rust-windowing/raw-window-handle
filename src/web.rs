@@ -96,11 +96,24 @@ impl WebCanvasWindowHandle {
     ///
     /// # Example
     ///
-    /// ```
+    #[cfg_attr(target_family = "wasm", doc = "```no_run")]
+    #[cfg_attr(not(target_family = "wasm"), doc = "```no_compile")]
     /// # use raw_window_handle::WebCanvasWindowHandle;
-    /// let value: usize;
-    /// # value = 0;
-    /// let mut handle = WebCanvasWindowHandle::new(value);
+    /// use core::mem::ManuallyDrop;
+    /// use wasm_bindgen::convert::{IntoWasmAbi, RefFromWasmAbi};
+    /// use web_sys::HtmlCanvasElement;
+    ///
+    /// let value: HtmlCanvasElement;
+    /// # value = todo!();
+    ///
+    /// // Convert to the raw index and convert to the handle.
+    /// let index = (&value).into_abi();
+    /// let mut handle = WebCanvasWindowHandle::new(index as usize);
+    ///
+    /// // To get the canvas element back, convert the index back.
+    /// let other_end: ManuallyDrop<HtmlCanvasElement> = unsafe {
+    ///     HtmlCanvasElement::ref_from_abi(handle.obj as u32)
+    /// };
     /// ```
     pub fn new(obj: usize) -> Self {
         Self {
@@ -134,11 +147,24 @@ impl WebOffscreenCanvasWindowHandle {
     ///
     /// # Example
     ///
-    /// ```
+    #[cfg_attr(target_family = "wasm", doc = "```no_run")]
+    #[cfg_attr(not(target_family = "wasm"), doc = "```no_compile")]
     /// # use raw_window_handle::WebOffscreenCanvasWindowHandle;
-    /// let value: usize;
-    /// # value = 0;
-    /// let mut handle = WebOffscreenCanvasWindowHandle::new(value);
+    /// use core::mem::ManuallyDrop;
+    /// use wasm_bindgen::convert::{IntoWasmAbi, RefFromWasmAbi};
+    /// use web_sys::OffscreenCanvas;
+    ///
+    /// let value: OffscreenCanvas;
+    /// # value = todo!();
+    ///
+    /// // Convert to the raw index and convert to the handle.
+    /// let index = (&value).into_abi();
+    /// let handle = WebOffscreenCanvasWindowHandle::new(index as usize);
+    ///
+    /// // To get the canvas element back, convert the index back.
+    /// let other_end: ManuallyDrop<OffscreenCanvas> = unsafe {
+    ///     OffscreenCanvas::ref_from_abi(handle.obj as u32)
+    /// };
     /// ```
     pub fn new(obj: usize) -> Self {
         Self {

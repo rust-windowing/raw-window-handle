@@ -18,6 +18,19 @@ std = ["alloc"]
 [dev-dependencies]
 static_assertions = "1.1.0"
 
+[target.'cfg(target_family = "wasm")'.dev-dependencies.wasm-bindgen]
+version = "0.2.87"
+default-features = false
+features = ["std"]
+
+[target.'cfg(target_family = "wasm")'.dev-dependencies.web-sys]
+version = "0.3.85"
+default-features = false
+features = ["HtmlCanvasElement", "OffscreenCanvas", "Window", "Document"]
+
+[target.'cfg(target_family = "wasm")'.dev-dependencies]
+wasm-bindgen-test = "0.3"
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
