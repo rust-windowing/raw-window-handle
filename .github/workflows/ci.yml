@@ -47,18 +47,18 @@ jobs:
           rust-version: ${{ matrix.rust_version }}
       - run: rustup target add wasm32-unknown-unknown
 
-      - name: Pin deps that break MSRV
-        if: matrix.rust_version == '1.64'
-        run: |
-          cargo update -p bumpalo --precise 3.14.0
-
       - name: Check documentation
         run: cargo doc --no-deps --document-private-items
 
       - uses: taiki-e/install-action@cargo-hack
+      - uses: taiki-e/install-action@wasm-pack
 
       - name: Run tests
         run: cargo hack test --feature-powerset
 
       - name: Run tests for wasm32-unknown-unknown
         run: cargo hack check --target wasm32-unknown-unknown --feature-powerset
+
+      - name: Run tests inside of Chrome
+        run: wasm-pack test --chrome --headless
+        if: matrix.rust_version != '1.64'

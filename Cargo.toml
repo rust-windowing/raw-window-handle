@@ -15,17 +15,21 @@ rust-version = "1.64"
 alloc = []
 std = ["alloc"]
 
-# Allow conversion methods to/from WASM types using `wasm-bindgen` v0.2.
-wasm-bindgen-0-2 = ["wasm-bindgen", "std"]
+[dev-dependencies]
+static_assertions = "1.1.0"
 
-[target.'cfg(target_family = "wasm")'.dependencies.wasm-bindgen]
+[target.'cfg(target_family = "wasm")'.dev-dependencies.wasm-bindgen]
 version = "0.2.87"
 default-features = false
 features = ["std"]
-optional = true
 
-[dev-dependencies]
-static_assertions = "1.1.0"
+[target.'cfg(target_family = "wasm")'.dev-dependencies.web-sys]
+version = "0.3.85"
+default-features = false
+features = ["HtmlCanvasElement", "OffscreenCanvas", "Window", "Document"]
+
+[target.'cfg(target_family = "wasm")'.dev-dependencies]
+wasm-bindgen-test = "0.3"
 
 [package.metadata.docs.rs]
 all-features = true
