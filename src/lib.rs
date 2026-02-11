@@ -55,9 +55,7 @@ pub use unix::{
     DrmDisplayHandle, DrmWindowHandle, GbmDisplayHandle, GbmWindowHandle, WaylandDisplayHandle,
     WaylandWindowHandle, XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle,
 };
-pub use web::{
-    WebCanvasWindowHandle, WebDisplayHandle, WebOffscreenCanvasWindowHandle, WebWindowHandle,
-};
+pub use web::{WebCanvasWindowHandle, WebDisplayHandle, WebOffscreenCanvasWindowHandle};
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 
 use core::fmt;
@@ -178,11 +176,6 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on Windows systems.
     WinRt(WinRtWindowHandle),
-    /// A raw window handle for the Web.
-    ///
-    /// ## Availability Hints
-    /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
-    Web(WebWindowHandle),
     /// A raw window handle for a Web canvas registered via [`wasm-bindgen`].
     ///
     /// ## Availability Hints
@@ -425,7 +418,6 @@ from_impl!(RawWindowHandle, Drm, DrmWindowHandle);
 from_impl!(RawWindowHandle, Gbm, GbmWindowHandle);
 from_impl!(RawWindowHandle, Win32, Win32WindowHandle);
 from_impl!(RawWindowHandle, WinRt, WinRtWindowHandle);
-from_impl!(RawWindowHandle, Web, WebWindowHandle);
 from_impl!(RawWindowHandle, WebCanvas, WebCanvasWindowHandle);
 from_impl!(
     RawWindowHandle,
@@ -481,7 +473,6 @@ mod tests {
         assert_not_impl_any!(GbmWindowHandle: Send, Sync);
         assert_impl_all!(Win32WindowHandle: Send, Sync);
         assert_not_impl_any!(WinRtWindowHandle: Send, Sync);
-        assert_impl_all!(WebWindowHandle: Send, Sync);
         assert_not_impl_any!(WebCanvasWindowHandle: Send, Sync);
         assert_not_impl_any!(WebOffscreenCanvasWindowHandle: Send, Sync);
         assert_not_impl_any!(AndroidNdkWindowHandle: Send, Sync);
