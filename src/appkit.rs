@@ -70,14 +70,12 @@ impl DisplayHandle<'static> {
 ///     # #[cfg(requires_objc2)]
 ///     RawWindowHandle::AppKit(handle) => {
 ///         assert!(MainThreadMarker::new().is_some(), "can only access AppKit handles on the main thread");
-///         let ns_view = handle.ns_view.as_ptr();
+///         let ns_window = handle.ns_window.as_ptr();
 ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
 ///         // that the `AppKitWindowHandle` contains a valid pointer to an
-///         // `NSView`.
+///         // `NSWindow`.
 ///         // Unwrap is fine, since the pointer came from `NonNull`.
-///         let ns_view: Retained<NSView> = unsafe { Retained::retain(ns_view.cast()) }.unwrap();
-///         // Do something with the NSView here, like getting the `NSWindow`
-///         let ns_window = ns_view.window().expect("view was not installed in a window");
+///         let ns_window: Retained<NSWindow> = unsafe { Retained::retain(ns_window.cast()) }.unwrap();
 ///     }
 ///     handle => unreachable!("unknown handle {handle:?} for platform"),
 /// }
@@ -86,11 +84,41 @@ impl DisplayHandle<'static> {
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AppKitWindowHandle {
+    /// A pointer to an `NSWindow` object.
+    pub ns_window: NonNull<c_void>,
+}
+
+impl AppKitWindowHandle {
+    /// Create a new handle to a window.
+    ///
+    ///
+    /// # Example
+    ///
+    /// Create a handle from an a `NSWindow`.
+    ///
+    /// ```ignore
+    /// use std::ptr::NonNull;
+    /// use objc2::rc::Retained;
+    /// use objc2_app_kit::{NSWindow, NSView};
+    /// use raw_window_handle::AppKitWindowHandle;
+    ///
+    /// let ns_window: Retained<NSWindow> = ...;
+    /// let handle = AppKitWindowHandle::new(ns_window.cast());
+    /// ```
+    pub fn new(ns_window: NonNull<c_void>) -> Self {
+        Self { ns_window }
+    }
+}
+
+/// Raw view handle for AppKit.
+#[non_exhaustive]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct AppKitSurfaceHandle {
     /// A pointer to an `NSView` object.
     pub ns_view: NonNull<c_void>,
 }
 
-impl AppKitWindowHandle {
+impl AppKitSurfaceHandle {
     /// Create a new handle to a view.
     ///
     ///
@@ -102,12 +130,12 @@ impl AppKitWindowHandle {
     /// use std::ptr::NonNull;
     /// use objc2::rc::Retained;
     /// use objc2_app_kit::{NSWindow, NSView};
-    /// use raw_window_handle::AppKitWindowHandle;
+    /// use raw_window_handle::AppKitSurfaceHandle;
     ///
     /// let ns_window: Retained<NSWindow> = ...;
     /// let ns_view: Retained<NSView> = window.contentView();
     /// let ns_view: NonNull<NSView> = NonNull::from(&*ns_view);
-    /// let handle = AppKitWindowHandle::new(ns_view.cast());
+    /// let handle = AppKitSurfaceHandle::new(ns_view.cast());
     /// ```
     pub fn new(ns_view: NonNull<c_void>) -> Self {
         Self { ns_view }

@@ -3,7 +3,10 @@
 ## Unreleased
 
 * **Breaking:** Rework web handles to remove `wasm-bindgen` from public API. (#184)
-- **Breaking:** Remove `WebWindowHandle` as it is no longer used. (#186)
+* **Breaking:** Remove `WebWindowHandle` as it is no longer used. (#186)
+* Add `RawViewHandle` and `ViewHandle` to support the separation of views and windows.
+  Graphics APIs should now take `HasViewHandle` instead of `HasWindowHandle` where
+  applicable.
 * Improve documentation on AppKit and UIKit handles.
 * Deprecated `UiKitWindowHandle::ui_view_controller`, retrieve this from the UIView's responder chain instead.
 

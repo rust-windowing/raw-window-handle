@@ -45,8 +45,11 @@ mod web;
 mod windows;
 
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
-pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
-pub use borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
+pub use appkit::{AppKitDisplayHandle, AppKitSurfaceHandle, AppKitWindowHandle};
+pub use borrowed::{
+    DisplayHandle, HasDisplayHandle, HasSurfaceHandle, HasWindowHandle, SurfaceHandle,
+    WindowHandle, WindowSurfaceHandle,
+};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
@@ -336,6 +339,40 @@ pub enum RawDisplayHandle {
     Haiku(HaikuDisplayHandle),
 }
 
+/// A view handle for a particular windowing system.
+///
+/// Some windowing systems have a concept of "views", which reference specific
+/// sub-areas of a surface. For example, on macOS, you can have an `NSWindow`
+/// that represents an entire window, or you can have an `NSView` that
+/// represents only a single part of that window.
+///
+/// Certain toolkits may require windows, and certain toolkits may require
+/// views. For example, most graphics frameworks support rendering directly
+/// into views. However, if you were designing a library to add a menubar to a
+/// window, you would need to take a window handle and not a view handle.
+///
+/// In general, all windows are also views, so window handles can be lossily
+/// converted to view handles. View handles cannot be automatically converted
+/// to window handles.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+pub enum RawSurfaceHandle {
+    /// A view that simply represents an entire window.
+    ///
+    /// This view should be used when you want to render directly into the
+    /// entire window. In addition, this should be used when there is no
+    /// meaningful difference between windows and views in the windowing system.
+    /// For example, in Windows, a `HWND` can correspond to both a view handle
+    /// as well as a window handle.
+    Window(RawWindowHandle),
+
+    /// A raw view handle for AppKit.
+    ///
+    /// ## Availability Hints
+    /// This variant is used on macOS systems.
+    AppKit(AppKitSurfaceHandle),
+}
+
 /// An error that can occur while fetching a display or window handle.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
@@ -427,6 +464,9 @@ from_impl!(
 from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
 
+from_impl!(RawSurfaceHandle, Window, RawWindowHandle);
+from_impl!(RawSurfaceHandle, AppKit, AppKitSurfaceHandle);
+
 #[cfg(test)]
 mod tests {
     use core::panic::{RefUnwindSafe, UnwindSafe};
@@ -477,6 +517,9 @@ mod tests {
         assert_not_impl_any!(WebOffscreenCanvasWindowHandle: Send, Sync);
         assert_not_impl_any!(AndroidNdkWindowHandle: Send, Sync);
         assert_not_impl_any!(HaikuWindowHandle: Send, Sync);
+
+        assert_not_impl_any!(RawSurfaceHandle: Send, Sync);
+        assert_not_impl_any!(AppKitSurfaceHandle: Send, Sync);
     }
 
     #[allow(deprecated, unused)]
