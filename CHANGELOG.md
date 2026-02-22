@@ -4,6 +4,7 @@
 
 * **Breaking:** Rework web handles to remove `wasm-bindgen` from public API. (#184)
 - **Breaking:** Remove `WebWindowHandle` as it is no longer used. (#186)
+- **Breaking:** Remove deprecated `HasRawWindowHandle` and `HasRawDisplayHandle` traits.
 * Improve documentation on AppKit and UIKit handles.
 * Deprecated `UiKitWindowHandle::ui_view_controller`, retrieve this from the UIView's responder chain instead.
 

@@ -60,32 +60,6 @@ pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 
 use core::fmt;
 
-/// Window that wraps around a raw window handle.
-///
-/// # Safety
-///
-/// Users can safely assume that pointers and non-zero fields are valid, and it is up to the
-/// implementer of this trait to ensure that condition is upheld.
-///
-/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
-/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
-/// try to derive the field from other fields the implementer *does* provide via whatever methods the
-/// platform provides.
-///
-/// The exact handles returned by `raw_window_handle` must remain consistent between multiple calls
-/// to `raw_window_handle` as long as not indicated otherwise by platform specific events.
-#[deprecated = "Use `HasWindowHandle` instead"]
-pub unsafe trait HasRawWindowHandle {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError>;
-}
-
-#[allow(deprecated)]
-unsafe impl<T: HasWindowHandle + ?Sized> HasRawWindowHandle for T {
-    fn raw_window_handle(&self) -> Result<RawWindowHandle, HandleError> {
-        self.window_handle().map(Into::into)
-    }
-}
-
 /// A window handle for a particular windowing system.
 ///
 /// Each variant contains a struct with fields specific to that windowing system
@@ -200,32 +174,6 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
     Haiku(HaikuWindowHandle),
-}
-
-/// Display that wraps around a raw display handle.
-///
-/// # Safety
-///
-/// Users can safely assume that pointers and non-zero fields are valid, and it is up to the
-/// implementer of this trait to ensure that condition is upheld.
-///
-/// Despite that qualification, implementers should still make a best-effort attempt to fill in all
-/// available fields. If an implementation doesn't, and a downstream user needs the field, it should
-/// try to derive the field from other fields the implementer *does* provide via whatever methods the
-/// platform provides.
-///
-/// The exact handles returned by `raw_display_handle` must remain consistent between multiple calls
-/// to `raw_display_handle` as long as not indicated otherwise by platform specific events.
-#[deprecated = "Use `HasDisplayHandle` instead"]
-pub unsafe trait HasRawDisplayHandle {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError>;
-}
-
-#[allow(deprecated)]
-unsafe impl<T: HasDisplayHandle + ?Sized> HasRawDisplayHandle for T {
-    fn raw_display_handle(&self) -> Result<RawDisplayHandle, HandleError> {
-        self.display_handle().map(Into::into)
-    }
 }
 
 /// A display server handle for a particular windowing system.
@@ -480,11 +428,5 @@ mod tests {
     }
 
     #[allow(deprecated, unused)]
-    fn assert_object_safe(
-        _: &dyn HasRawWindowHandle,
-        _: &dyn HasRawDisplayHandle,
-        _: &dyn HasWindowHandle,
-        _: &dyn HasDisplayHandle,
-    ) {
-    }
+    fn assert_object_safe(_: &dyn HasWindowHandle, _: &dyn HasDisplayHandle) {}
 }
