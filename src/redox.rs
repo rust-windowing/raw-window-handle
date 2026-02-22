@@ -4,6 +4,19 @@ use core::ptr::NonNull;
 use super::DisplayHandle;
 
 /// Raw display handle for the Redox operating system.
+///
+/// ## Thread Safety
+///
+/// The underlying window is a [file descriptor], and most calls on the window
+/// correspond directly to non-mutating file descriptor reads and writes.
+/// Therefore this type is `Send` and `Sync`. This means that this type can be
+/// sent to and used from other threads.
+///
+/// Note that this type does not currently contain any Orbital file descriptors.
+/// This type is kept as `Send` and `Sync` in preparation for file descriptors
+/// to be added to this type.
+///
+/// [file descriptor]: https://github.com/redox-os/orbclient/blob/77c28e88fcb180c750175f2dcf5c7342d357ab26/src/sys/orbital.rs#L64-L65
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OrbitalDisplayHandle {}
@@ -44,6 +57,15 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for the Redox operating system.
+///
+/// ## Thread Safety
+///
+/// The underlying window is a [file descriptor], and most calls on the window
+/// correspond directly to non-mutating file descriptor reads and writes.
+/// Therefore this type is `Send` and `Sync`. This means that this type can be
+/// sent to and used from other threads.
+///
+/// [file descriptor]: https://github.com/redox-os/orbclient/blob/77c28e88fcb180c750175f2dcf5c7342d357ab26/src/sys/orbital.rs#L64-L65
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OrbitalWindowHandle {
@@ -52,6 +74,9 @@ pub struct OrbitalWindowHandle {
     // actually use `std::os::fd::RawFd`, or some sort of integer instead?
     pub window: NonNull<c_void>,
 }
+
+unsafe impl Send for OrbitalWindowHandle {}
+unsafe impl Sync for OrbitalWindowHandle {}
 
 impl OrbitalWindowHandle {
     /// Create a new handle to a window.

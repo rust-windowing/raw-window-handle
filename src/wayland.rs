@@ -2,12 +2,20 @@ use core::ffi::c_void;
 use core::ptr::NonNull;
 
 /// Raw display handle for Wayland.
+///
+/// ## Thread Safety
+///
+/// `libwayland-client` is thread safe, therefore this type is `Send` and `Sync`.
+/// This means that this type can be sent to and from other threads.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WaylandDisplayHandle {
     /// A pointer to a `wl_display`.
     pub display: NonNull<c_void>,
 }
+
+unsafe impl Send for WaylandDisplayHandle {}
+unsafe impl Sync for WaylandDisplayHandle {}
 
 impl WaylandDisplayHandle {
     /// Create a new display handle.
@@ -30,12 +38,20 @@ impl WaylandDisplayHandle {
 }
 
 /// Raw window handle for Wayland.
+///
+/// ## Thread Safety
+///
+/// `libwayland-client` is thread safe, therefore this type is `Send` and `Sync`.
+/// This means that this type can be sent to and from other threads.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WaylandWindowHandle {
     /// A pointer to a `wl_surface`.
     pub surface: NonNull<c_void>,
 }
+
+unsafe impl Send for WaylandWindowHandle {}
+unsafe impl Sync for WaylandWindowHandle {}
 
 impl WaylandWindowHandle {
     /// Create a new handle to a surface.

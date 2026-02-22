@@ -3,6 +3,14 @@ use core::num::NonZeroU32;
 use core::ptr::NonNull;
 
 /// Raw display handle for Xlib.
+///
+/// ## Thread Safety
+///
+/// Reads and writes to and from the X server are internally secure by a [mutex].
+/// Therefore this type is `Send` and `Sync`. This means it can be sent to or
+/// used from other threads.
+///
+/// [mutex]: https://gitlab.freedesktop.org/xorg/lib/libx11/-/blob/master/src/locking.c?ref_type=heads#L596
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XlibDisplayHandle {
@@ -19,6 +27,9 @@ pub struct XlibDisplayHandle {
     /// given that multiple screens usually reside on different GPUs.
     pub screen: c_int,
 }
+
+unsafe impl Send for XlibDisplayHandle {}
+unsafe impl Sync for XlibDisplayHandle {}
 
 impl XlibDisplayHandle {
     /// Create a new handle to a display.
@@ -43,6 +54,11 @@ impl XlibDisplayHandle {
 }
 
 /// Raw window handle for Xlib.
+///
+/// ## Thread Safety
+///
+/// This type is nothing more than a numeric identifier, therefore it is `Send`
+/// and `Sync`. This means it can be safely sent to or used from other threads.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XlibWindowHandle {
@@ -54,7 +70,6 @@ pub struct XlibWindowHandle {
 
 impl XlibWindowHandle {
     /// Create a new handle to a window.
-    ///
     ///
     /// # Example
     ///
@@ -77,6 +92,14 @@ impl XlibWindowHandle {
 }
 
 /// Raw display handle for Xcb.
+///
+/// ## Thread Safety
+///
+/// Reads and writes to and from the X server are internally secure by a [mutex].
+/// Therefore this type is `Send` and `Sync`. This means it can be sent to or
+/// used from other threads.
+///
+/// [mutex]: https://gitlab.freedesktop.org/xorg/lib/libxcb/-/blob/master/src/xcb_conn.c?ref_type=heads#L165
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XcbDisplayHandle {
@@ -93,6 +116,9 @@ pub struct XcbDisplayHandle {
     /// given that multiple screens usually reside on different GPUs.
     pub screen: c_int,
 }
+
+unsafe impl Send for XcbDisplayHandle {}
+unsafe impl Sync for XcbDisplayHandle {}
 
 impl XcbDisplayHandle {
     /// Create a new handle to a connection and screen.
@@ -117,6 +143,11 @@ impl XcbDisplayHandle {
 }
 
 /// Raw window handle for Xcb.
+///
+/// ## Thread Safety
+///
+/// This type is nothing more than a numeric identifier, therefore it is `Send`
+/// and `Sync`. This means it can be safely sent to or used from other threads.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XcbWindowHandle {

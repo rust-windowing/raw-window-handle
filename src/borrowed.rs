@@ -75,6 +75,11 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
 ///
 /// This is the primary return type of the [`HasDisplayHandle`] trait. It is guaranteed to contain
 /// a valid platform-specific display handle for its lifetime.
+///
+/// ## Thread Safety
+///
+/// See individual handle types for thread safety documentation. Since some
+/// window handle types are `!Send` and `!Sync`, this sum type is as well.
 #[repr(transparent)]
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct DisplayHandle<'a> {
@@ -207,6 +212,11 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 /// trait for more information about these safety requirements.
 ///
 /// This handle is guaranteed to be safe and valid.
+///
+/// ## Thread Safety
+///
+/// See individual handle types for thread safety documentation. Since some
+/// window handle types are `!Send` and `!Sync`, this sum type is as well.
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub struct WindowHandle<'a> {
     raw: RawWindowHandle,

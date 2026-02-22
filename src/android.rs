@@ -4,6 +4,16 @@ use core::ptr::NonNull;
 use super::DisplayHandle;
 
 /// Raw display handle for Android.
+///
+/// ## Thread Safety
+///
+/// Android native objects are thread-safe by default; therefore this type is
+/// `Send` and `Sync`. This means that this type can be sent to or used from
+/// any thread.
+///
+/// Note that this type does not contain any Android native objects. However,
+/// it is kept `Send` and `Sync` for the event that Android native objects are
+/// added to this type.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AndroidDisplayHandle {}
@@ -44,12 +54,21 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for Android NDK.
+///
+/// ## Thread Safety
+///
+/// Android native objects are thread-safe by default; therefore this type is
+/// `Send` and `Sync`. This means that this type can be sent to or used from
+/// any thread.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AndroidNdkWindowHandle {
     /// A pointer to an `ANativeWindow`.
     pub a_native_window: NonNull<c_void>,
 }
+
+unsafe impl Send for AndroidNdkWindowHandle {}
+unsafe impl Sync for AndroidNdkWindowHandle {}
 
 impl AndroidNdkWindowHandle {
     /// Create a new handle to an `ANativeWindow`.

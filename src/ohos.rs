@@ -15,14 +15,29 @@
 //! [`OHNativeWindow`]: https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis-arkgraphics2d/_native_window.md
 
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
 
 /// Raw display handle for OpenHarmony.
+///
+/// ## Thread-Safety
+///
+/// OpenHarmony [expects] that UI primitives will only be called from one
+/// thread. Therefore, all OHOS objects are `!Send` and `!Sync`. This means
+/// that this type cannot be sent to or used from other threads.
+///
+/// Note that this type does not contain any OHOS objects. However, it is kept
+/// `!Send` and `!Sync` for the event that OHOS objects are added to this
+/// type.
+///
+/// [expects]: https://ai6s.net/6921b48882fbe0098cade00f.html
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct OhosDisplayHandle {}
+pub struct OhosDisplayHandle {
+    _thread_unsafe: PhantomData<*mut ()>,
+}
 
 impl OhosDisplayHandle {
     /// Create a new empty display handle.
@@ -35,7 +50,9 @@ impl OhosDisplayHandle {
     /// let handle = OhosDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self {
+            _thread_unsafe: PhantomData,
+        }
     }
 }
 
@@ -60,6 +77,14 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for Ohos NDK.
+///
+/// ## Thread-Safety
+///
+/// OpenHarmony [expects] that UI primitives will only be called from one
+/// thread. Therefore, all OHOS objects are `!Send` and `!Sync`. This means
+/// that this type cannot be sent to or used from other threads.
+///
+/// [expects]: https://ai6s.net/6921b48882fbe0098cade00f.html
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OhosNdkWindowHandle {

@@ -6,6 +6,14 @@ use super::DisplayHandle;
 /// Raw display handle for Windows.
 ///
 /// It can be used regardless of Windows window backend.
+///
+/// ## Thread-Safety
+///
+/// Overall, even though Win32 windows have [thread affinity], the overall
+/// Win32 user API is thread-safe. Therefore this type is `Send` and `Sync`.
+/// This means it can be sent to or used from other threads.
+///
+/// [thread affinity]: https://devblogs.microsoft.com/oldnewthing/20051010-09/?p=33843
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WindowsDisplayHandle {}
@@ -46,6 +54,19 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for Win32.
+///
+/// ## Thread-Safety
+///
+/// Window handles have [thread affinity]. This means that they are `!Send`, as
+/// they must be dropped on the same thread that created them. However, some
+/// functions on the window can be called from other threads. This means that
+/// the window is `Sync`.
+///
+/// Note that not all functions of the Win32 handle are thread-safe (modifying
+/// functions especially), so care should be taken to not call these functions
+/// from other threads. When in doubt, only run the function on the main thread.
+///
+/// [thread affinity]: https://devblogs.microsoft.com/oldnewthing/20051010-09/?p=33843
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Win32WindowHandle {
@@ -54,6 +75,8 @@ pub struct Win32WindowHandle {
     /// The `GWLP_HINSTANCE` associated with this type's `HWND`.
     pub hinstance: Option<NonNull<c_void>>,
 }
+
+unsafe impl Sync for Win32WindowHandle {}
 
 impl Win32WindowHandle {
     /// Create a new handle to a window.
@@ -89,12 +112,27 @@ impl Win32WindowHandle {
 }
 
 /// Raw window handle for WinRT.
+///
+/// ## Thread-Safety
+///
+/// Window handles have [thread affinity]. This means that they are `!Send`, as
+/// they must be dropped on the same thread that created them. However, some
+/// functions on the window can be called from other threads. This means that
+/// the window is `Sync`.
+///
+/// Note that not all functions of the Win32 handle are thread-safe (modifying
+/// functions especially), so care should be taken to not call these functions
+/// from other threads. When in doubt, only run the function on the main thread.
+///
+/// [thread affinity]: https://devblogs.microsoft.com/oldnewthing/20051010-09/?p=33843
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WinRtWindowHandle {
     /// A WinRT `CoreWindow` handle.
     pub core_window: NonNull<c_void>,
 }
+
+unsafe impl Sync for WinRtWindowHandle {}
 
 impl WinRtWindowHandle {
     /// Create a new handle to a window.
