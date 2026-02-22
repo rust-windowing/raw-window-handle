@@ -4,6 +4,18 @@ use core::ptr::NonNull;
 use super::DisplayHandle;
 
 /// Raw display handle for Haiku.
+///
+/// ## Thread Safety
+///
+/// Haiku objects are protected by a [global lock]. They are `Send` and `Sync`
+/// as long as producers/downstream consumers take this lock before the `BLooper`
+/// or `BWindow` are used outside of their origin threads.
+///
+/// Note that this type does not currently contain any Haiku objects. However,
+/// it is kept `Send` and `Sync` for the event that Haiku objects are added to
+/// this type.
+///
+/// [global lock]: https://grok.nikisoft.one/opengrok/xref/haiku/src/kits/app/Looper.cpp?r=b47e8b0cadeb9a9d985d7f72d2e9a099cbcb8f90#591-627
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HaikuDisplayHandle {}
@@ -44,6 +56,12 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for Haiku.
+///
+/// Haiku objects are protected by a [global lock]. They are `Send` and `Sync`
+/// as long as producers/downstream consumers take this lock before the `BLooper`
+/// or `BWindow` are used outside of their origin threads.
+///
+/// [global lock]: https://grok.nikisoft.one/opengrok/xref/haiku/src/kits/app/Looper.cpp?r=b47e8b0cadeb9a9d985d7f72d2e9a099cbcb8f90#591-627
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HaikuWindowHandle {
@@ -52,6 +70,9 @@ pub struct HaikuWindowHandle {
     /// A pointer to a BDirectWindow object that might be null
     pub b_direct_window: Option<NonNull<c_void>>,
 }
+
+unsafe impl Send for HaikuWindowHandle {}
+unsafe impl Sync for HaikuWindowHandle {}
 
 impl HaikuWindowHandle {
     /// Create a new handle to a window.

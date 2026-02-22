@@ -3,9 +3,25 @@ use core::marker::PhantomData;
 use super::DisplayHandle;
 
 /// Raw display handle for the Web.
+///
+/// ## Thread-Safety
+///
+/// WASM objects are usually bound to the main UI "thread" belonging to the
+/// top-level webpage. Therefore this type is `!Send` and `!Sync`. It cannot be
+/// sent to or used from other threads.
+///
+/// Note that this type does not contain any WASM objects. However,
+/// it is kept `!Send` and `!Sync` for the event that WASM objects are
+/// added to this type.
+///
+/// However, this status quo may change in the future, due to the adoption of
+/// atomics in WASM code. Therefore this type may be made `Send` and `Sync` as
+/// part of a non-breaking change.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WebDisplayHandle {}
+pub struct WebDisplayHandle {
+    _thread_unsafe: PhantomData<*mut ()>,
+}
 
 impl WebDisplayHandle {
     /// Create a new empty display handle.
@@ -18,7 +34,9 @@ impl WebDisplayHandle {
     /// let handle = WebDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self {
+            _thread_unsafe: PhantomData,
+        }
     }
 }
 
@@ -45,6 +63,12 @@ impl DisplayHandle<'static> {
 /// Raw window handle for a Web canvas registered via [`wasm-bindgen`].
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+///
+/// ## Thread-Safety
+///
+/// WASM objects are usually bound to the main UI "thread" belonging to the
+/// top-level webpage. Therefore this type is `!Send` and `!Sync`. It cannot be
+/// sent to or used from other threads.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebCanvasWindowHandle {
@@ -96,6 +120,12 @@ impl WebCanvasWindowHandle {
 /// [`wasm-bindgen`].
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+///
+/// ## Thread-Safety
+///
+/// WASM objects are usually bound to the main UI "thread" belonging to the
+/// top-level webpage. Therefore this type is `!Send` and `!Sync`. It cannot be
+/// sent to or used from other threads.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebOffscreenCanvasWindowHandle {

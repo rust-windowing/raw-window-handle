@@ -90,6 +90,11 @@ use core::fmt;
 /// unexpected. (For example, it's legal for someone to return a
 /// [`RawWindowHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
+///
+/// ## Thread Safety
+///
+/// See individual handle types for thread safety documentation. Since some
+/// window handle types are `!Send` and `!Sync`, this sum type is as well.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
@@ -212,6 +217,11 @@ pub enum RawWindowHandle {
 /// unexpected. (For example, it's legal for someone to return a
 /// [`RawDisplayHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
+///
+/// ## Thread Safety
+///
+/// See individual handle types for thread safety documentation. Since some
+/// window handle types are `!Send` and `!Sync`, this sum type is as well.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawDisplayHandle {
@@ -405,36 +415,40 @@ mod tests {
         assert_impl_all!(HandleError: Send, Sync, UnwindSafe, RefUnwindSafe, Unpin);
 
         // TODO: Unsure if some of these should not actually be Send + Sync
-        assert_impl_all!(UiKitDisplayHandle: Send, Sync);
-        assert_impl_all!(AppKitDisplayHandle: Send, Sync);
+        assert_not_impl_any!(UiKitDisplayHandle: Send, Sync);
+        assert_not_impl_any!(AppKitDisplayHandle: Send, Sync);
         assert_impl_all!(OrbitalDisplayHandle: Send, Sync);
-        assert_impl_all!(OhosDisplayHandle: Send, Sync);
-        assert_not_impl_any!(XlibDisplayHandle: Send, Sync);
-        assert_not_impl_any!(XcbDisplayHandle: Send, Sync);
-        assert_not_impl_any!(WaylandDisplayHandle: Send, Sync);
+        assert_not_impl_any!(OhosDisplayHandle: Send, Sync);
+        assert_impl_all!(XlibDisplayHandle: Send, Sync);
+        assert_impl_all!(XcbDisplayHandle: Send, Sync);
+        assert_impl_all!(WaylandDisplayHandle: Send, Sync);
         assert_impl_all!(DrmDisplayHandle: Send, Sync);
-        assert_not_impl_any!(GbmDisplayHandle: Send, Sync);
+        assert_impl_all!(GbmDisplayHandle: Send);
+        assert_not_impl_any!(GbmDisplayHandle: Sync);
         assert_impl_all!(WindowsDisplayHandle: Send, Sync);
-        assert_impl_all!(WebDisplayHandle: Send, Sync);
+        assert_not_impl_any!(WebDisplayHandle: Send, Sync);
         assert_impl_all!(AndroidDisplayHandle: Send, Sync);
         assert_impl_all!(HaikuDisplayHandle: Send, Sync);
 
         // TODO: Unsure if some of these should not actually be Send + Sync
         assert_not_impl_any!(UiKitWindowHandle: Send, Sync);
         assert_not_impl_any!(AppKitWindowHandle: Send, Sync);
-        assert_not_impl_any!(OrbitalWindowHandle: Send, Sync);
+        assert_impl_all!(OrbitalWindowHandle: Send, Sync);
         assert_not_impl_any!(OhosNdkWindowHandle: Send, Sync);
         assert_impl_all!(XlibWindowHandle: Send, Sync);
         assert_impl_all!(XcbWindowHandle: Send, Sync);
-        assert_not_impl_any!(WaylandWindowHandle: Send, Sync);
+        assert_impl_all!(WaylandWindowHandle: Send, Sync);
         assert_impl_all!(DrmWindowHandle: Send, Sync);
-        assert_not_impl_any!(GbmWindowHandle: Send, Sync);
-        assert_not_impl_any!(Win32WindowHandle: Send, Sync);
-        assert_not_impl_any!(WinRtWindowHandle: Send, Sync);
+        assert_not_impl_any!(GbmWindowHandle: Sync);
+        assert_impl_all!(GbmWindowHandle: Send);
+        assert_not_impl_any!(Win32WindowHandle: Send);
+        assert_not_impl_any!(WinRtWindowHandle: Send);
+        assert_impl_all!(Win32WindowHandle: Sync);
+        assert_impl_all!(WinRtWindowHandle: Sync);
         assert_not_impl_any!(WebCanvasWindowHandle: Send, Sync);
         assert_not_impl_any!(WebOffscreenCanvasWindowHandle: Send, Sync);
-        assert_not_impl_any!(AndroidNdkWindowHandle: Send, Sync);
-        assert_not_impl_any!(HaikuWindowHandle: Send, Sync);
+        assert_impl_all!(AndroidNdkWindowHandle: Send, Sync);
+        assert_impl_all!(HaikuWindowHandle: Send, Sync);
     }
 
     #[allow(unused)]

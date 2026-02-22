@@ -1,4 +1,10 @@
 /// Raw display handle for the Linux Kernel Mode Set/Direct Rendering Manager.
+///
+/// ## Thread Safety
+///
+/// The DRM display handle is a file descriptor, and file descriptors in Unix
+/// are thread-safe by default. Therefore this type is `Send` and `Sync`. This
+/// means that it can be sent to or used from other threads.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DrmDisplayHandle {
@@ -26,6 +32,12 @@ impl DrmDisplayHandle {
 }
 
 /// Raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager.
+///
+/// ## Thread Safety
+///
+/// DRM "windows" are just planes, which are just numbers. Therefore this type
+/// is `Send` and `Sync`. This means that it can be sent to or used from other
+/// threads.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DrmWindowHandle {

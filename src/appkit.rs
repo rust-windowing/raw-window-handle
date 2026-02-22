@@ -1,12 +1,23 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
 
 /// Raw display handle for AppKit.
+///
+/// ## Thread Safety
+///
+/// This type has the safe thread safety guarantees as [`AppKitWindowHandle`].
+///
+/// Note that this type does not contain any Appkit objects. However,
+/// it is kept `!Send` and `!Sync` for the event that Appkit objects are
+/// added to this type.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AppKitDisplayHandle {}
+pub struct AppKitDisplayHandle {
+    _thread_unsafe: PhantomData<*mut ()>,
+}
 
 impl AppKitDisplayHandle {
     /// Create a new empty display handle.
@@ -19,7 +30,9 @@ impl AppKitDisplayHandle {
     /// let handle = AppKitDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self {
+            _thread_unsafe: PhantomData,
+        }
     }
 }
 
@@ -44,10 +57,6 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for AppKit.
-///
-/// Note that `NSView` can only be accessed from the main thread of the
-/// application. This struct is `!Send` and `!Sync` to help with ensuring
-/// that.
 ///
 /// # Example
 ///
@@ -83,6 +92,19 @@ impl DisplayHandle<'static> {
 /// }
 /// # }
 /// ```
+///
+/// ## Thread Safety
+///
+/// Handles to AppKit objects can only be safely used from the main thread.
+/// Therefore, all Appkit objects are `!Send` and `!Sync`.
+/// This means that this type cannot be sent to or used from other threads.
+///
+/// In addition, it is also expected that the consumer will take precautions to
+/// ensure that this object is only used on the main thread.
+/// It is recommended to use [`objc2::MainThreadMarker`] as a strategy for
+/// ensuring this.
+///
+/// [`objc2::MainThreadMarker`]: https://docs.rs/objc2/latest/objc2/struct.MainThreadMarker.html
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AppKitWindowHandle {
