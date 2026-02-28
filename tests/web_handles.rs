@@ -3,7 +3,7 @@
 #![cfg(target_family = "wasm")]
 
 use core::mem::ManuallyDrop;
-use raw_window_handle::{WebCanvasWindowHandle, WebOffscreenCanvasWindowHandle};
+use raw_window_handle::{WasmBindgenCanvasWindowHandle, WasmBindgenOffscreenCanvasWindowHandle};
 use wasm_bindgen::convert::{IntoWasmAbi, RefFromWasmAbi};
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlCanvasElement, OffscreenCanvas};
@@ -23,7 +23,7 @@ fn html_canvas_element() {
 
     // Convert to the raw index and convert to the handle.
     let index = (&canvas).into_abi();
-    let handle = WebCanvasWindowHandle::new(index as usize);
+    let handle = WasmBindgenCanvasWindowHandle::new(index as usize);
 
     // To get the canvas element back, convert the index back.
     let other_end: ManuallyDrop<HtmlCanvasElement> =
@@ -38,7 +38,7 @@ fn offscreen_canvas() {
 
     // Convert to the raw index and convert to the handle.
     let index = (&canvas).into_abi();
-    let handle = WebOffscreenCanvasWindowHandle::new(index as usize);
+    let handle = WasmBindgenOffscreenCanvasWindowHandle::new(index as usize);
 
     // To get the canvas element back, convert the index back.
     let other_end: ManuallyDrop<OffscreenCanvas> =

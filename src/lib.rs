@@ -64,7 +64,9 @@ pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
 pub use wayland::{WaylandDisplayHandle, WaylandWindowHandle};
-pub use web::{WebCanvasWindowHandle, WebDisplayHandle, WebOffscreenCanvasWindowHandle};
+pub use web::{
+    WasmBindgenCanvasWindowHandle, WasmBindgenDisplay, WasmBindgenOffscreenCanvasWindowHandle,
+};
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 pub use x11::{XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle};
 
@@ -171,14 +173,14 @@ pub enum RawWindowHandle {
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    WebCanvas(WebCanvasWindowHandle),
+    WasmBindgenCanvas(WasmBindgenCanvasWindowHandle),
     /// A raw window handle for a Web offscreen canvas registered via [`wasm-bindgen`].
     ///
     /// ## Availability Hints
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    WebOffscreenCanvas(WebOffscreenCanvasWindowHandle),
+    WasmBindgenOffscreenCanvas(WasmBindgenOffscreenCanvasWindowHandle),
     /// A raw window handle for Android NDK.
     ///
     /// ## Availability Hints
@@ -291,7 +293,7 @@ pub enum RawDisplayHandle {
     ///
     /// ## Availability Hints
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
-    Web(WebDisplayHandle),
+    WasmBindgen(WasmBindgenDisplay),
     /// A raw display handle for Android NDK.
     ///
     /// ## Availability Hints
@@ -371,7 +373,7 @@ from_impl!(RawDisplayHandle, Wayland, WaylandDisplayHandle);
 from_impl!(RawDisplayHandle, Drm, DrmDisplayHandle);
 from_impl!(RawDisplayHandle, Gbm, GbmDisplayHandle);
 from_impl!(RawDisplayHandle, Windows, WindowsDisplayHandle);
-from_impl!(RawDisplayHandle, Web, WebDisplayHandle);
+from_impl!(RawDisplayHandle, WasmBindgen, WasmBindgenDisplay);
 from_impl!(RawDisplayHandle, Android, AndroidDisplayHandle);
 from_impl!(RawDisplayHandle, Haiku, HaikuDisplayHandle);
 
@@ -386,11 +388,15 @@ from_impl!(RawWindowHandle, Drm, DrmWindowHandle);
 from_impl!(RawWindowHandle, Gbm, GbmWindowHandle);
 from_impl!(RawWindowHandle, Win32, Win32WindowHandle);
 from_impl!(RawWindowHandle, WinRt, WinRtWindowHandle);
-from_impl!(RawWindowHandle, WebCanvas, WebCanvasWindowHandle);
 from_impl!(
     RawWindowHandle,
-    WebOffscreenCanvas,
-    WebOffscreenCanvasWindowHandle
+    WasmBindgenCanvas,
+    WasmBindgenCanvasWindowHandle
+);
+from_impl!(
+    RawWindowHandle,
+    WasmBindgenOffscreenCanvas,
+    WasmBindgenOffscreenCanvasWindowHandle
 );
 from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
@@ -426,7 +432,7 @@ mod tests {
         assert_impl_all!(GbmDisplayHandle: Send);
         assert_not_impl_any!(GbmDisplayHandle: Sync);
         assert_impl_all!(WindowsDisplayHandle: Send, Sync);
-        assert_not_impl_any!(WebDisplayHandle: Send, Sync);
+        assert_not_impl_any!(WasmBindgenDisplay: Send, Sync);
         assert_impl_all!(AndroidDisplayHandle: Send, Sync);
         assert_impl_all!(HaikuDisplayHandle: Send, Sync);
 
@@ -444,8 +450,8 @@ mod tests {
         assert_not_impl_any!(WinRtWindowHandle: Send);
         assert_impl_all!(Win32WindowHandle: Send, Sync);
         assert_impl_all!(WinRtWindowHandle: Sync);
-        assert_not_impl_any!(WebCanvasWindowHandle: Send, Sync);
-        assert_not_impl_any!(WebOffscreenCanvasWindowHandle: Send, Sync);
+        assert_not_impl_any!(WasmBindgenCanvasWindowHandle: Send, Sync);
+        assert_not_impl_any!(WasmBindgenOffscreenCanvasWindowHandle: Send, Sync);
         assert_impl_all!(AndroidNdkWindowHandle: Send, Sync);
         assert_impl_all!(HaikuWindowHandle: Send, Sync);
     }
