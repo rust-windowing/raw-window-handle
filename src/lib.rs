@@ -26,6 +26,13 @@
 //! Some windowing systems use a separate display handle for some operations. The display usually
 //! represents a connection to some display server, but it is not necessarily tied to a particular
 //! window. See [`RawDisplayHandle`] for more details.
+//!
+//! ## Dependencies
+//!
+//! This library is intentionally dependency-free, to:
+//! 1. Allow it to better interoperate with arbitrary versions of different crates in the ecosystem.
+//! 2. Reduce compile-times, especially since it allows compiling consumer and producer crates in
+//!    parallel.
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
