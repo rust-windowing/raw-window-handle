@@ -1,10 +1,8 @@
 /// Raw display handle for the Linux Kernel Mode Set/Direct Rendering Manager.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DrmDisplayHandle {
-    /// The drm file descriptor.
     // TODO: Use `std::os::fd::RawFd`?
-    pub fd: i32,
+    fd: i32,
 }
 
 impl DrmDisplayHandle {
@@ -23,14 +21,17 @@ impl DrmDisplayHandle {
     pub fn new(fd: i32) -> Self {
         Self { fd }
     }
+
+    /// The drm file descriptor.
+    pub fn fd(&self) -> i32 {
+        self.fd
+    }
 }
 
 /// Raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DrmWindowHandle {
-    /// The primary drm plane handle.
-    pub plane: u32,
+    plane: u32,
 }
 
 impl DrmWindowHandle {
@@ -48,5 +49,10 @@ impl DrmWindowHandle {
     /// ```
     pub fn new(plane: u32) -> Self {
         Self { plane }
+    }
+
+    /// The primary drm plane handle.
+    pub fn plane(&self) -> u32 {
+        self.plane
     }
 }

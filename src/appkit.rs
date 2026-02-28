@@ -4,9 +4,8 @@ use core::ptr::NonNull;
 use super::DisplayHandle;
 
 /// Raw display handle for AppKit.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AppKitDisplayHandle {}
+pub struct AppKitDisplayHandle(());
 
 impl AppKitDisplayHandle {
     /// Create a new empty display handle.
@@ -19,7 +18,7 @@ impl AppKitDisplayHandle {
     /// let handle = AppKitDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self(())
     }
 }
 
@@ -70,7 +69,7 @@ impl DisplayHandle<'static> {
 ///     # #[cfg(requires_objc2)]
 ///     RawWindowHandle::AppKit(handle) => {
 ///         assert!(MainThreadMarker::new().is_some(), "can only access AppKit handles on the main thread");
-///         let ns_view = handle.ns_view.as_ptr();
+///         let ns_view = handle.ns_view().as_ptr();
 ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
 ///         // that the `AppKitWindowHandle` contains a valid pointer to an
 ///         // `NSView`.
@@ -83,11 +82,9 @@ impl DisplayHandle<'static> {
 /// }
 /// # }
 /// ```
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AppKitWindowHandle {
-    /// A pointer to an `NSView` object.
-    pub ns_view: NonNull<c_void>,
+    ns_view: NonNull<c_void>,
 }
 
 impl AppKitWindowHandle {
@@ -111,5 +108,10 @@ impl AppKitWindowHandle {
     /// ```
     pub fn new(ns_view: NonNull<c_void>) -> Self {
         Self { ns_view }
+    }
+
+    /// A pointer to an `NSView` object.
+    pub fn ns_view(&self) -> NonNull<c_void> {
+        self.ns_view
     }
 }

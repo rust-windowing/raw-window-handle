@@ -4,9 +4,8 @@ use core::ptr::NonNull;
 use super::DisplayHandle;
 
 /// Raw display handle for UIKit.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct UiKitDisplayHandle {}
+pub struct UiKitDisplayHandle(());
 
 impl UiKitDisplayHandle {
     /// Create a new empty display handle.
@@ -19,7 +18,7 @@ impl UiKitDisplayHandle {
     /// let handle = UiKitDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self(())
     }
 }
 
@@ -70,7 +69,7 @@ impl DisplayHandle<'static> {
 ///     # #[cfg(requires_objc2)]
 ///     RawWindowHandle::UIKit(handle) => {
 ///         assert!(MainThreadMarker::new().is_some(), "can only access UIKit handles on the main thread");
-///         let ui_view = handle.ui_view.as_ptr();
+///         let ui_view = handle.ui_view().as_ptr();
 ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
 ///         // that the `UiKitWindowHandle` contains a valid pointer to an
 ///         // `UIView`.
@@ -106,11 +105,9 @@ impl DisplayHandle<'static> {
 ///
 /// // Use found_controller here.
 /// ```
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct UiKitWindowHandle {
-    /// A pointer to an `UIView` object.
-    pub ui_view: NonNull<c_void>,
+    ui_view: NonNull<c_void>,
 }
 
 impl UiKitWindowHandle {
@@ -133,5 +130,10 @@ impl UiKitWindowHandle {
     /// ```
     pub fn new(ui_view: NonNull<c_void>) -> Self {
         Self { ui_view }
+    }
+
+    /// A pointer to an `UIView` object.
+    pub fn ui_view(&self) -> NonNull<c_void> {
+        self.ui_view
     }
 }

@@ -6,9 +6,8 @@ use super::DisplayHandle;
 /// Raw display handle for Windows.
 ///
 /// It can be used regardless of Windows window backend.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WindowsDisplayHandle {}
+pub struct WindowsDisplayHandle(());
 
 impl WindowsDisplayHandle {
     /// Create a new empty display handle.
@@ -21,7 +20,7 @@ impl WindowsDisplayHandle {
     /// let handle = WindowsDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self(())
     }
 }
 
@@ -46,13 +45,10 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for Win32.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Win32WindowHandle {
-    /// A Win32 `HWND` handle.
-    pub hwnd: NonNull<c_void>,
-    /// The `GWLP_HINSTANCE` associated with this type's `HWND`.
-    pub hinstance: Option<NonNull<c_void>>,
+    hwnd: NonNull<c_void>,
+    hinstance: Option<NonNull<c_void>>,
 }
 
 impl Win32WindowHandle {
@@ -73,12 +69,7 @@ impl Win32WindowHandle {
     /// #
     /// let window: HWND;
     /// # window = HWND(1 as *mut c_void);
-    /// let mut handle = Win32WindowHandle::new(NonNull::new(window.0).unwrap());
-    /// // Optionally set the GWLP_HINSTANCE.
-    /// # #[cfg(only_for_showcase)]
-    /// let hinstance = NonNull::new(unsafe { GetWindowLongPtrW(window, GWLP_HINSTANCE) }).unwrap();
-    /// # let hinstance = None;
-    /// handle.hinstance = hinstance;
+    /// let handle = Win32WindowHandle::new(NonNull::new(window.0).unwrap());
     /// ```
     pub fn new(hwnd: NonNull<c_void>) -> Self {
         Self {
@@ -86,14 +77,46 @@ impl Win32WindowHandle {
             hinstance: None,
         }
     }
+
+    /// Create a new window handle to a window together with its `GWLP_HINSTANCE`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::Win32WindowHandle;
+    /// # struct HWND(*mut c_void);
+    /// #
+    /// let window: HWND;
+    /// # window = HWND(1 as *mut c_void);
+    /// # #[cfg(only_for_showcase)]
+    /// let hinstance = NonNull::new(unsafe { GetWindowLongPtrW(window, GWLP_HINSTANCE) }).unwrap();
+    /// # let hinstance = NonNull::dangling();
+    /// let handle = Win32WindowHandle::with_hinstance(NonNull::new(window.0).unwrap(), hinstance);
+    /// ```
+    pub fn with_hinstance(hwnd: NonNull<c_void>, hinstance: NonNull<c_void>) -> Self {
+        Self {
+            hwnd,
+            hinstance: Some(hinstance),
+        }
+    }
+
+    /// A Win32 `HWND` handle.
+    pub fn hwnd(&self) -> NonNull<c_void> {
+        self.hwnd
+    }
+
+    /// The `GWLP_HINSTANCE` associated with this type's `HWND`.
+    pub fn hinstance(&self) -> Option<NonNull<c_void>> {
+        self.hinstance
+    }
 }
 
 /// Raw window handle for WinRT.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WinRtWindowHandle {
-    /// A WinRT `CoreWindow` handle.
-    pub core_window: NonNull<c_void>,
+    core_window: NonNull<c_void>,
 }
 
 impl WinRtWindowHandle {
@@ -113,5 +136,10 @@ impl WinRtWindowHandle {
     /// ```
     pub fn new(core_window: NonNull<c_void>) -> Self {
         Self { core_window }
+    }
+
+    /// A WinRT `CoreWindow` handle.
+    pub fn core_window(&self) -> NonNull<c_void> {
+        self.core_window
     }
 }

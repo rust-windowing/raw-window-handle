@@ -20,9 +20,8 @@ use core::ptr::NonNull;
 use super::DisplayHandle;
 
 /// Raw display handle for OpenHarmony.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct OhosDisplayHandle {}
+pub struct OhosDisplayHandle(());
 
 impl OhosDisplayHandle {
     /// Create a new empty display handle.
@@ -35,7 +34,7 @@ impl OhosDisplayHandle {
     /// let handle = OhosDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self(())
     }
 }
 
@@ -60,10 +59,9 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for Ohos NDK.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OhosNdkWindowHandle {
-    pub native_window: NonNull<c_void>,
+    native_window: NonNull<c_void>,
 }
 
 impl OhosNdkWindowHandle {
@@ -94,5 +92,10 @@ impl OhosNdkWindowHandle {
     /// ```
     pub fn new(native_window: NonNull<c_void>) -> Self {
         Self { native_window }
+    }
+
+    /// Get the handle to `OHNativeWindow`.
+    pub fn native_window(&self) -> NonNull<c_void> {
+        self.native_window
     }
 }
