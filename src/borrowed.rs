@@ -20,11 +20,11 @@ use crate::{HandleError, RawDisplayHandle, RawWindowHandle};
 /// display object.
 ///
 /// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
-/// should be generic over a type that implements `HasDisplayHandle`, and should use the
+/// should be generic over a type that implements `AsDisplayHandle`, and should use the
 /// [`DisplayHandle`] type to access the display handle.
 ///
-/// Note that these requirements are not enforced on `HasDisplayHandle`, rather, they are enforced on the
-/// constructors of [`DisplayHandle`]. This is because the `HasDisplayHandle` trait is safe to implement.
+/// Note that these requirements are not enforced on `AsDisplayHandle`, rather, they are enforced on the
+/// constructors of [`DisplayHandle`]. This is because the `AsDisplayHandle` trait is safe to implement.
 ///
 /// [`winit`]: https://crates.io/crates/winit
 /// [`sdl2`]: https://crates.io/crates/sdl2
@@ -73,7 +73,7 @@ impl<H: AsDisplayHandle + ?Sized> AsDisplayHandle for alloc::sync::Arc<H> {
 
 /// The handle to the display controller of the windowing system.
 ///
-/// This is the primary return type of the [`HasDisplayHandle`] trait. It is guaranteed to contain
+/// This is the primary return type of the [`AsDisplayHandle`] trait. It is guaranteed to contain
 /// a valid platform-specific display handle for its lifetime.
 ///
 /// ## Thread Safety
@@ -154,7 +154,7 @@ impl<'a> AsDisplayHandle for BorrowedDisplayHandle<'a> {
 /// systems should implement this trait on types that represent windows.
 ///
 /// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
-/// should be generic over a type that implements `HasWindowHandle`, and should use the
+/// should be generic over a type that implements `AsWindowHandle`, and should use the
 /// [`WindowHandle`] type to access the window handle. The window handle should be acquired and held
 /// while the window is being used, in order to ensure that the window is not deleted while it is in
 /// use.
@@ -206,9 +206,9 @@ impl<H: AsWindowHandle + ?Sized> AsWindowHandle for alloc::sync::Arc<H> {
 
 /// The handle to a window.
 ///
-/// This is the primary return type of the [`HasWindowHandle`] trait. All *pointers* within this type
+/// This is the primary return type of the [`AsWindowHandle`] trait. All *pointers* within this type
 /// are guaranteed to be valid and not dangling for the lifetime of the handle. This excludes window IDs
-/// like XIDs and the window ID for web platforms. See the documentation on the [`HasWindowHandle`]
+/// like XIDs and the window ID for web platforms. See the documentation on the [`AsWindowHandle`]
 /// trait for more information about these safety requirements.
 ///
 /// This handle is guaranteed to be safe and valid.

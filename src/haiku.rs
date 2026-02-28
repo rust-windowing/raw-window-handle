@@ -44,9 +44,9 @@ impl BorrowedDisplayHandle<'static> {
     /// # Example
     ///
     /// ```
-    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
-    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
-    /// let handle = DisplayHandle::haiku();
+    /// # use raw_window_handle::{BorrowedDisplayHandle, AsDisplayHandle};
+    /// # fn do_something(rwh: impl AsDisplayHandle) { let _ = rwh; }
+    /// let handle = BorrowedDisplayHandle::haiku();
     /// do_something(handle);
     /// ```
     pub fn haiku() -> Self {
