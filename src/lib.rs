@@ -43,27 +43,30 @@ extern crate std;
 mod android;
 mod appkit;
 mod borrowed;
+mod drm;
+mod gbm;
 mod haiku;
 mod ohos;
 mod redox;
 mod uikit;
-mod unix;
+mod wayland;
 mod web;
 mod windows;
+mod x11;
 
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
 pub use borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
+pub use drm::{DrmDisplayHandle, DrmWindowHandle};
+pub use gbm::{GbmDisplayHandle, GbmWindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
-pub use unix::{
-    DrmDisplayHandle, DrmWindowHandle, GbmDisplayHandle, GbmWindowHandle, WaylandDisplayHandle,
-    WaylandWindowHandle, XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle,
-};
+pub use wayland::{WaylandDisplayHandle, WaylandWindowHandle};
 pub use web::{WebCanvasWindowHandle, WebDisplayHandle, WebOffscreenCanvasWindowHandle};
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
+pub use x11::{XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle};
 
 use core::fmt;
 
