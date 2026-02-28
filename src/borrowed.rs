@@ -67,7 +67,7 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
 
 impl<'a> HasDisplayHandle for DisplayHandle<'a> {
     fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
-        Ok(*self)
+        Ok(self.clone())
     }
 }
 
@@ -133,6 +133,6 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 
 impl HasWindowHandle for WindowHandle<'_> {
     fn window_handle(&self) -> Result<Self, HandleError> {
-        Ok(*self)
+        Ok(self.clone())
     }
 }

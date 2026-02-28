@@ -7,6 +7,7 @@
 - **Breaking:** Remove deprecated `HasRawWindowHandle` and `HasRawDisplayHandle` traits.
 - **Breaking:** Remove `UiKitWindowHandle::ui_view_controller` field, retrieve this from the UIView's responder chain instead.
 - **Breaking:** Merge `RawWindowHandle` and `WindowHandle<'_>`.
+- **Breaking:** Remove `Copy` impl on `WindowHandle<'_>` and `DisplayHandle<'_>`.
 * Improve documentation on AppKit and UIKit handles.
 
 ## 0.6.2 (2024-05-17)
