@@ -30,43 +30,43 @@ use crate::{HandleError, RawDisplayHandle, RawWindowHandle};
 /// [`sdl2`]: https://crates.io/crates/sdl2
 /// [`wgpu`]: https://crates.io/crates/wgpu
 /// [`glutin`]: https://crates.io/crates/glutin
-pub trait HasDisplayHandle {
+pub trait AsDisplayHandle {
     /// Get a handle to the display controller of the windowing system.
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError>;
+    fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError>;
 }
 
-impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for &H {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+impl<H: AsDisplayHandle + ?Sized> AsDisplayHandle for &H {
+    fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
         (**self).display_handle()
     }
 }
 
-impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for &mut H {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
-        (**self).display_handle()
-    }
-}
-
-#[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::boxed::Box<H> {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+impl<H: AsDisplayHandle + ?Sized> AsDisplayHandle for &mut H {
+    fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
         (**self).display_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::rc::Rc<H> {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+impl<H: AsDisplayHandle + ?Sized> AsDisplayHandle for alloc::boxed::Box<H> {
+    fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
         (**self).display_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+impl<H: AsDisplayHandle + ?Sized> AsDisplayHandle for alloc::rc::Rc<H> {
+    fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
+        (**self).display_handle()
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+impl<H: AsDisplayHandle + ?Sized> AsDisplayHandle for alloc::sync::Arc<H> {
+    fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
         (**self).display_handle()
     }
 }
@@ -82,18 +82,18 @@ impl<H: HasDisplayHandle + ?Sized> HasDisplayHandle for alloc::sync::Arc<H> {
 /// window handle types are `!Send` and `!Sync`, this sum type is as well.
 #[repr(transparent)]
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
-pub struct DisplayHandle<'a> {
+pub struct BorrowedDisplayHandle<'a> {
     raw: RawDisplayHandle,
     _marker: PhantomData<&'a ()>,
 }
 
-impl fmt::Debug for DisplayHandle<'_> {
+impl fmt::Debug for BorrowedDisplayHandle<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("DisplayHandle").field(&self.raw).finish()
     }
 }
 
-impl<'a> DisplayHandle<'a> {
+impl<'a> BorrowedDisplayHandle<'a> {
     /// Create a `DisplayHandle` from a [`RawDisplayHandle`].
     ///
     /// # Safety
@@ -120,26 +120,26 @@ impl<'a> DisplayHandle<'a> {
     }
 }
 
-impl AsRef<RawDisplayHandle> for DisplayHandle<'_> {
+impl AsRef<RawDisplayHandle> for BorrowedDisplayHandle<'_> {
     fn as_ref(&self) -> &RawDisplayHandle {
         &self.raw
     }
 }
 
-impl Borrow<RawDisplayHandle> for DisplayHandle<'_> {
+impl Borrow<RawDisplayHandle> for BorrowedDisplayHandle<'_> {
     fn borrow(&self) -> &RawDisplayHandle {
         &self.raw
     }
 }
 
-impl From<DisplayHandle<'_>> for RawDisplayHandle {
-    fn from(handle: DisplayHandle<'_>) -> Self {
+impl From<BorrowedDisplayHandle<'_>> for RawDisplayHandle {
+    fn from(handle: BorrowedDisplayHandle<'_>) -> Self {
         handle.raw
     }
 }
 
-impl<'a> HasDisplayHandle for DisplayHandle<'a> {
-    fn display_handle(&self) -> Result<DisplayHandle<'_>, HandleError> {
+impl<'a> AsDisplayHandle for BorrowedDisplayHandle<'a> {
+    fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
         Ok(*self)
     }
 }
@@ -163,43 +163,43 @@ impl<'a> HasDisplayHandle for DisplayHandle<'a> {
 /// [`sdl2`]: https://crates.io/crates/sdl2
 /// [`wgpu`]: https://crates.io/crates/wgpu
 /// [`glutin`]: https://crates.io/crates/glutin
-pub trait HasWindowHandle {
+pub trait AsWindowHandle {
     /// Get a handle to the window.
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError>;
+    fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError>;
 }
 
-impl<H: HasWindowHandle + ?Sized> HasWindowHandle for &H {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+impl<H: AsWindowHandle + ?Sized> AsWindowHandle for &H {
+    fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
         (**self).window_handle()
     }
 }
 
-impl<H: HasWindowHandle + ?Sized> HasWindowHandle for &mut H {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
-        (**self).window_handle()
-    }
-}
-
-#[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::boxed::Box<H> {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+impl<H: AsWindowHandle + ?Sized> AsWindowHandle for &mut H {
+    fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
         (**self).window_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::rc::Rc<H> {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+impl<H: AsWindowHandle + ?Sized> AsWindowHandle for alloc::boxed::Box<H> {
+    fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
         (**self).window_handle()
     }
 }
 
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
-impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
-    fn window_handle(&self) -> Result<WindowHandle<'_>, HandleError> {
+impl<H: AsWindowHandle + ?Sized> AsWindowHandle for alloc::rc::Rc<H> {
+    fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
+        (**self).window_handle()
+    }
+}
+
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+impl<H: AsWindowHandle + ?Sized> AsWindowHandle for alloc::sync::Arc<H> {
+    fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
         (**self).window_handle()
     }
 }
@@ -218,18 +218,18 @@ impl<H: HasWindowHandle + ?Sized> HasWindowHandle for alloc::sync::Arc<H> {
 /// See individual handle types for thread safety documentation. Since some
 /// window handle types are `!Send` and `!Sync`, this sum type is as well.
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
-pub struct WindowHandle<'a> {
+pub struct BorrowedWindowHandle<'a> {
     raw: RawWindowHandle,
     _marker: PhantomData<&'a ()>,
 }
 
-impl fmt::Debug for WindowHandle<'_> {
+impl fmt::Debug for BorrowedWindowHandle<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_tuple("WindowHandle").field(&self.raw).finish()
     }
 }
 
-impl<'a> WindowHandle<'a> {
+impl<'a> BorrowedWindowHandle<'a> {
     /// Borrow a `WindowHandle` from a [`RawWindowHandle`].
     ///
     /// # Safety
@@ -267,25 +267,25 @@ impl<'a> WindowHandle<'a> {
     }
 }
 
-impl AsRef<RawWindowHandle> for WindowHandle<'_> {
+impl AsRef<RawWindowHandle> for BorrowedWindowHandle<'_> {
     fn as_ref(&self) -> &RawWindowHandle {
         &self.raw
     }
 }
 
-impl Borrow<RawWindowHandle> for WindowHandle<'_> {
+impl Borrow<RawWindowHandle> for BorrowedWindowHandle<'_> {
     fn borrow(&self) -> &RawWindowHandle {
         &self.raw
     }
 }
 
-impl From<WindowHandle<'_>> for RawWindowHandle {
-    fn from(handle: WindowHandle<'_>) -> Self {
+impl From<BorrowedWindowHandle<'_>> for RawWindowHandle {
+    fn from(handle: BorrowedWindowHandle<'_>) -> Self {
         handle.raw
     }
 }
 
-impl HasWindowHandle for WindowHandle<'_> {
+impl AsWindowHandle for BorrowedWindowHandle<'_> {
     fn window_handle(&self) -> Result<Self, HandleError> {
         Ok(*self)
     }

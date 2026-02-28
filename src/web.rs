@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use super::DisplayHandle;
+use super::BorrowedDisplayHandle;
 
 /// Raw display handle for the Web.
 ///
@@ -40,7 +40,7 @@ impl WebDisplayHandle {
     }
 }
 
-impl DisplayHandle<'static> {
+impl BorrowedDisplayHandle<'static> {
     /// Create a Web-based display handle.
     ///
     /// As no data is borrowed by this handle, it is completely safe to create. This function

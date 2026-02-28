@@ -2,7 +2,7 @@ use core::ffi::c_void;
 use core::marker::PhantomData;
 use core::ptr::NonNull;
 
-use super::DisplayHandle;
+use super::BorrowedDisplayHandle;
 
 /// Raw display handle for AppKit.
 ///
@@ -36,7 +36,7 @@ impl AppKitDisplayHandle {
     }
 }
 
-impl DisplayHandle<'static> {
+impl BorrowedDisplayHandle<'static> {
     /// Create an AppKit-based display handle.
     ///
     /// As no data is borrowed by this handle, it is completely safe to create. This function

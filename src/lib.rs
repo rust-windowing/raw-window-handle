@@ -56,7 +56,7 @@ mod x11;
 
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
-pub use borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
+pub use borrowed::{AsDisplayHandle, AsWindowHandle, BorrowedDisplayHandle, BorrowedWindowHandle};
 pub use drm::{DrmDisplayHandle, DrmWindowHandle};
 pub use gbm::{GbmDisplayHandle, GbmWindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
@@ -406,12 +406,12 @@ mod tests {
     fn auto_traits() {
         assert_impl_all!(RawDisplayHandle: UnwindSafe, RefUnwindSafe, Unpin);
         assert_not_impl_any!(RawDisplayHandle: Send, Sync);
-        assert_impl_all!(DisplayHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
-        assert_not_impl_any!(DisplayHandle<'_>: Send, Sync);
+        assert_impl_all!(BorrowedDisplayHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
+        assert_not_impl_any!(BorrowedDisplayHandle<'_>: Send, Sync);
         assert_impl_all!(RawWindowHandle: UnwindSafe, RefUnwindSafe, Unpin);
         assert_not_impl_any!(RawWindowHandle: Send, Sync);
-        assert_impl_all!(WindowHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
-        assert_not_impl_any!(WindowHandle<'_>: Send, Sync);
+        assert_impl_all!(BorrowedWindowHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
+        assert_not_impl_any!(BorrowedWindowHandle<'_>: Send, Sync);
         assert_impl_all!(HandleError: Send, Sync, UnwindSafe, RefUnwindSafe, Unpin);
 
         // TODO: Unsure if some of these should not actually be Send + Sync
@@ -451,6 +451,6 @@ mod tests {
         assert_impl_all!(HaikuWindowHandle: Send, Sync);
     }
 
-    #[allow(unused)]
-    fn assert_object_safe(_: &dyn HasWindowHandle, _: &dyn HasDisplayHandle) {}
+    #[allow(deprecated, unused)]
+    fn assert_object_safe(_: &dyn AsWindowHandle, _: &dyn AsDisplayHandle) {}
 }

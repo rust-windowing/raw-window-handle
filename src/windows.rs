@@ -1,7 +1,7 @@
 use core::ffi::c_void;
 use core::ptr::NonNull;
 
-use super::DisplayHandle;
+use super::BorrowedDisplayHandle;
 
 /// Raw display handle for Windows.
 ///
@@ -33,7 +33,7 @@ impl WindowsDisplayHandle {
     }
 }
 
-impl DisplayHandle<'static> {
+impl BorrowedDisplayHandle<'static> {
     /// Create a Windows-based display handle.
     ///
     /// As no data is borrowed by this handle, it is completely safe to create. This function
