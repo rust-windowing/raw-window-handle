@@ -3,12 +3,55 @@
 #![allow(clippy::new_without_default)]
 #![deny(unsafe_op_in_unsafe_fn)]
 
-//! Interoperability library for Rust Windowing applications.
+//! # Interoperability helper between graphics crates
 //!
-//! This library provides standard types for accessing a window's platform-specific raw window
-//! handle and platforms display handle. This does not provide any utilities for creating and
-//! managing windows; instead, it provides a common interface that window creation libraries (e.g.
-//! Winit, SDL) can use to easily talk with graphics libraries (e.g. gfx-hal).
+//! This crate is intended as an interoperability crate, that allows "producer" crates to create a
+//! handle to a window surface, and for this handle to be passed onwards to "consumer" crates for
+//! rendering to that surface.
+//!
+//! This crate does not by itself provide any utilities for creating and managing windows, nor for
+//! rendering into them.
+//!
+//! ## Producers
+//!
+//! Producer crates provide some sort of "window" type that implements [`HasWindowHandle`], and
+//! ensures that the [`WindowHandle`] returned from that is alive for as long as the window is. The
+//! primary example of this is [`winit`](https://docs.rs/winit/), consider that the "reference
+//! implementation" of a producer crate.
+//!
+//! Other cross-platform producer crates include [`sdl3`](https://docs.rs/sdl3/),
+//! [`sdl2`](https://docs.rs/sdl2/), [`minifb`](https://docs.rs/minifb/),
+//! [`glfw`](https://docs.rs/glfw/) and [`fltk`](https://docs.rs/fltk/).
+//!
+//! Some platform-specific toolkits might also decide to implement `HasWindowHandle` for their
+//! types to allow more easily using them with consumer crates. Examples of this include `x11rb`,
+//! `ndk`, `orbclient` and `wayland-backend`.
+//!
+//! ## Consumers
+//!
+//! Consumer crates expose some sort of "surface" type that renders into a provided window handle.
+//!
+//! In general, consumer crates must either be generic over the handle type, or contain a lifetime
+//! to it, because on some platforms (Wayland, GBM, maybe more?) that is the only way to ensure that
+//! the handle is not deallocated while in use by the surface.
+//! ```
+//! struct Surface<W: HasWindowHandle> {
+//!     handle: W,
+//! }
+//! ```
+//!
+//! Examples of consumer crates include [`softbuffer`](https://docs.rs/softbuffer/),
+//! [`glutin`](https://docs.rs/glutin/) and [`wgpu`](https://docs.rs/wgpu/), consider these
+//! "reference implementations" of consumer crates. Other examples include
+//! [`ash-window`](https://docs.rs/ash-window/) and [`pixels`](https://docs.rs/pixels/).
+//!
+//! Another type of producer is those that use the window handle to access either the platform
+//! widget/view or the actual window, and performs some operation that requires that. Examples of
+//! this include [`rfd`](https://docs.rs/rfd/), [`wry`](https://docs.rs/wry/),
+//! [`muda`](https://docs.rs/muda/), [`window_clipboard`](https://docs.rs/window_clipboard/),
+//! [`ashpd`](https://docs.rs/ashpd/), [`window-vibrancy`](https://docs.rs/window-vibrancy/),
+//! [`window-shadows`](https://docs.rs/window-shadows/) and
+//! [`native-dialog`](https://docs.rs/native-dialog/).
 //!
 //! ## Safety guarantees
 //!
