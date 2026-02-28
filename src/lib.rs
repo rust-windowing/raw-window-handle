@@ -427,6 +427,6 @@ mod tests {
         assert_not_impl_any!(HaikuWindowHandle: Send, Sync);
     }
 
-    #[allow(deprecated, unused)]
+    #[allow(unused)]
     fn assert_object_safe(_: &dyn HasWindowHandle, _: &dyn HasDisplayHandle) {}
 }
