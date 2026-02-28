@@ -47,7 +47,7 @@ impl DisplayHandle<'static> {
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WebCanvasWindowHandle {
+pub struct WasmBindgenCanvasWindowHandle {
     /// An inner index of the [`JsValue`] of an [`HtmlCanvasElement`].
     ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
@@ -58,7 +58,7 @@ pub struct WebCanvasWindowHandle {
     _marker: PhantomData<*mut ()>,
 }
 
-impl WebCanvasWindowHandle {
+impl WasmBindgenCanvasWindowHandle {
     /// Create a new handle from a pointer to [`HtmlCanvasElement`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
@@ -67,7 +67,7 @@ impl WebCanvasWindowHandle {
     ///
     #[cfg_attr(target_family = "wasm", doc = "```no_run")]
     #[cfg_attr(not(target_family = "wasm"), doc = "```no_compile")]
-    /// # use raw_window_handle::WebCanvasWindowHandle;
+    /// # use raw_window_handle::WasmBindgenCanvasWindowHandle;
     /// use core::mem::ManuallyDrop;
     /// use wasm_bindgen::convert::{IntoWasmAbi, RefFromWasmAbi};
     /// use web_sys::HtmlCanvasElement;
@@ -77,7 +77,7 @@ impl WebCanvasWindowHandle {
     ///
     /// // Convert to the raw index and convert to the handle.
     /// let index = (&value).into_abi();
-    /// let mut handle = WebCanvasWindowHandle::new(index as usize);
+    /// let mut handle = WasmBindgenCanvasWindowHandle::new(index as usize);
     ///
     /// // To get the canvas element back, convert the index back.
     /// let other_end: ManuallyDrop<HtmlCanvasElement> = unsafe {
@@ -98,7 +98,7 @@ impl WebCanvasWindowHandle {
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WebOffscreenCanvasWindowHandle {
+pub struct WasmBindgenOffscreenCanvasWindowHandle {
     /// An inner index of the [`JsValue`] of an [`OffscreenCanvas`].
     ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
@@ -109,7 +109,7 @@ pub struct WebOffscreenCanvasWindowHandle {
     _marker: PhantomData<*mut ()>,
 }
 
-impl WebOffscreenCanvasWindowHandle {
+impl WasmBindgenOffscreenCanvasWindowHandle {
     /// Create a new handle from a pointer to an [`OffscreenCanvas`].
     ///
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
@@ -118,7 +118,7 @@ impl WebOffscreenCanvasWindowHandle {
     ///
     #[cfg_attr(target_family = "wasm", doc = "```no_run")]
     #[cfg_attr(not(target_family = "wasm"), doc = "```no_compile")]
-    /// # use raw_window_handle::WebOffscreenCanvasWindowHandle;
+    /// # use raw_window_handle::WasmBindgenOffscreenCanvasWindowHandle;
     /// use core::mem::ManuallyDrop;
     /// use wasm_bindgen::convert::{IntoWasmAbi, RefFromWasmAbi};
     /// use web_sys::OffscreenCanvas;
@@ -128,7 +128,7 @@ impl WebOffscreenCanvasWindowHandle {
     ///
     /// // Convert to the raw index and convert to the handle.
     /// let index = (&value).into_abi();
-    /// let handle = WebOffscreenCanvasWindowHandle::new(index as usize);
+    /// let handle = WasmBindgenOffscreenCanvasWindowHandle::new(index as usize);
     ///
     /// // To get the canvas element back, convert the index back.
     /// let other_end: ManuallyDrop<OffscreenCanvas> = unsafe {
