@@ -49,7 +49,7 @@ mod x11;
 
 pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
 pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
-pub use borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
+pub use borrowed::{HasDisplayHandle, HasWindowHandle};
 pub use drm::{DrmDisplayHandle, DrmWindowHandle};
 pub use gbm::{GbmDisplayHandle, GbmWindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
@@ -81,11 +81,11 @@ use core::fmt;
 /// Note that these "Availability Hints" are not normative. That is to say, a
 /// [`HasWindowHandle`] implementor is completely allowed to return something
 /// unexpected. (For example, it's legal for someone to return a
-/// [`RawWindowHandle::Xlib`] on macOS, it would just be weird, and probably
+/// [`WindowHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum RawWindowHandle {
+pub enum WindowHandle<'window> {
     /// A raw window handle for UIKit (Apple's non-macOS windowing library).
     ///
     /// ## Availability Hints
@@ -94,24 +94,24 @@ pub enum RawWindowHandle {
     ///
     /// Note that Mac Catalyst (`$arch-apple-ios-macabi` targets), can use
     /// UIKit *or* AppKit.
-    UiKit(UiKitWindowHandle),
+    UiKit(UiKitWindowHandle<'window>),
     /// A raw window handle for AppKit.
     ///
     /// ## Availability Hints
     /// This variant is used on macOS, although Mac Catalyst can also use it
     /// despite being `target_os = "ios"`.
-    AppKit(AppKitWindowHandle),
+    AppKit(AppKitWindowHandle<'window>),
     /// A raw window handle for the Redox operating system.
     ///
     /// ## Availability Hints
     /// This variant is used by the Orbital Windowing System in the Redox
     /// operating system.
-    Orbital(OrbitalWindowHandle),
+    Orbital(OrbitalWindowHandle<'window>),
     /// A raw window handle for the OpenHarmony OS NDK
     ///
     /// ## Availability Hints
     /// This variant is used on OpenHarmony OS (`target_env = "ohos"`).
-    OhosNdk(OhosNdkWindowHandle),
+    OhosNdk(OhosNdkWindowHandle<'window>),
     /// A raw window handle for Xlib.
     ///
     /// ## Availability Hints
@@ -131,7 +131,7 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant should be expected anywhere Wayland works, which is
     /// currently some subset of unix systems.
-    Wayland(WaylandWindowHandle),
+    Wayland(WaylandWindowHandle<'window>),
     /// A raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager
     ///
     /// ## Availability Hints
@@ -142,7 +142,7 @@ pub enum RawWindowHandle {
     /// ## Availability Hints
     /// This variant is present regardless of windowing backend and likely to be used with
     /// EGL_MESA_platform_gbm or EGL_KHR_platform_gbm.
-    Gbm(GbmWindowHandle),
+    Gbm(GbmWindowHandle<'window>),
     /// A raw window handle for Win32.
     ///
     /// ## Availability Hints
@@ -152,34 +152,34 @@ pub enum RawWindowHandle {
     ///
     /// ## Availability Hints
     /// This variant is used on Windows systems.
-    WinRt(WinRtWindowHandle),
+    WinRt(WinRtWindowHandle<'window>),
     /// A raw window handle for a Web canvas registered via [`wasm-bindgen`].
     ///
     /// ## Availability Hints
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    WebCanvas(WebCanvasWindowHandle),
+    WebCanvas(WebCanvasWindowHandle<'window>),
     /// A raw window handle for a Web offscreen canvas registered via [`wasm-bindgen`].
     ///
     /// ## Availability Hints
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
     ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    WebOffscreenCanvas(WebOffscreenCanvasWindowHandle),
+    WebOffscreenCanvas(WebOffscreenCanvasWindowHandle<'window>),
     /// A raw window handle for Android NDK.
     ///
     /// ## Availability Hints
     /// This variant is used on Android targets.
-    AndroidNdk(AndroidNdkWindowHandle),
+    AndroidNdk(AndroidNdkWindowHandle<'window>),
     /// A raw window handle for Haiku.
     ///
     /// ## Availability Hints
     /// This variant is used on HaikuOS.
-    Haiku(HaikuWindowHandle),
+    Haiku(HaikuWindowHandle<'window>),
 }
 
-/// A display server handle for a particular windowing system.
+/// A handle to the display server/controller for a particular windowing system.
 ///
 /// The display usually represents a connection to some display server, but it is not necessarily
 /// tied to a particular window. Some APIs can use the display handle without ever creating a window
@@ -207,7 +207,7 @@ pub enum RawWindowHandle {
 /// requires something like XQuartz be used).
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum RawDisplayHandle {
+pub enum DisplayHandle<'display> {
     /// A raw display handle for UIKit (Apple's non-macOS windowing library).
     ///
     /// ## Availability Hints
@@ -240,31 +240,31 @@ pub enum RawDisplayHandle {
     /// This variant is likely to show up anywhere someone manages to get X11
     /// working that Xlib can be built for, which is to say, most (but not all)
     /// Unix systems.
-    Xlib(XlibDisplayHandle),
+    Xlib(XlibDisplayHandle<'display>),
     /// A raw display handle for Xcb.
     ///
     /// ## Availability Hints
     /// This variant is likely to show up anywhere someone manages to get X11
     /// working that XCB can be built for, which is to say, most (but not all)
     /// Unix systems.
-    Xcb(XcbDisplayHandle),
+    Xcb(XcbDisplayHandle<'display>),
     /// A raw display handle for Wayland.
     ///
     /// ## Availability Hints
     /// This variant should be expected anywhere Wayland works, which is
     /// currently some subset of unix systems.
-    Wayland(WaylandDisplayHandle),
+    Wayland(WaylandDisplayHandle<'display>),
     /// A raw display handle for the Linux Kernel Mode Set/Direct Rendering Manager
     ///
     /// ## Availability Hints
     /// This variant is used on Linux when neither X nor Wayland are available
-    Drm(DrmDisplayHandle),
+    Drm(DrmDisplayHandle<'display>),
     /// A raw display handle for the Linux Generic Buffer Manager.
     ///
     /// ## Availability Hints
     /// This variant is present regardless of windowing backend and likely to be used with
     /// EGL_MESA_platform_gbm or EGL_KHR_platform_gbm.
-    Gbm(GbmDisplayHandle),
+    Gbm(GbmDisplayHandle<'display>),
     /// A raw display handle for Win32.
     ///
     /// ## Availability Hints
@@ -296,7 +296,7 @@ pub enum HandleError {
     /// This may be returned if the underlying window system does not support any of the
     /// representative C window handles in this crate. For instance, if you were using a pure Rust
     /// library to set up X11 (like [`x11rb`]), you would not be able to use any of the
-    /// [`RawWindowHandle`] variants, as they all represent C types.
+    /// [`WindowHandle`] variants, as they all represent C types.
     ///
     /// Another example would be a system that isn't supported by `raw-window-handle` yet,
     /// like some game consoles.
@@ -336,7 +336,7 @@ impl std::error::Error for HandleError {}
 
 macro_rules! from_impl {
     ($($to:ident, $enum:ident, $from:ty)*) => ($(
-        impl From<$from> for $to {
+        impl<'a> From<$from> for $to<'a> {
             fn from(value: $from) -> Self {
                 $to::$enum(value)
             }
@@ -344,39 +344,39 @@ macro_rules! from_impl {
     )*)
 }
 
-from_impl!(RawDisplayHandle, UiKit, UiKitDisplayHandle);
-from_impl!(RawDisplayHandle, AppKit, AppKitDisplayHandle);
-from_impl!(RawDisplayHandle, Orbital, OrbitalDisplayHandle);
-from_impl!(RawDisplayHandle, Ohos, OhosDisplayHandle);
-from_impl!(RawDisplayHandle, Xlib, XlibDisplayHandle);
-from_impl!(RawDisplayHandle, Xcb, XcbDisplayHandle);
-from_impl!(RawDisplayHandle, Wayland, WaylandDisplayHandle);
-from_impl!(RawDisplayHandle, Drm, DrmDisplayHandle);
-from_impl!(RawDisplayHandle, Gbm, GbmDisplayHandle);
-from_impl!(RawDisplayHandle, Windows, WindowsDisplayHandle);
-from_impl!(RawDisplayHandle, Web, WebDisplayHandle);
-from_impl!(RawDisplayHandle, Android, AndroidDisplayHandle);
-from_impl!(RawDisplayHandle, Haiku, HaikuDisplayHandle);
+from_impl!(DisplayHandle, UiKit, UiKitDisplayHandle);
+from_impl!(DisplayHandle, AppKit, AppKitDisplayHandle);
+from_impl!(DisplayHandle, Orbital, OrbitalDisplayHandle);
+from_impl!(DisplayHandle, Ohos, OhosDisplayHandle);
+from_impl!(DisplayHandle, Xlib, XlibDisplayHandle<'a>);
+from_impl!(DisplayHandle, Xcb, XcbDisplayHandle<'a>);
+from_impl!(DisplayHandle, Wayland, WaylandDisplayHandle<'a>);
+from_impl!(DisplayHandle, Drm, DrmDisplayHandle<'a>);
+from_impl!(DisplayHandle, Gbm, GbmDisplayHandle<'a>);
+from_impl!(DisplayHandle, Windows, WindowsDisplayHandle);
+from_impl!(DisplayHandle, Web, WebDisplayHandle);
+from_impl!(DisplayHandle, Android, AndroidDisplayHandle);
+from_impl!(DisplayHandle, Haiku, HaikuDisplayHandle);
 
-from_impl!(RawWindowHandle, UiKit, UiKitWindowHandle);
-from_impl!(RawWindowHandle, AppKit, AppKitWindowHandle);
-from_impl!(RawWindowHandle, Orbital, OrbitalWindowHandle);
-from_impl!(RawWindowHandle, OhosNdk, OhosNdkWindowHandle);
-from_impl!(RawWindowHandle, Xlib, XlibWindowHandle);
-from_impl!(RawWindowHandle, Xcb, XcbWindowHandle);
-from_impl!(RawWindowHandle, Wayland, WaylandWindowHandle);
-from_impl!(RawWindowHandle, Drm, DrmWindowHandle);
-from_impl!(RawWindowHandle, Gbm, GbmWindowHandle);
-from_impl!(RawWindowHandle, Win32, Win32WindowHandle);
-from_impl!(RawWindowHandle, WinRt, WinRtWindowHandle);
-from_impl!(RawWindowHandle, WebCanvas, WebCanvasWindowHandle);
+from_impl!(WindowHandle, UiKit, UiKitWindowHandle<'a>);
+from_impl!(WindowHandle, AppKit, AppKitWindowHandle<'a>);
+from_impl!(WindowHandle, Orbital, OrbitalWindowHandle<'a>);
+from_impl!(WindowHandle, OhosNdk, OhosNdkWindowHandle<'a>);
+from_impl!(WindowHandle, Xlib, XlibWindowHandle);
+from_impl!(WindowHandle, Xcb, XcbWindowHandle);
+from_impl!(WindowHandle, Wayland, WaylandWindowHandle<'a>);
+from_impl!(WindowHandle, Drm, DrmWindowHandle);
+from_impl!(WindowHandle, Gbm, GbmWindowHandle<'a>);
+from_impl!(WindowHandle, Win32, Win32WindowHandle);
+from_impl!(WindowHandle, WinRt, WinRtWindowHandle<'a>);
+from_impl!(WindowHandle, WebCanvas, WebCanvasWindowHandle<'a>);
 from_impl!(
-    RawWindowHandle,
+    WindowHandle,
     WebOffscreenCanvas,
-    WebOffscreenCanvasWindowHandle
+    WebOffscreenCanvasWindowHandle<'a>
 );
-from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
-from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
+from_impl!(WindowHandle, AndroidNdk, AndroidNdkWindowHandle<'a>);
+from_impl!(WindowHandle, Haiku, HaikuWindowHandle<'a>);
 
 #[cfg(test)]
 mod tests {
@@ -387,12 +387,8 @@ mod tests {
 
     #[test]
     fn auto_traits() {
-        assert_impl_all!(RawDisplayHandle: UnwindSafe, RefUnwindSafe, Unpin);
-        assert_not_impl_any!(RawDisplayHandle: Send, Sync);
         assert_impl_all!(DisplayHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
         assert_not_impl_any!(DisplayHandle<'_>: Send, Sync);
-        assert_impl_all!(RawWindowHandle: UnwindSafe, RefUnwindSafe, Unpin);
-        assert_not_impl_any!(RawWindowHandle: Send, Sync);
         assert_impl_all!(WindowHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
         assert_not_impl_any!(WindowHandle<'_>: Send, Sync);
         assert_impl_all!(HandleError: Send, Sync, UnwindSafe, RefUnwindSafe, Unpin);

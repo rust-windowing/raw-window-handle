@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
@@ -27,9 +28,6 @@ impl WindowsDisplayHandle {
 impl DisplayHandle<'static> {
     /// Create a Windows-based display handle.
     ///
-    /// As no data is borrowed by this handle, it is completely safe to create. This function
-    /// may be useful to windowing framework implementations that want to avoid unsafe code.
-    ///
     /// # Example
     ///
     /// ```
@@ -39,8 +37,7 @@ impl DisplayHandle<'static> {
     /// do_something(handle);
     /// ```
     pub fn windows() -> Self {
-        // SAFETY: No data is borrowed.
-        unsafe { Self::borrow_raw(WindowsDisplayHandle::new().into()) }
+        WindowsDisplayHandle::new().into()
     }
 }
 
@@ -69,9 +66,9 @@ impl Win32WindowHandle {
     /// #
     /// let window: HWND;
     /// # window = HWND(1 as *mut c_void);
-    /// let handle = Win32WindowHandle::new(NonNull::new(window.0).unwrap());
+    /// let handle = unsafe { Win32WindowHandle::new(NonNull::new(window.0).unwrap()) };
     /// ```
-    pub fn new(hwnd: NonNull<c_void>) -> Self {
+    pub unsafe fn new(hwnd: NonNull<c_void>) -> Self {
         Self {
             hwnd,
             hinstance: None,
@@ -79,6 +76,10 @@ impl Win32WindowHandle {
     }
 
     /// Create a new window handle to a window together with its `GWLP_HINSTANCE`.
+    ///
+    /// # Safety
+    ///
+    /// Same as in [`Win32WindowHandle::new`].
     ///
     /// # Example
     ///
@@ -93,9 +94,9 @@ impl Win32WindowHandle {
     /// # #[cfg(only_for_showcase)]
     /// let hinstance = NonNull::new(unsafe { GetWindowLongPtrW(window, GWLP_HINSTANCE) }).unwrap();
     /// # let hinstance = NonNull::dangling();
-    /// let handle = Win32WindowHandle::with_hinstance(NonNull::new(window.0).unwrap(), hinstance);
+    /// let handle = unsafe { Win32WindowHandle::with_hinstance(NonNull::new(window.0).unwrap(), hinstance) };
     /// ```
-    pub fn with_hinstance(hwnd: NonNull<c_void>, hinstance: NonNull<c_void>) -> Self {
+    pub unsafe fn with_hinstance(hwnd: NonNull<c_void>, hinstance: NonNull<c_void>) -> Self {
         Self {
             hwnd,
             hinstance: Some(hinstance),
@@ -115,13 +116,18 @@ impl Win32WindowHandle {
 
 /// Raw window handle for WinRT.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WinRtWindowHandle {
+pub struct WinRtWindowHandle<'window> {
     core_window: NonNull<c_void>,
+    _marker: PhantomData<&'window ()>,
 }
 
-impl WinRtWindowHandle {
+impl WinRtWindowHandle<'_> {
     /// Create a new handle to a window.
     ///
+    /// # Safety
+    ///
+    /// `core_window` must be a valid pointer to a WinRT `CoreWindow` and must remain valid for the
+    /// lifetime of this type.
     ///
     /// # Example
     ///
@@ -132,13 +138,18 @@ impl WinRtWindowHandle {
     /// #
     /// let window: NonNull<CoreWindow>;
     /// # window = NonNull::from(&());
-    /// let handle = WinRtWindowHandle::new(window.cast());
+    /// let handle = unsafe { WinRtWindowHandle::new(window.cast()) };
     /// ```
-    pub fn new(core_window: NonNull<c_void>) -> Self {
-        Self { core_window }
+    pub unsafe fn new(core_window: NonNull<c_void>) -> Self {
+        Self {
+            core_window,
+            _marker: PhantomData,
+        }
     }
 
     /// A WinRT `CoreWindow` handle.
+    ///
+    /// The pointer is guaranteed to be valid for at least as long as `self`.
     pub fn core_window(&self) -> NonNull<c_void> {
         self.core_window
     }

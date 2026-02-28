@@ -1,15 +1,21 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 /// Raw display handle for Wayland.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WaylandDisplayHandle {
+pub struct WaylandDisplayHandle<'display> {
     display: NonNull<c_void>,
+    _marker: PhantomData<&'display ()>,
 }
 
-impl WaylandDisplayHandle {
+impl WaylandDisplayHandle<'_> {
     /// Create a new display handle.
     ///
+    /// # Safety
+    ///
+    /// `display` must be a valid pointer to a `wl_display` and must remain valid for the lifetime
+    /// of this type.
     ///
     /// # Example
     ///
@@ -20,13 +26,18 @@ impl WaylandDisplayHandle {
     /// #
     /// let display: NonNull<c_void>;
     /// # display = NonNull::from(&()).cast();
-    /// let handle = WaylandDisplayHandle::new(display);
+    /// let handle = unsafe { WaylandDisplayHandle::new(display) };
     /// ```
-    pub fn new(display: NonNull<c_void>) -> Self {
-        Self { display }
+    pub unsafe fn new(display: NonNull<c_void>) -> Self {
+        Self {
+            display,
+            _marker: PhantomData,
+        }
     }
 
     /// A pointer to a `wl_display`.
+    ///
+    /// The pointer is guaranteed to be valid for at least as long as `self`.
     pub fn display(&self) -> NonNull<c_void> {
         self.display
     }
@@ -34,13 +45,18 @@ impl WaylandDisplayHandle {
 
 /// Raw window handle for Wayland.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WaylandWindowHandle {
+pub struct WaylandWindowHandle<'window> {
     surface: NonNull<c_void>,
+    _marker: PhantomData<&'window ()>,
 }
 
-impl WaylandWindowHandle {
+impl WaylandWindowHandle<'_> {
     /// Create a new handle to a surface.
     ///
+    /// # Safety
+    ///
+    /// `display` must be a valid pointer to a `wl_surface` and must remain valid for the lifetime
+    /// of this type.
     ///
     /// # Example
     ///
@@ -51,13 +67,18 @@ impl WaylandWindowHandle {
     /// #
     /// let surface: NonNull<c_void>;
     /// # surface = NonNull::from(&()).cast();
-    /// let handle = WaylandWindowHandle::new(surface);
+    /// let handle = unsafe { WaylandWindowHandle::new(surface) };
     /// ```
-    pub fn new(surface: NonNull<c_void>) -> Self {
-        Self { surface }
+    pub unsafe fn new(surface: NonNull<c_void>) -> Self {
+        Self {
+            surface,
+            _marker: PhantomData,
+        }
     }
 
     /// A pointer to a `wl_surface`.
+    ///
+    /// The pointer is guaranteed to be valid for at least as long as `self`.
     pub fn surface(&self) -> NonNull<c_void> {
         self.surface
     }

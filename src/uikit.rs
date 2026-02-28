@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
@@ -25,9 +26,6 @@ impl UiKitDisplayHandle {
 impl DisplayHandle<'static> {
     /// Create a UiKit-based display handle.
     ///
-    /// As no data is borrowed by this handle, it is completely safe to create. This function
-    /// may be useful to windowing framework implementations that want to avoid unsafe code.
-    ///
     /// # Example
     ///
     /// ```
@@ -37,8 +35,7 @@ impl DisplayHandle<'static> {
     /// do_something(handle);
     /// ```
     pub fn uikit() -> Self {
-        // SAFETY: No data is borrowed.
-        unsafe { Self::borrow_raw(UiKitDisplayHandle::new().into()) }
+        UiKitDisplayHandle::new().into()
     }
 }
 
@@ -61,13 +58,13 @@ impl DisplayHandle<'static> {
 /// use objc2::rc::Retained;
 /// # #[cfg(requires_objc2)]
 /// use objc2_ui_kit::UIView;
-/// use raw_window_handle::{WindowHandle, RawWindowHandle};
+/// use raw_window_handle::WindowHandle;
 ///
 /// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
 /// # handle = unimplemented!();
-/// match handle.as_raw() {
+/// match handle {
 ///     # #[cfg(requires_objc2)]
-///     RawWindowHandle::UIKit(handle) => {
+///     WindowHandle::UIKit(handle) => {
 ///         assert!(MainThreadMarker::new().is_some(), "can only access UIKit handles on the main thread");
 ///         let ui_view = handle.ui_view().as_ptr();
 ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
@@ -106,13 +103,18 @@ impl DisplayHandle<'static> {
 /// // Use found_controller here.
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct UiKitWindowHandle {
+pub struct UiKitWindowHandle<'window> {
     ui_view: NonNull<c_void>,
+    _marker: PhantomData<&'window ()>,
 }
 
-impl UiKitWindowHandle {
+impl UiKitWindowHandle<'_> {
     /// Create a new handle to a view.
     ///
+    /// # Safety
+    ///
+    /// `ui_view` must be a valid pointer to a `UIView`, and must remain valid for the lifetime of
+    /// this type.
     ///
     /// # Example
     ///
@@ -126,13 +128,18 @@ impl UiKitWindowHandle {
     ///
     /// let ui_view: Retained<UIView> = ...;
     /// let ui_view: NonNull<UIView> = NonNull::from(&*ui_view);
-    /// let handle = UiKitWindowHandle::new(ui_view.cast());
+    /// let handle = unsafe { UiKitWindowHandle::new(ui_view.cast()) };
     /// ```
-    pub fn new(ui_view: NonNull<c_void>) -> Self {
-        Self { ui_view }
+    pub unsafe fn new(ui_view: NonNull<c_void>) -> Self {
+        Self {
+            ui_view,
+            _marker: PhantomData,
+        }
     }
 
     /// A pointer to an `UIView` object.
+    ///
+    /// The pointer is guaranteed to be valid for at least as long as `self`.
     pub fn ui_view(&self) -> NonNull<c_void> {
         self.ui_view
     }

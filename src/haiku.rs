@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
@@ -25,9 +26,6 @@ impl HaikuDisplayHandle {
 impl DisplayHandle<'static> {
     /// Create an Haiku-based display handle.
     ///
-    /// As no data is borrowed by this handle, it is completely safe to create. This function
-    /// may be useful to windowing framework implementations that want to avoid unsafe code.
-    ///
     /// # Example
     ///
     /// ```
@@ -37,20 +35,25 @@ impl DisplayHandle<'static> {
     /// do_something(handle);
     /// ```
     pub fn haiku() -> Self {
-        // SAFETY: No data is borrowed.
-        unsafe { Self::borrow_raw(HaikuDisplayHandle::new().into()) }
+        HaikuDisplayHandle::new().into()
     }
 }
 
 /// Raw window handle for Haiku.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct HaikuWindowHandle {
+pub struct HaikuWindowHandle<'window> {
     b_window: NonNull<c_void>,
     b_direct_window: Option<NonNull<c_void>>,
+    _marker: PhantomData<&'window ()>,
 }
 
-impl HaikuWindowHandle {
+impl HaikuWindowHandle<'_> {
     /// Create a new handle to a window.
+    ///
+    /// # Safety
+    ///
+    /// `b_window` must be a valid pointer to a `BWindow`, and must remain valid for the lifetime of
+    /// this type.
     ///
     /// # Example
     ///
@@ -61,16 +64,23 @@ impl HaikuWindowHandle {
     /// #
     /// let b_window: NonNull<BWindow>;
     /// # b_window = NonNull::from(&());
-    /// let handle = HaikuWindowHandle::new(b_window.cast());
+    /// let handle = unsafe { HaikuWindowHandle::new(b_window.cast()) };
     /// ```
-    pub fn new(b_window: NonNull<c_void>) -> Self {
+    pub unsafe fn new(b_window: NonNull<c_void>) -> Self {
         Self {
             b_window,
             b_direct_window: None,
+            _marker: PhantomData,
         }
     }
 
     /// Create a new window handle together with a `BDirectWindow`.
+    ///
+    /// # Safety
+    ///
+    /// `b_window` must be a valid pointer to a `BWindow`, and `b_direct_window` must be a valid
+    /// pointer to `BDirectWindow`, and both pointers must remain valid for the lifetime of this
+    /// type.
     ///
     /// # Example
     ///
@@ -84,21 +94,26 @@ impl HaikuWindowHandle {
     /// let b_direct_window: NonNull<BDirectWindow>;
     /// # b_window = NonNull::dangling();
     /// # b_direct_window = NonNull::dangling();
-    /// let handle = HaikuWindowHandle::with_window(b_window.cast(), b_direct_window.cast());
+    /// let handle = unsafe { HaikuWindowHandle::with_window(b_window.cast(), b_direct_window.cast()) };
     /// ```
-    pub fn with_window(b_window: NonNull<c_void>, b_direct_window: NonNull<c_void>) -> Self {
+    pub unsafe fn with_window(b_window: NonNull<c_void>, b_direct_window: NonNull<c_void>) -> Self {
         Self {
             b_window,
             b_direct_window: Some(b_direct_window),
+            _marker: PhantomData,
         }
     }
 
     /// A pointer to a BWindow object.
+    ///
+    /// The pointer is guaranteed to be valid for at least as long as `self`.
     pub fn b_window(&self) -> NonNull<c_void> {
         self.b_window
     }
 
     /// A pointer to a BDirectWindow object that might be null.
+    ///
+    /// If `Some`, the pointer is guaranteed to be valid for at least as long as `self`.
     pub fn b_direct_window(&self) -> Option<NonNull<c_void>> {
         self.b_direct_window
     }
