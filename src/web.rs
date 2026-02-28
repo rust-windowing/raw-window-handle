@@ -24,9 +24,6 @@ impl WebDisplayHandle {
 impl DisplayHandle<'static> {
     /// Create a Web-based display handle.
     ///
-    /// As no data is borrowed by this handle, it is completely safe to create. This function
-    /// may be useful to windowing framework implementations that want to avoid unsafe code.
-    ///
     /// # Example
     ///
     /// ```
@@ -36,8 +33,7 @@ impl DisplayHandle<'static> {
     /// do_something(handle);
     /// ```
     pub fn web() -> Self {
-        // SAFETY: No data is borrowed.
-        unsafe { Self::borrow_raw(WebDisplayHandle::new().into()) }
+        WebDisplayHandle::new().into()
     }
 }
 
@@ -45,17 +41,22 @@ impl DisplayHandle<'static> {
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WebCanvasWindowHandle {
+pub struct WebCanvasWindowHandle<'window> {
     obj: usize,
 
     /// Makes this type `!Send` and `!Sync`.
-    _marker: PhantomData<*mut ()>,
+    _marker: PhantomData<(*mut (), &'window ())>,
 }
 
-impl WebCanvasWindowHandle {
+impl WebCanvasWindowHandle<'_> {
     /// Create a new handle from a pointer to [`HtmlCanvasElement`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
+    ///
+    /// # Safety
+    ///
+    /// `obj` must be a valid index to the `JsValue` of a `HtmlCanvasElement` and must remain valid
+    /// for the lifetime of this type.
     ///
     /// # Example
     ///
@@ -71,14 +72,14 @@ impl WebCanvasWindowHandle {
     ///
     /// // Convert to the raw index and convert to the handle.
     /// let index = (&value).into_abi();
-    /// let mut handle = WebCanvasWindowHandle::new(index as usize);
+    /// let handle = unsafe { WebCanvasWindowHandle::new(index as usize) };
     ///
     /// // To get the canvas element back, convert the index back.
     /// let other_end: ManuallyDrop<HtmlCanvasElement> = unsafe {
     ///     HtmlCanvasElement::ref_from_abi(handle.obj as u32)
     /// };
     /// ```
-    pub fn new(obj: usize) -> Self {
+    pub unsafe fn new(obj: usize) -> Self {
         Self {
             obj,
             _marker: PhantomData,
@@ -86,6 +87,8 @@ impl WebCanvasWindowHandle {
     }
 
     /// An inner index of the [`JsValue`] of an [`HtmlCanvasElement`].
+    ///
+    /// The index is guaranteed to be valid for at least as long as `self`.
     ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
@@ -99,17 +102,22 @@ impl WebCanvasWindowHandle {
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WebOffscreenCanvasWindowHandle {
+pub struct WebOffscreenCanvasWindowHandle<'window> {
     obj: usize,
 
     /// Makes this type `!Send` and `!Sync`.
-    _marker: PhantomData<*mut ()>,
+    _marker: PhantomData<(*mut (), &'window ())>,
 }
 
-impl WebOffscreenCanvasWindowHandle {
+impl WebOffscreenCanvasWindowHandle<'_> {
     /// Create a new handle from a pointer to an [`OffscreenCanvas`].
     ///
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
+    ///
+    /// # Safety
+    ///
+    /// `obj` must be a valid index to the `JsValue` of a `OffscreenCanvas` and must remain valid
+    /// for the lifetime of this type.
     ///
     /// # Example
     ///
@@ -125,14 +133,14 @@ impl WebOffscreenCanvasWindowHandle {
     ///
     /// // Convert to the raw index and convert to the handle.
     /// let index = (&value).into_abi();
-    /// let handle = WebOffscreenCanvasWindowHandle::new(index as usize);
+    /// let handle = unsafe { WebOffscreenCanvasWindowHandle::new(index as usize) };
     ///
     /// // To get the canvas element back, convert the index back.
     /// let other_end: ManuallyDrop<OffscreenCanvas> = unsafe {
     ///     OffscreenCanvas::ref_from_abi(handle.obj as u32)
     /// };
     /// ```
-    pub fn new(obj: usize) -> Self {
+    pub unsafe fn new(obj: usize) -> Self {
         Self {
             obj,
             _marker: PhantomData,
@@ -140,6 +148,8 @@ impl WebOffscreenCanvasWindowHandle {
     }
 
     /// An inner index of the [`JsValue`] of an [`OffscreenCanvas`].
+    ///
+    /// The index is guaranteed to be valid for at least as long as `self`.
     ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html

@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
@@ -25,9 +26,6 @@ impl AppKitDisplayHandle {
 impl DisplayHandle<'static> {
     /// Create an AppKit-based display handle.
     ///
-    /// As no data is borrowed by this handle, it is completely safe to create. This function
-    /// may be useful to windowing framework implementations that want to avoid unsafe code.
-    ///
     /// # Example
     ///
     /// ```
@@ -37,8 +35,7 @@ impl DisplayHandle<'static> {
     /// do_something(handle);
     /// ```
     pub fn appkit() -> Self {
-        // SAFETY: No data is borrowed.
-        unsafe { Self::borrow_raw(AppKitDisplayHandle::new().into()) }
+        AppKitDisplayHandle::new().into()
     }
 }
 
@@ -61,13 +58,13 @@ impl DisplayHandle<'static> {
 /// use objc2::rc::Retained;
 /// # #[cfg(requires_objc2)]
 /// use objc2_app_kit::NSView;
-/// use raw_window_handle::{WindowHandle, RawWindowHandle};
+/// use raw_window_handle::WindowHandle;
 ///
 /// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
 /// # handle = unimplemented!();
-/// match handle.as_raw() {
+/// match handle {
 ///     # #[cfg(requires_objc2)]
-///     RawWindowHandle::AppKit(handle) => {
+///     WindowHandle::AppKit(handle) => {
 ///         assert!(MainThreadMarker::new().is_some(), "can only access AppKit handles on the main thread");
 ///         let ns_view = handle.ns_view().as_ptr();
 ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
@@ -83,13 +80,18 @@ impl DisplayHandle<'static> {
 /// # }
 /// ```
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AppKitWindowHandle {
+pub struct AppKitWindowHandle<'window> {
     ns_view: NonNull<c_void>,
+    _marker: PhantomData<&'window ()>,
 }
 
-impl AppKitWindowHandle {
+impl AppKitWindowHandle<'_> {
     /// Create a new handle to a view.
     ///
+    /// # Safety
+    ///
+    /// `ns_view` must be a valid pointer to a `NSView`, and must remain valid for the lifetime of
+    /// this type.
     ///
     /// # Example
     ///
@@ -104,13 +106,18 @@ impl AppKitWindowHandle {
     /// let ns_window: Retained<NSWindow> = ...;
     /// let ns_view: Retained<NSView> = window.contentView();
     /// let ns_view: NonNull<NSView> = NonNull::from(&*ns_view);
-    /// let handle = AppKitWindowHandle::new(ns_view.cast());
+    /// let handle = unsafe { AppKitWindowHandle::new(ns_view.cast()) };
     /// ```
-    pub fn new(ns_view: NonNull<c_void>) -> Self {
-        Self { ns_view }
+    pub unsafe fn new(ns_view: NonNull<c_void>) -> Self {
+        Self {
+            ns_view,
+            _marker: PhantomData,
+        }
     }
 
     /// A pointer to an `NSView` object.
+    ///
+    /// The pointer is guaranteed to be valid for at least as long as `self`.
     pub fn ns_view(&self) -> NonNull<c_void> {
         self.ns_view
     }

@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
@@ -25,9 +26,6 @@ impl AndroidDisplayHandle {
 impl DisplayHandle<'static> {
     /// Create an Android-based display handle.
     ///
-    /// As no data is borrowed by this handle, it is completely safe to create. This function
-    /// may be useful to windowing framework implementations that want to avoid unsafe code.
-    ///
     /// # Example
     ///
     /// ```
@@ -37,19 +35,24 @@ impl DisplayHandle<'static> {
     /// do_something(handle);
     /// ```
     pub fn android() -> Self {
-        // SAFETY: No data is borrowed.
-        unsafe { Self::borrow_raw(AndroidDisplayHandle::new().into()) }
+        AndroidDisplayHandle::new().into()
     }
 }
 
 /// Raw window handle for Android NDK.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AndroidNdkWindowHandle {
+pub struct AndroidNdkWindowHandle<'window> {
     a_native_window: NonNull<c_void>,
+    _marker: PhantomData<&'window ()>,
 }
 
-impl AndroidNdkWindowHandle {
+impl AndroidNdkWindowHandle<'_> {
     /// Create a new handle to an `ANativeWindow`.
+    ///
+    /// # Safety
+    ///
+    /// `a_native_window` must be a valid pointer to a `ANativeWindow`, and must remain valid for
+    /// the lifetime of this type.
     ///
     /// # Example
     ///
@@ -60,13 +63,18 @@ impl AndroidNdkWindowHandle {
     /// #
     /// let ptr: NonNull<ANativeWindow>;
     /// # ptr = NonNull::from(&());
-    /// let handle = AndroidNdkWindowHandle::new(ptr.cast());
+    /// let handle = unsafe { AndroidNdkWindowHandle::new(ptr.cast()) };
     /// ```
-    pub fn new(a_native_window: NonNull<c_void>) -> Self {
-        Self { a_native_window }
+    pub unsafe fn new(a_native_window: NonNull<c_void>) -> Self {
+        Self {
+            a_native_window,
+            _marker: PhantomData,
+        }
     }
 
     /// A pointer to an `ANativeWindow`.
+    ///
+    /// The pointer is guaranteed to be valid for at least as long as `self`.
     ///
     /// # Example
     ///
@@ -75,7 +83,7 @@ impl AndroidNdkWindowHandle {
     /// # use raw_window_handle::AndroidNdkWindowHandle;
     /// # type ANativeWindow = ();
     /// #
-    /// # let handle = AndroidNdkWindowHandle::new(NonNull::dangling());
+    /// # let handle = unsafe { AndroidNdkWindowHandle::new(NonNull::dangling()) };
     /// let ptr = handle.a_native_window();
     /// let ptr = ptr.cast::<ANativeWindow>();
     /// ```

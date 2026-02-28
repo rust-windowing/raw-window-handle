@@ -1,17 +1,25 @@
 use core::ffi::{c_int, c_ulong, c_void};
+use core::marker::PhantomData;
 use core::num::NonZeroU32;
 use core::ptr::NonNull;
 
 /// Raw display handle for Xlib.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct XlibDisplayHandle {
+pub struct XlibDisplayHandle<'display> {
     display: Option<NonNull<c_void>>,
     screen: c_int,
+    _marker: PhantomData<&'display ()>,
 }
 
-impl XlibDisplayHandle {
+impl XlibDisplayHandle<'_> {
     /// Create a new handle to a display.
     ///
+    /// # Safety
+    ///
+    /// `display` must be a valid pointer to an Xlib `Display` and must remain valid for the
+    /// lifetime of this type.
+    ///
+    /// TODO: `screen` must be valid too?
     ///
     /// # Example
     ///
@@ -24,22 +32,28 @@ impl XlibDisplayHandle {
     /// let screen;
     /// # display = NonNull::from(&()).cast();
     /// # screen = 0;
-    /// let handle = XlibDisplayHandle::new(display, screen);
+    /// let handle = unsafe { XlibDisplayHandle::new(display, screen) };
     /// ```
-    pub fn new(display: NonNull<c_void>, screen: c_int) -> Self {
+    pub unsafe fn new(display: NonNull<c_void>, screen: c_int) -> Self {
         Self {
             display: Some(display),
             screen,
+            _marker: PhantomData,
         }
     }
 
     /// Create a new handle to a screen with the default display.
     ///
     /// You are strongly encouraged to call [`XcbDisplayHandle::new`] when possible.
-    pub fn with_default_display(screen: c_int) -> Self {
+    ///
+    /// # Safety
+    ///
+    /// TODO: Must be screen ID be valid? And what should the lifetime that this returns be?
+    pub unsafe fn with_default_display(screen: c_int) -> Self {
         Self {
             display: None,
             screen,
+            _marker: PhantomData,
         }
     }
 
@@ -47,6 +61,8 @@ impl XlibDisplayHandle {
     ///
     /// It is strongly recommended to set this value, however it may be set to
     /// `None` to request the default display when using EGL.
+    ///
+    /// If the pointer is `Some`, it is guaranteed to be valid for at least as long as `self`.
     pub fn display(&self) -> Option<NonNull<c_void>> {
         self.display
     }
@@ -85,6 +101,16 @@ impl XlibWindowHandle {
     /// let handle = XlibWindowHandle::new(window);
     /// ```
     pub fn new(window: c_ulong) -> Self {
+        // Safe because window IDs are just that, and ID (so they're both Send+Sync, and have no
+        // lifetime issues).
+        //
+        // The handle may be deleted by safe code in the same process. It is even possible for code
+        // in a different process to delete the window. In fact, it is possible for code on a
+        // different *machine* to delete the window.
+        //
+        // So users of the handle must always be ready to handle those error cases.
+
+        // TODO: Assert window != 0?
         Self {
             window,
             visual_id: 0,
@@ -123,14 +149,21 @@ impl XlibWindowHandle {
 
 /// Raw display handle for Xcb.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct XcbDisplayHandle {
+pub struct XcbDisplayHandle<'display> {
     connection: Option<NonNull<c_void>>,
     screen: c_int,
+    _marker: PhantomData<&'display ()>,
 }
 
-impl XcbDisplayHandle {
+impl XcbDisplayHandle<'_> {
     /// Create a new handle to a connection and screen.
     ///
+    /// # Safety
+    ///
+    /// `display` must be a valid pointer to an Xlib `Display` and must remain valid for the
+    /// lifetime of this type.
+    ///
+    /// TODO: `screen` must be valid too?
     ///
     /// # Example
     ///
@@ -143,22 +176,28 @@ impl XcbDisplayHandle {
     /// let screen;
     /// # connection = NonNull::from(&()).cast();
     /// # screen = 0;
-    /// let handle = XcbDisplayHandle::new(connection, screen);
+    /// let handle = unsafe { XcbDisplayHandle::new(connection, screen) };
     /// ```
-    pub fn new(connection: NonNull<c_void>, screen: c_int) -> Self {
+    pub unsafe fn new(connection: NonNull<c_void>, screen: c_int) -> Self {
         Self {
             connection: Some(connection),
             screen,
+            _marker: PhantomData,
         }
     }
 
     /// Create a new handle to a screen with the default connection.
     ///
     /// You are strongly encouraged to call [`XcbDisplayHandle::new`] when possible.
-    pub fn with_default_connection(screen: c_int) -> Self {
+    ///
+    /// # Safety
+    ///
+    /// TODO: Must be screen ID be valid? And what should the lifetime that this returns be?
+    pub unsafe fn with_default_connection(screen: c_int) -> Self {
         Self {
             connection: None,
             screen,
+            _marker: PhantomData,
         }
     }
 
@@ -166,6 +205,8 @@ impl XcbDisplayHandle {
     ///
     /// It is strongly recommended that producers set this value, however it may be set to
     /// `None` to request the default display when using EGL.
+    ///
+    /// If the pointer is `Some`, it is guaranteed to be valid for at least as long as `self`.
     pub fn connection(&self) -> Option<NonNull<c_void>> {
         self.connection
     }
@@ -202,6 +243,8 @@ impl XcbWindowHandle {
     /// let handle = XcbWindowHandle::new(window);
     /// ```
     pub fn new(window: NonZeroU32) -> Self {
+        // Safe because window IDs are just that, and ID (so they're both Send+Sync, and have no
+        // lifetime issues).
         Self {
             window,
             visual_id: None,

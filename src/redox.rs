@@ -1,4 +1,5 @@
 use core::ffi::c_void;
+use core::marker::PhantomData;
 use core::ptr::NonNull;
 
 use super::DisplayHandle;
@@ -25,9 +26,6 @@ impl OrbitalDisplayHandle {
 impl DisplayHandle<'static> {
     /// Create an Orbital-based display handle.
     ///
-    /// As no data is borrowed by this handle, it is completely safe to create. This function
-    /// may be useful to windowing framework implementations that want to avoid unsafe code.
-    ///
     /// # Example
     ///
     /// ```
@@ -37,22 +35,26 @@ impl DisplayHandle<'static> {
     /// do_something(handle);
     /// ```
     pub fn orbital() -> Self {
-        // SAFETY: No data is borrowed.
-        unsafe { Self::borrow_raw(OrbitalDisplayHandle::new().into()) }
+        OrbitalDisplayHandle::new().into()
     }
 }
 
 /// Raw window handle for the Redox operating system.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct OrbitalWindowHandle {
+pub struct OrbitalWindowHandle<'window> {
     // TODO(madsmtm): I think this is a file descriptor, so perhaps it should
     // actually use `std::os::fd::RawFd`, or some sort of integer instead?
     window: NonNull<c_void>,
+    _marker: PhantomData<&'window ()>,
 }
 
-impl OrbitalWindowHandle {
+impl OrbitalWindowHandle<'_> {
     /// Create a new handle to a window.
     ///
+    /// # Safety
+    ///
+    /// `window` must be a valid pointer to an orbclient window, and must remain valid for the
+    /// lifetime of this type.
     ///
     /// # Example
     ///
@@ -63,13 +65,18 @@ impl OrbitalWindowHandle {
     /// #
     /// let window: NonNull<Window>;
     /// # window = NonNull::from(&());
-    /// let mut handle = OrbitalWindowHandle::new(window.cast());
+    /// let handle = unsafe { OrbitalWindowHandle::new(window.cast()) };
     /// ```
-    pub fn new(window: NonNull<c_void>) -> Self {
-        Self { window }
+    pub unsafe fn new(window: NonNull<c_void>) -> Self {
+        Self {
+            window,
+            _marker: PhantomData,
+        }
     }
 
     /// A pointer to an orbclient window.
+    ///
+    /// The pointer is guaranteed to be valid for at least as long as `self`.
     pub fn window(&self) -> NonNull<c_void> {
         self.window
     }

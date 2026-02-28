@@ -1,13 +1,19 @@
+use core::marker::PhantomData;
+
 /// Raw display handle for the Linux Kernel Mode Set/Direct Rendering Manager.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct DrmDisplayHandle {
-    // TODO: Use `std::os::fd::RawFd`?
+pub struct DrmDisplayHandle<'display> {
+    // TODO: Use `std::os::fd::RawFd`? Or `BorrowedFd`?
     fd: i32,
+    _marker: PhantomData<&'display ()>,
 }
 
-impl DrmDisplayHandle {
+impl DrmDisplayHandle<'_> {
     /// Create a new handle to a file descriptor.
     ///
+    /// # Safety
+    ///
+    /// TODO.
     ///
     /// # Example
     ///
@@ -16,10 +22,13 @@ impl DrmDisplayHandle {
     /// #
     /// let fd: i32;
     /// # fd = 0;
-    /// let handle = DrmDisplayHandle::new(fd);
+    /// let handle = unsafe { DrmDisplayHandle::new(fd) };
     /// ```
-    pub fn new(fd: i32) -> Self {
-        Self { fd }
+    pub unsafe fn new(fd: i32) -> Self {
+        Self {
+            fd,
+            _marker: PhantomData,
+        }
     }
 
     /// The drm file descriptor.
@@ -37,6 +46,9 @@ pub struct DrmWindowHandle {
 impl DrmWindowHandle {
     /// Create a new handle to a plane.
     ///
+    /// # Safety
+    ///
+    /// TODO.
     ///
     /// # Example
     ///
@@ -45,9 +57,9 @@ impl DrmWindowHandle {
     /// #
     /// let plane: u32;
     /// # plane = 0;
-    /// let handle = DrmWindowHandle::new(plane);
+    /// let handle = unsafe { DrmWindowHandle::new(plane) };
     /// ```
-    pub fn new(plane: u32) -> Self {
+    pub unsafe fn new(plane: u32) -> Self {
         Self { plane }
     }
 
