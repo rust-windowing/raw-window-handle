@@ -4,11 +4,13 @@
 [![Docs](https://docs.rs/raw-window-handle/badge.svg)](https://docs.rs/raw-window-handle)
 [![CI Status](https://github.com/rust-windowing/raw-window-handle/workflows/CI/badge.svg)](https://github.com/rust-windowing/raw-window-handle/actions)
 
-This library provides standard types for accessing a window's platform-specific
-raw window handle and display's platform-specific raw display handle. This does
-not provide any utilities for creating and managing windows; instead, it
-provides a common interface that window creation libraries (e.g. Winit, SDL)
-can use to easily talk with graphics libraries (e.g. gfx-hal).
+This crate is intended as an interoperability crate, that allows "producer"
+crates to create a handle to a window surface, and for this handle to be
+passed onwards to "consumer" crates for rendering to that surface.
+
+This crate does not by itself provide any utilities for creating and managing
+windows, nor for rendering into them; use Winit or SDL for the former, and
+Softbuffer, Glutin or Wgpu for the latter.
 
 ## MSRV Policy
 
