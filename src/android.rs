@@ -4,9 +4,8 @@ use core::ptr::NonNull;
 use super::DisplayHandle;
 
 /// Raw display handle for Android.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AndroidDisplayHandle {}
+pub struct AndroidDisplayHandle(());
 
 impl AndroidDisplayHandle {
     /// Create a new empty display handle.
@@ -19,7 +18,7 @@ impl AndroidDisplayHandle {
     /// let handle = AndroidDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self(())
     }
 }
 
@@ -44,16 +43,13 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for Android NDK.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct AndroidNdkWindowHandle {
-    /// A pointer to an `ANativeWindow`.
-    pub a_native_window: NonNull<c_void>,
+    a_native_window: NonNull<c_void>,
 }
 
 impl AndroidNdkWindowHandle {
     /// Create a new handle to an `ANativeWindow`.
-    ///
     ///
     /// # Example
     ///
@@ -68,5 +64,22 @@ impl AndroidNdkWindowHandle {
     /// ```
     pub fn new(a_native_window: NonNull<c_void>) -> Self {
         Self { a_native_window }
+    }
+
+    /// A pointer to an `ANativeWindow`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::AndroidNdkWindowHandle;
+    /// # type ANativeWindow = ();
+    /// #
+    /// # let handle = AndroidNdkWindowHandle::new(NonNull::dangling());
+    /// let ptr = handle.a_native_window();
+    /// let ptr = ptr.cast::<ANativeWindow>();
+    /// ```
+    pub fn a_native_window(&self) -> NonNull<c_void> {
+        self.a_native_window
     }
 }
