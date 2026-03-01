@@ -171,7 +171,7 @@ pub enum WindowHandle<'window> {
     ///
     /// ## Availability Hints
     /// This variant is used on Android targets.
-    AndroidNdk(AndroidNdkWindowHandle<'window>),
+    AndroidNdk(AndroidNdkWindowHandle),
     /// A raw window handle for Haiku.
     ///
     /// ## Availability Hints
@@ -375,7 +375,7 @@ from_impl!(
     WebOffscreenCanvas,
     WebOffscreenCanvasWindowHandle<'a>
 );
-from_impl!(WindowHandle, AndroidNdk, AndroidNdkWindowHandle<'a>);
+from_impl!(WindowHandle, AndroidNdk, AndroidNdkWindowHandle);
 from_impl!(WindowHandle, Haiku, HaikuWindowHandle<'a>);
 
 #[cfg(test)]

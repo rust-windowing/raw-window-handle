@@ -1,6 +1,6 @@
 use core::ffi::c_void;
-use core::marker::PhantomData;
 use core::ptr::NonNull;
+use core::{fmt, hash};
 
 use super::DisplayHandle;
 
@@ -40,35 +40,92 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for Android NDK.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AndroidNdkWindowHandle<'window> {
+pub struct AndroidNdkWindowHandle {
     a_native_window: NonNull<c_void>,
-    _marker: PhantomData<&'window ()>,
+    // ANativeWindow_acquire
+    acquire: unsafe extern "C" fn(a_native_window: NonNull<c_void>),
+    // ANativeWindow_release
+    release: unsafe extern "C" fn(a_native_window: NonNull<c_void>),
 }
 
-impl AndroidNdkWindowHandle<'_> {
+impl Clone for AndroidNdkWindowHandle {
+    #[inline]
+    fn clone(&self) -> Self {
+        // SAFETY: The window pointer is valid.
+        unsafe { (self.acquire)(self.a_native_window) };
+        Self {
+            a_native_window: self.a_native_window,
+            acquire: self.acquire,
+            release: self.release,
+        }
+    }
+}
+
+impl Drop for AndroidNdkWindowHandle {
+    #[inline]
+    fn drop(&mut self) {
+        // SAFETY: The window pointer is valid.
+        unsafe { (self.release)(self.a_native_window) };
+    }
+}
+
+impl AndroidNdkWindowHandle {
     /// Create a new handle to an `ANativeWindow`.
     ///
     /// # Safety
     ///
-    /// `a_native_window` must be a valid pointer to a `ANativeWindow`, and must remain valid for
-    /// the lifetime of this type.
+    /// `a_native_window` must be a valid pointer to a `ANativeWindow`, and the given function
+    /// pointers must correctly acquire / release the window.
+    ///
+    /// This function takes ownership of the pointer.
     ///
     /// # Example
     ///
+    /// Create a handle using the `ndk` crate.
+    ///
     /// ```
-    /// # use core::ptr::NonNull;
-    /// # use raw_window_handle::AndroidNdkWindowHandle;
-    /// # type ANativeWindow = ();
-    /// #
-    /// let ptr: NonNull<ANativeWindow>;
-    /// # ptr = NonNull::from(&());
-    /// let handle = unsafe { AndroidNdkWindowHandle::new(ptr.cast()) };
+    /// # fn inner() {
+    /// #![cfg(target_os = "android")]
+    /// use std::ffi::c_void;
+    /// use std::mem::{self, ManuallyDrop};
+    /// use std::ptr::NonNull;
+    /// use ndk::native_window::NativeWindow;
+    /// use raw_window_handle::AndroidNdkWindowHandle;
+    ///
+    /// // Window gotten from somewhere (for example using `android-activity`).
+    /// let window: NativeWindow;
+    /// window = unimplemented!();
+    ///
+    /// // Helper functions to acquire/release the window.
+    /// unsafe extern "C" fn acquire(a_native_window: NonNull<c_void>) {
+    ///     // SAFETY: Upheld by the caller that the pointer is a `ANativeWindow`.
+    ///     mem::forget(unsafe { NativeWindow::clone_from_ptr(a_native_window.cast()) });
+    /// }
+    /// unsafe extern "C" fn release(a_native_window: NonNull<c_void>) {
+    ///     // SAFETY: Upheld by the caller that the pointer is a `ANativeWindow`.
+    ///     let _ = unsafe { NativeWindow::from_ptr(a_native_window.cast()) };
+    /// }
+    ///
+    /// // Pass reference count to `AndroidNdkWindowHandle`.
+    /// let a_native_window: NonNull<c_void> = ManuallyDrop::new(window).ptr().cast();
+    ///
+    /// // SAFETY: The window is valid and the function pointers are correct.
+    /// let handle = unsafe { AndroidNdkWindowHandle::new(a_native_window, acquire, release) };
+    ///
+    /// // Handle can be cloned, which acquires it, and releases it when dropped.
+    /// let handle2 = handle.clone();
+    /// # }
     /// ```
-    pub unsafe fn new(a_native_window: NonNull<c_void>) -> Self {
+    #[inline]
+    pub unsafe fn new(
+        a_native_window: NonNull<c_void>,
+        acquire: unsafe extern "C" fn(a_native_window: NonNull<c_void>),
+        release: unsafe extern "C" fn(a_native_window: NonNull<c_void>),
+    ) -> Self {
         Self {
             a_native_window,
-            _marker: PhantomData,
+            acquire,
+            release,
         }
     }
 
@@ -79,15 +136,47 @@ impl AndroidNdkWindowHandle<'_> {
     /// # Example
     ///
     /// ```
-    /// # use core::ptr::NonNull;
-    /// # use raw_window_handle::AndroidNdkWindowHandle;
-    /// # type ANativeWindow = ();
-    /// #
-    /// # let handle = unsafe { AndroidNdkWindowHandle::new(NonNull::dangling()) };
-    /// let ptr = handle.a_native_window();
-    /// let ptr = ptr.cast::<ANativeWindow>();
+    /// # fn inner() {
+    /// #![cfg(target_os = "android")]
+    /// use ndk::native_window::NativeWindow;
+    /// use raw_window_handle::AndroidNdkWindowHandle;
+    ///
+    /// // Gotten from somewhere.
+    /// let handle: AndroidNdkWindowHandle;
+    /// # handle = unimplemented!();
+    ///
+    /// // SAFETY: The pointer is a valid `ANativeWindow`.
+    /// let window = unsafe { NativeWindow::clone_from_ptr(handle.a_native_window().cast()) };
+    ///
+    /// // Do stuff with `window` here.
+    /// # }
     /// ```
+    #[inline]
     pub fn a_native_window(&self) -> NonNull<c_void> {
         self.a_native_window
+    }
+}
+
+impl PartialEq for AndroidNdkWindowHandle {
+    #[inline]
+    fn eq(&self, other: &Self) -> bool {
+        self.a_native_window == other.a_native_window
+    }
+}
+
+impl Eq for AndroidNdkWindowHandle {}
+
+impl hash::Hash for AndroidNdkWindowHandle {
+    #[inline]
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        self.a_native_window.hash(state);
+    }
+}
+
+impl fmt::Debug for AndroidNdkWindowHandle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("AndroidNdkWindowHandle")
+            .field("a_native_window", &self.a_native_window)
+            .finish()
     }
 }
