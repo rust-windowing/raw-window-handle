@@ -94,13 +94,13 @@ pub enum WindowHandle<'window> {
     ///
     /// Note that Mac Catalyst (`$arch-apple-ios-macabi` targets), can use
     /// UIKit *or* AppKit.
-    UiKit(UiKitWindowHandle<'window>),
+    UiKit(UiKitWindowHandle),
     /// A raw window handle for AppKit.
     ///
     /// ## Availability Hints
     /// This variant is used on macOS, although Mac Catalyst can also use it
     /// despite being `target_os = "ios"`.
-    AppKit(AppKitWindowHandle<'window>),
+    AppKit(AppKitWindowHandle),
     /// A raw window handle for the Redox operating system.
     ///
     /// ## Availability Hints
@@ -358,8 +358,8 @@ from_impl!(DisplayHandle, Web, WebDisplayHandle);
 from_impl!(DisplayHandle, Android, AndroidDisplayHandle);
 from_impl!(DisplayHandle, Haiku, HaikuDisplayHandle);
 
-from_impl!(WindowHandle, UiKit, UiKitWindowHandle<'a>);
-from_impl!(WindowHandle, AppKit, AppKitWindowHandle<'a>);
+from_impl!(WindowHandle, UiKit, UiKitWindowHandle);
+from_impl!(WindowHandle, AppKit, AppKitWindowHandle);
 from_impl!(WindowHandle, Orbital, OrbitalWindowHandle<'a>);
 from_impl!(WindowHandle, OhosNdk, OhosNdkWindowHandle<'a>);
 from_impl!(WindowHandle, Xlib, XlibWindowHandle);
