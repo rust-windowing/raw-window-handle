@@ -253,7 +253,7 @@ impl<'a> WindowHandle<'a> {
 
     /// Get the underlying raw window handle.
     pub fn as_raw(&self) -> RawWindowHandle {
-        self.raw.clone()
+        self.raw
     }
 }
 
