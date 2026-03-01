@@ -131,7 +131,7 @@ pub enum WindowHandle<'window> {
     /// ## Availability Hints
     /// This variant should be expected anywhere Wayland works, which is
     /// currently some subset of unix systems.
-    Wayland(WaylandWindowHandle<'window>),
+    Wayland(WaylandWindowHandle),
     /// A raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager
     ///
     /// ## Availability Hints
@@ -253,7 +253,7 @@ pub enum DisplayHandle<'display> {
     /// ## Availability Hints
     /// This variant should be expected anywhere Wayland works, which is
     /// currently some subset of unix systems.
-    Wayland(WaylandDisplayHandle<'display>),
+    Wayland(WaylandDisplayHandle),
     /// A raw display handle for the Linux Kernel Mode Set/Direct Rendering Manager
     ///
     /// ## Availability Hints
@@ -350,7 +350,7 @@ from_impl!(DisplayHandle, Orbital, OrbitalDisplayHandle);
 from_impl!(DisplayHandle, Ohos, OhosDisplayHandle);
 from_impl!(DisplayHandle, Xlib, XlibDisplayHandle<'a>);
 from_impl!(DisplayHandle, Xcb, XcbDisplayHandle<'a>);
-from_impl!(DisplayHandle, Wayland, WaylandDisplayHandle<'a>);
+from_impl!(DisplayHandle, Wayland, WaylandDisplayHandle);
 from_impl!(DisplayHandle, Drm, DrmDisplayHandle<'a>);
 from_impl!(DisplayHandle, Gbm, GbmDisplayHandle<'a>);
 from_impl!(DisplayHandle, Windows, WindowsDisplayHandle);
@@ -364,7 +364,7 @@ from_impl!(WindowHandle, Orbital, OrbitalWindowHandle<'a>);
 from_impl!(WindowHandle, OhosNdk, OhosNdkWindowHandle<'a>);
 from_impl!(WindowHandle, Xlib, XlibWindowHandle);
 from_impl!(WindowHandle, Xcb, XcbWindowHandle);
-from_impl!(WindowHandle, Wayland, WaylandWindowHandle<'a>);
+from_impl!(WindowHandle, Wayland, WaylandWindowHandle);
 from_impl!(WindowHandle, Drm, DrmWindowHandle);
 from_impl!(WindowHandle, Gbm, GbmWindowHandle<'a>);
 from_impl!(WindowHandle, Win32, Win32WindowHandle);
