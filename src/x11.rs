@@ -3,21 +3,10 @@ use core::num::NonZeroU32;
 use core::ptr::NonNull;
 
 /// Raw display handle for Xlib.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XlibDisplayHandle {
-    /// A pointer to an Xlib `Display`.
-    ///
-    /// It is strongly recommended to set this value, however it may be set to
-    /// `None` to request the default display when using EGL.
-    pub display: Option<NonNull<c_void>>,
-
-    /// An X11 screen to use with this display handle.
-    ///
-    /// Note, that X11 could have multiple screens, however
-    /// graphics APIs could work only with one screen at the time,
-    /// given that multiple screens usually reside on different GPUs.
-    pub screen: c_int,
+    display: Option<NonNull<c_void>>,
+    screen: c_int,
 }
 
 impl XlibDisplayHandle {
@@ -35,21 +24,50 @@ impl XlibDisplayHandle {
     /// let screen;
     /// # display = NonNull::from(&()).cast();
     /// # screen = 0;
-    /// let handle = XlibDisplayHandle::new(Some(display), screen);
+    /// let handle = XlibDisplayHandle::new(display, screen);
     /// ```
-    pub fn new(display: Option<NonNull<c_void>>, screen: c_int) -> Self {
-        Self { display, screen }
+    pub fn new(display: NonNull<c_void>, screen: c_int) -> Self {
+        Self {
+            display: Some(display),
+            screen,
+        }
+    }
+
+    /// Create a new handle to a screen with the default display.
+    ///
+    /// You are strongly encouraged to call [`XcbDisplayHandle::new`] when possible.
+    pub fn with_default_display(screen: c_int) -> Self {
+        Self {
+            display: None,
+            screen,
+        }
+    }
+
+    /// A pointer to an Xlib `Display`.
+    ///
+    /// It is strongly recommended to set this value, however it may be set to
+    /// `None` to request the default display when using EGL.
+    pub fn display(&self) -> Option<NonNull<c_void>> {
+        self.display
+    }
+
+    /// An X11 screen to use with this display handle.
+    ///
+    /// Note, that X11 could have multiple screens, however
+    /// graphics APIs could work only with one screen at the time,
+    /// given that multiple screens usually reside on different GPUs.
+    pub fn screen(&self) -> c_int {
+        self.screen
     }
 }
 
 /// Raw window handle for Xlib.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XlibWindowHandle {
-    /// An Xlib `Window`.
-    pub window: c_ulong,
-    /// An Xlib visual ID, or 0 if unknown.
-    pub visual_id: c_ulong,
+    // TODO(MSRV 1.79): Use `NonZero<c_ulong>`?
+    window: c_ulong,
+    // TODO(MSRV 1.79): Use `Option<NonZero<c_ulong>>`?
+    visual_id: c_ulong,
 }
 
 impl XlibWindowHandle {
@@ -64,9 +82,7 @@ impl XlibWindowHandle {
     /// #
     /// let window: c_ulong;
     /// # window = 0;
-    /// let mut handle = XlibWindowHandle::new(window);
-    /// // Optionally set the visual ID.
-    /// handle.visual_id = 0;
+    /// let handle = XlibWindowHandle::new(window);
     /// ```
     pub fn new(window: c_ulong) -> Self {
         Self {
@@ -74,24 +90,42 @@ impl XlibWindowHandle {
             visual_id: 0,
         }
     }
+
+    /// Create a new handle to a window along with a visual ID.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_ulong;
+    /// # use raw_window_handle::XlibWindowHandle;
+    /// #
+    /// let window: c_ulong;
+    /// let visual_id: c_ulong;
+    /// # window = 1;
+    /// # visual_id = 1;
+    /// let handle = XlibWindowHandle::with_visual_id(window, visual_id);
+    /// ```
+    pub fn with_visual_id(window: c_ulong, visual_id: c_ulong) -> Self {
+        assert_ne!(visual_id, 0); // TODO: Should we have this check?
+        Self { window, visual_id }
+    }
+
+    /// An Xlib `Window`.
+    pub fn window(&self) -> c_ulong {
+        self.window
+    }
+
+    /// An Xlib visual ID, or 0 if unknown.
+    pub fn visual_id(&self) -> c_ulong {
+        self.visual_id
+    }
 }
 
 /// Raw display handle for Xcb.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XcbDisplayHandle {
-    /// A pointer to an X server `xcb_connection_t`.
-    ///
-    /// It is strongly recommended to set this value, however it may be set to
-    /// `None` to request the default display when using EGL.
-    pub connection: Option<NonNull<c_void>>,
-
-    /// An X11 screen to use with this display handle.
-    ///
-    /// Note, that X11 could have multiple screens, however
-    /// graphics APIs could work only with one screen at the time,
-    /// given that multiple screens usually reside on different GPUs.
-    pub screen: c_int,
+    connection: Option<NonNull<c_void>>,
+    screen: c_int,
 }
 
 impl XcbDisplayHandle {
@@ -109,21 +143,48 @@ impl XcbDisplayHandle {
     /// let screen;
     /// # connection = NonNull::from(&()).cast();
     /// # screen = 0;
-    /// let handle = XcbDisplayHandle::new(Some(connection), screen);
+    /// let handle = XcbDisplayHandle::new(connection, screen);
     /// ```
-    pub fn new(connection: Option<NonNull<c_void>>, screen: c_int) -> Self {
-        Self { connection, screen }
+    pub fn new(connection: NonNull<c_void>, screen: c_int) -> Self {
+        Self {
+            connection: Some(connection),
+            screen,
+        }
+    }
+
+    /// Create a new handle to a screen with the default connection.
+    ///
+    /// You are strongly encouraged to call [`XcbDisplayHandle::new`] when possible.
+    pub fn with_default_connection(screen: c_int) -> Self {
+        Self {
+            connection: None,
+            screen,
+        }
+    }
+
+    /// A pointer to an X server `xcb_connection_t`.
+    ///
+    /// It is strongly recommended that producers set this value, however it may be set to
+    /// `None` to request the default display when using EGL.
+    pub fn connection(&self) -> Option<NonNull<c_void>> {
+        self.connection
+    }
+
+    /// An X11 screen to use with this display handle.
+    ///
+    /// Note, that X11 could have multiple screens, however
+    /// graphics APIs could work only with one screen at the time,
+    /// given that multiple screens usually reside on different GPUs.
+    pub fn screen(&self) -> c_int {
+        self.screen
     }
 }
 
 /// Raw window handle for Xcb.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct XcbWindowHandle {
-    /// An X11 `xcb_window_t`.
-    pub window: NonZeroU32, // Based on xproto.h
-    /// An X11 `xcb_visualid_t`.
-    pub visual_id: Option<NonZeroU32>,
+    window: NonZeroU32, // Based on xproto.h
+    visual_id: Option<NonZeroU32>,
 }
 
 impl XcbWindowHandle {
@@ -138,14 +199,43 @@ impl XcbWindowHandle {
     /// #
     /// let window: NonZeroU32;
     /// # window = NonZeroU32::new(1).unwrap();
-    /// let mut handle = XcbWindowHandle::new(window);
-    /// // Optionally set the visual ID.
-    /// handle.visual_id = None;
+    /// let handle = XcbWindowHandle::new(window);
     /// ```
     pub fn new(window: NonZeroU32) -> Self {
         Self {
             window,
             visual_id: None,
         }
+    }
+
+    /// Create a new handle to a window along with a `xcb_visualid_t`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::num::NonZeroU32;
+    /// # use raw_window_handle::XcbWindowHandle;
+    /// #
+    /// let window: NonZeroU32;
+    /// let visual_id: NonZeroU32;
+    /// # window = NonZeroU32::new(1).unwrap();
+    /// # visual_id = NonZeroU32::new(1).unwrap();
+    /// let handle = XcbWindowHandle::with_visual_id(window, visual_id);
+    /// ```
+    pub fn with_visual_id(window: NonZeroU32, visual_id: NonZeroU32) -> Self {
+        Self {
+            window,
+            visual_id: Some(visual_id),
+        }
+    }
+
+    /// An X11 `xcb_window_t`.
+    pub fn window(&self) -> NonZeroU32 {
+        self.window
+    }
+
+    /// An X11 `xcb_visualid_t`.
+    pub fn visual_id(&self) -> Option<NonZeroU32> {
+        self.visual_id
     }
 }

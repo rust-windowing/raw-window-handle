@@ -27,7 +27,7 @@ fn html_canvas_element() {
 
     // To get the canvas element back, convert the index back.
     let other_end: ManuallyDrop<HtmlCanvasElement> =
-        unsafe { HtmlCanvasElement::ref_from_abi(handle.obj as u32) };
+        unsafe { HtmlCanvasElement::ref_from_abi(handle.obj() as u32) };
     assert_eq!(&*other_end, &canvas);
 }
 
@@ -42,7 +42,7 @@ fn offscreen_canvas() {
 
     // To get the canvas element back, convert the index back.
     let other_end: ManuallyDrop<OffscreenCanvas> =
-        unsafe { OffscreenCanvas::ref_from_abi(handle.obj as u32) };
+        unsafe { OffscreenCanvas::ref_from_abi(handle.obj() as u32) };
     assert_eq!(&*other_end, &canvas);
 }
 

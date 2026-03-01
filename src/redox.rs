@@ -4,9 +4,8 @@ use core::ptr::NonNull;
 use super::DisplayHandle;
 
 /// Raw display handle for the Redox operating system.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct OrbitalDisplayHandle {}
+pub struct OrbitalDisplayHandle(());
 
 impl OrbitalDisplayHandle {
     /// Create a new empty display handle.
@@ -19,7 +18,7 @@ impl OrbitalDisplayHandle {
     /// let handle = OrbitalDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self(())
     }
 }
 
@@ -44,13 +43,11 @@ impl DisplayHandle<'static> {
 }
 
 /// Raw window handle for the Redox operating system.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct OrbitalWindowHandle {
-    /// A pointer to an orbclient window.
     // TODO(madsmtm): I think this is a file descriptor, so perhaps it should
     // actually use `std::os::fd::RawFd`, or some sort of integer instead?
-    pub window: NonNull<c_void>,
+    window: NonNull<c_void>,
 }
 
 impl OrbitalWindowHandle {
@@ -70,5 +67,10 @@ impl OrbitalWindowHandle {
     /// ```
     pub fn new(window: NonNull<c_void>) -> Self {
         Self { window }
+    }
+
+    /// A pointer to an orbclient window.
+    pub fn window(&self) -> NonNull<c_void> {
+        self.window
     }
 }

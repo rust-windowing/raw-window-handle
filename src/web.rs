@@ -3,9 +3,8 @@ use core::marker::PhantomData;
 use super::DisplayHandle;
 
 /// Raw display handle for the Web.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct WebDisplayHandle {}
+pub struct WebDisplayHandle(());
 
 impl WebDisplayHandle {
     /// Create a new empty display handle.
@@ -18,7 +17,7 @@ impl WebDisplayHandle {
     /// let handle = WebDisplayHandle::new();
     /// ```
     pub fn new() -> Self {
-        Self {}
+        Self(())
     }
 }
 
@@ -45,14 +44,9 @@ impl DisplayHandle<'static> {
 /// Raw window handle for a Web canvas registered via [`wasm-bindgen`].
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebCanvasWindowHandle {
-    /// An inner index of the [`JsValue`] of an [`HtmlCanvasElement`].
-    ///
-    /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
-    /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
-    pub obj: usize,
+    obj: usize,
 
     /// Makes this type `!Send` and `!Sync`.
     _marker: PhantomData<*mut ()>,
@@ -81,7 +75,7 @@ impl WebCanvasWindowHandle {
     ///
     /// // To get the canvas element back, convert the index back.
     /// let other_end: ManuallyDrop<HtmlCanvasElement> = unsafe {
-    ///     HtmlCanvasElement::ref_from_abi(handle.obj as u32)
+    ///     HtmlCanvasElement::ref_from_abi(handle.obj() as u32)
     /// };
     /// ```
     pub fn new(obj: usize) -> Self {
@@ -90,20 +84,23 @@ impl WebCanvasWindowHandle {
             _marker: PhantomData,
         }
     }
+
+    /// An inner index of the [`JsValue`] of an [`HtmlCanvasElement`].
+    ///
+    /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+    /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
+    pub fn obj(&self) -> usize {
+        self.obj
+    }
 }
 
 /// Raw window handle for a Web offscreen canvas registered via
 /// [`wasm-bindgen`].
 ///
 /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WebOffscreenCanvasWindowHandle {
-    /// An inner index of the [`JsValue`] of an [`OffscreenCanvas`].
-    ///
-    /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
-    /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
-    pub obj: usize,
+    obj: usize,
 
     /// Makes this type `!Send` and `!Sync`.
     _marker: PhantomData<*mut ()>,
@@ -132,7 +129,7 @@ impl WebOffscreenCanvasWindowHandle {
     ///
     /// // To get the canvas element back, convert the index back.
     /// let other_end: ManuallyDrop<OffscreenCanvas> = unsafe {
-    ///     OffscreenCanvas::ref_from_abi(handle.obj as u32)
+    ///     OffscreenCanvas::ref_from_abi(handle.obj() as u32)
     /// };
     /// ```
     pub fn new(obj: usize) -> Self {
@@ -140,5 +137,13 @@ impl WebOffscreenCanvasWindowHandle {
             obj,
             _marker: PhantomData,
         }
+    }
+
+    /// An inner index of the [`JsValue`] of an [`OffscreenCanvas`].
+    ///
+    /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+    /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
+    pub fn obj(&self) -> usize {
+        self.obj
     }
 }

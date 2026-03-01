@@ -2,11 +2,9 @@ use core::ffi::c_void;
 use core::ptr::NonNull;
 
 /// Raw display handle for the Linux Generic Buffer Manager.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct GbmDisplayHandle {
-    /// The gbm device.
-    pub gbm_device: NonNull<c_void>,
+    gbm_device: NonNull<c_void>,
 }
 
 impl GbmDisplayHandle {
@@ -27,14 +25,17 @@ impl GbmDisplayHandle {
     pub fn new(gbm_device: NonNull<c_void>) -> Self {
         Self { gbm_device }
     }
+
+    /// The gbm device.
+    pub fn gbm_device(&self) -> NonNull<c_void> {
+        self.gbm_device
+    }
 }
 
 /// Raw window handle for the Linux Generic Buffer Manager.
-#[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct GbmWindowHandle {
-    /// The gbm surface.
-    pub gbm_surface: NonNull<c_void>,
+    gbm_surface: NonNull<c_void>,
 }
 
 impl GbmWindowHandle {
@@ -54,5 +55,10 @@ impl GbmWindowHandle {
     /// ```
     pub fn new(gbm_surface: NonNull<c_void>) -> Self {
         Self { gbm_surface }
+    }
+
+    /// The gbm surface.
+    pub fn gbm_surface(&self) -> NonNull<c_void> {
+        self.gbm_surface
     }
 }
