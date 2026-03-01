@@ -441,9 +441,8 @@ mod tests {
         assert_impl_all!(DrmWindowHandle: Send, Sync);
         assert_not_impl_any!(GbmWindowHandle: Sync);
         assert_impl_all!(GbmWindowHandle: Send);
-        assert_not_impl_any!(Win32WindowHandle: Send);
         assert_not_impl_any!(WinRtWindowHandle: Send);
-        assert_impl_all!(Win32WindowHandle: Sync);
+        assert_impl_all!(Win32WindowHandle: Send, Sync);
         assert_impl_all!(WinRtWindowHandle: Sync);
         assert_not_impl_any!(WebCanvasWindowHandle: Send, Sync);
         assert_not_impl_any!(WebOffscreenCanvasWindowHandle: Send, Sync);
