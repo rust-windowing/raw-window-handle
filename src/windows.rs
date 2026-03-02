@@ -55,13 +55,17 @@ pub struct Win32WindowHandle {
     pub hinstance: Option<NonNull<c_void>>,
 }
 
+unsafe impl Send for Win32WindowHandle {}
+unsafe impl Sync for Win32WindowHandle {}
+
 impl Win32WindowHandle {
     /// Create a new handle to a window.
     ///
     /// # Safety
     ///
-    /// It is assumed that the Win32 handle belongs to the current thread. This
-    /// is necessary for the handle to be considered "valid" in all cases.
+    /// Some APIs taking a `HWND` must observe its thread-affinity.
+    /// Consumers are responsible to ensure these safety guarantees themselves.
+    /// See [`GetWindowThreadProcessId()`](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowthreadprocessid).
     ///
     /// # Example
     ///
@@ -79,6 +83,11 @@ impl Win32WindowHandle {
     /// let hinstance = NonNull::new(unsafe { GetWindowLongPtrW(window, GWLP_HINSTANCE) }).unwrap();
     /// # let hinstance = None;
     /// handle.hinstance = hinstance;
+    ///
+    /// // On the other end we need to check if we are on the
+    /// // right thread when using API calls that require it:
+    /// # #[cfg(only_for_showcase)]
+    /// unsafe { assert_eq!(GetWindowThreadProcessId(HWND(handle.hwnd.as_ptr()), None), GetCurrentThreadId()) };
     /// ```
     pub fn new(hwnd: NonNull<c_void>) -> Self {
         Self {
