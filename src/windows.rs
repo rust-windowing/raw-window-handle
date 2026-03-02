@@ -92,6 +92,11 @@ impl Win32WindowHandle {
     /// let hinstance = NonNull::new(unsafe { GetWindowLongPtrW(window, GWLP_HINSTANCE) }).unwrap();
     /// # let hinstance = None;
     /// handle.hinstance = hinstance;
+    ///
+    /// // On the other end we need to check if we are on the
+    /// // right thread when using API calls that require it:
+    /// # #[cfg(only_for_showcase)]
+    /// unsafe { assert_eq!(GetWindowThreadProcessId(HWND(handle.hwnd.as_ptr()), None), GetCurrentThreadId()) };
     /// ```
     pub fn new(hwnd: NonNull<c_void>) -> Self {
         Self {
