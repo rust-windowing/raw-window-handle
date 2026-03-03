@@ -10,21 +10,21 @@ use crate::{HandleError, RawDisplayHandle, RawWindowHandle};
 
 /// A display that acts as a wrapper around a display handle.
 ///
-/// Objects that implement this trait should be able to return a [`DisplayHandle`] for the display
+/// Objects that implement this trait should be able to return a [`BorrowedDisplayHandle`] for the display
 /// that they are associated with. This handle should last for the lifetime of the object, and should
 /// return an error if the application is inactive.
 ///
 /// Implementors of this trait will be windowing systems, like [`winit`] and [`sdl2`]. These windowing
 /// systems should implement this trait on types that represent the top-level display server. It
-/// should be implemented by tying the lifetime of the [`DisplayHandle`] to the lifetime of the
+/// should be implemented by tying the lifetime of the [`BorrowedDisplayHandle`] to the lifetime of the
 /// display object.
 ///
 /// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
 /// should be generic over a type that implements `AsDisplayHandle`, and should use the
-/// [`DisplayHandle`] type to access the display handle.
+/// [`BorrowedDisplayHandle`] type to access the display handle.
 ///
 /// Note that these requirements are not enforced on `AsDisplayHandle`, rather, they are enforced on the
-/// constructors of [`DisplayHandle`]. This is because the `AsDisplayHandle` trait is safe to implement.
+/// constructors of [`BorrowedDisplayHandle`]. This is because the `AsDisplayHandle` trait is safe to implement.
 ///
 /// [`winit`]: https://crates.io/crates/winit
 /// [`sdl2`]: https://crates.io/crates/sdl2
@@ -106,7 +106,7 @@ impl<'a> BorrowedDisplayHandle<'a> {
     /// try to derive the field from other fields the implementer *does* provide via whatever methods the
     /// platform provides.
     ///
-    /// It is not possible to invalidate a [`DisplayHandle`] on any platform without additional unsafe code.
+    /// It is not possible to invalidate a [`BorrowedDisplayHandle`] on any platform without additional unsafe code.
     pub unsafe fn borrow_raw(raw: RawDisplayHandle) -> Self {
         Self {
             raw,
@@ -146,7 +146,7 @@ impl<'a> AsDisplayHandle for BorrowedDisplayHandle<'a> {
 
 /// A handle to a window.
 ///
-/// Objects that implement this trait should be able to return a [`WindowHandle`] for the window
+/// Objects that implement this trait should be able to return a [`BorrowedWindowHandle`] for the window
 /// that they are associated with. This handle should last for the lifetime of the object, and should
 /// return an error if the application is inactive.
 ///
@@ -155,7 +155,7 @@ impl<'a> AsDisplayHandle for BorrowedDisplayHandle<'a> {
 ///
 /// Users of this trait will include graphics libraries, like [`wgpu`] and [`glutin`]. These APIs
 /// should be generic over a type that implements `AsWindowHandle`, and should use the
-/// [`WindowHandle`] type to access the window handle. The window handle should be acquired and held
+/// [`BorrowedWindowHandle`] type to access the window handle. The window handle should be acquired and held
 /// while the window is being used, in order to ensure that the window is not deleted while it is in
 /// use.
 ///
