@@ -1,6 +1,6 @@
 use core::marker::PhantomData;
 
-use super::DisplayHandle;
+use super::BorrowedDisplayHandle;
 
 /// Raw display handle for the Web.
 ///
@@ -40,7 +40,7 @@ impl WebDisplayHandle {
     }
 }
 
-impl DisplayHandle<'static> {
+impl BorrowedDisplayHandle<'static> {
     /// Create a Web-based display handle.
     ///
     /// As no data is borrowed by this handle, it is completely safe to create. This function
@@ -49,9 +49,9 @@ impl DisplayHandle<'static> {
     /// # Example
     ///
     /// ```
-    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
-    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
-    /// let handle = DisplayHandle::web();
+    /// # use raw_window_handle::{BorrowedDisplayHandle, AsDisplayHandle};
+    /// # fn do_something(rwh: impl AsDisplayHandle) { let _ = rwh; }
+    /// let handle = BorrowedDisplayHandle::web();
     /// do_something(handle);
     /// ```
     pub fn web() -> Self {
