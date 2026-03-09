@@ -49,10 +49,10 @@ impl DisplayHandle<'static> {
 ///
 /// ## Safety
 ///
-/// Note that window objects have [thread affinity]. Not all functions of the
-/// Win32 handle are thread-safe (modifying functions especially), so care
-/// should be taken to not call these functions from other threads. When in
-/// doubt, only run the function on the thread the window object was created on.
+/// Window objects have [thread affinity]. Some functions read or modify window
+/// state non-atomically, making them unsafe to call from threads other than
+/// the one that created the window. When in doubt, only run the function on
+/// the thread the window object was created on.
 ///
 /// [thread affinity]: https://devblogs.microsoft.com/oldnewthing/20051010-09/?p=33843
 #[non_exhaustive]
@@ -107,19 +107,6 @@ impl Win32WindowHandle {
 }
 
 /// Raw window handle for WinRT.
-///
-/// ## Thread-Safety
-///
-/// Window handles have [thread affinity]. This means that they are `!Send`, as
-/// they must be dropped on the same thread that created them. However, some
-/// functions on the window can be called from other threads. This means that
-/// the window is `Sync`.
-///
-/// Note that not all functions of the Win32 handle are thread-safe (modifying
-/// functions especially), so care should be taken to not call these functions
-/// from other threads. When in doubt, only run the function on the main thread.
-///
-/// [thread affinity]: https://devblogs.microsoft.com/oldnewthing/20051010-09/?p=33843
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WinRtWindowHandle {
