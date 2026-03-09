@@ -3,20 +3,6 @@ use core::marker::PhantomData;
 use super::DisplayHandle;
 
 /// Raw display handle for the Web.
-///
-/// ## Thread-Safety
-///
-/// WASM objects are usually bound to the main UI "thread" belonging to the
-/// top-level webpage. Therefore this type is `!Send` and `!Sync`. It cannot be
-/// sent to or used from other threads.
-///
-/// Note that this type does not contain any WASM objects. However,
-/// it is kept `!Send` and `!Sync` for the event that WASM objects are
-/// added to this type.
-///
-/// However, this status quo may change in the future, due to the adoption of
-/// atomics in WASM code. Therefore this type may be made `Send` and `Sync` as
-/// part of a non-breaking change.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WasmBindgenDisplay {
@@ -66,15 +52,13 @@ impl DisplayHandle<'static> {
 ///
 /// ## Thread-Safety
 ///
-/// WASM objects are usually bound to the main UI "thread" belonging to the
-/// top-level webpage. Therefore this type is `!Send` and `!Sync`. It cannot be
-/// sent to or used from other threads.
+/// JS objects can't be implicitly transferred across threads.
+/// Therefore this type is `!Send` and `!Sync`.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WasmBindgenCanvasWindowHandle {
-    /// An inner index of the [`JsValue`] of an [`HtmlCanvasElement`].
+    /// A table element index of the `externref` of an [`HtmlCanvasElement`].
     ///
-    /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
     pub obj: usize,
 
@@ -83,7 +67,7 @@ pub struct WasmBindgenCanvasWindowHandle {
 }
 
 impl WasmBindgenCanvasWindowHandle {
-    /// Create a new handle from a pointer to [`HtmlCanvasElement`].
+    /// Create a new handle from a table element index to [`HtmlCanvasElement`].
     ///
     /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
     ///
@@ -123,13 +107,12 @@ impl WasmBindgenCanvasWindowHandle {
 ///
 /// ## Thread-Safety
 ///
-/// WASM objects are usually bound to the main UI "thread" belonging to the
-/// top-level webpage. Therefore this type is `!Send` and `!Sync`. It cannot be
-/// sent to or used from other threads.
+/// JS objects can't be implicitly transferred across threads.
+/// Therefore this type is `!Send` and `!Sync`.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct WasmBindgenOffscreenCanvasWindowHandle {
-    /// An inner index of the [`JsValue`] of an [`OffscreenCanvas`].
+    /// A table element index of the `externref` of an [`OffscreenCanvas`].
     ///
     /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
@@ -140,7 +123,7 @@ pub struct WasmBindgenOffscreenCanvasWindowHandle {
 }
 
 impl WasmBindgenOffscreenCanvasWindowHandle {
-    /// Create a new handle from a pointer to an [`OffscreenCanvas`].
+    /// Create a new handle from a table element index to an [`OffscreenCanvas`].
     ///
     /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
     ///
