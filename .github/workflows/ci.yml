@@ -62,3 +62,20 @@ jobs:
       - name: Run tests inside of Chrome
         run: wasm-pack test --chrome --headless
         if: matrix.rust_version != '1.64'
+
+  apple:
+    name: Apple
+    needs: fmt
+
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - run: rustup target add aarch64-apple-ios-macabi
+
+      - name: macOS (doc) tests
+        run: cargo test
+
+      - name: iOS (doc) tests using Mac Catalyst
+        run: cargo test --target aarch64-apple-ios-macabi
