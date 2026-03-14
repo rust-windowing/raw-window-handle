@@ -37,7 +37,7 @@
 //! because on some platforms (Wayland, GBM, maybe more?) that is the only way to ensure that the
 //! handle is not deallocated while in use by the surface.
 //! ```
-//! struct Surface<W: HasWindowHandle> {
+//! struct Surface<W: raw_window_handle::HasWindowHandle> {
 //!     handle: W,
 //! }
 //! ```
