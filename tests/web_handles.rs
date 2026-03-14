@@ -3,7 +3,7 @@
 #![cfg(target_family = "wasm")]
 
 use core::mem::ManuallyDrop;
-use raw_window_handle::{WebCanvasWindowHandle, WebOffscreenCanvasWindowHandle};
+use raw_window_handle::RawWindowHandle;
 use wasm_bindgen::convert::{IntoWasmAbi, RefFromWasmAbi};
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlCanvasElement, OffscreenCanvas};
@@ -23,11 +23,14 @@ fn html_canvas_element() {
 
     // Convert to the raw index and convert to the handle.
     let index = (&canvas).into_abi();
-    let handle = WebCanvasWindowHandle::new(index as usize);
+    let handle = RawWindowHandle::new_webcanvas(index as usize);
 
     // To get the canvas element back, convert the index back.
+    let RawWindowHandle::WebCanvas { obj, .. } = handle else {
+        unreachable!()
+    };
     let other_end: ManuallyDrop<HtmlCanvasElement> =
-        unsafe { HtmlCanvasElement::ref_from_abi(handle.obj as u32) };
+        unsafe { HtmlCanvasElement::ref_from_abi(obj as u32) };
     assert_eq!(&*other_end, &canvas);
 }
 
@@ -38,11 +41,14 @@ fn offscreen_canvas() {
 
     // Convert to the raw index and convert to the handle.
     let index = (&canvas).into_abi();
-    let handle = WebOffscreenCanvasWindowHandle::new(index as usize);
+    let handle = RawWindowHandle::new_weboffscreencanvas(index as usize);
 
     // To get the canvas element back, convert the index back.
+    let RawWindowHandle::WebOffscreenCanvas { obj, .. } = handle else {
+        unreachable!()
+    };
     let other_end: ManuallyDrop<OffscreenCanvas> =
-        unsafe { OffscreenCanvas::ref_from_abi(handle.obj as u32) };
+        unsafe { OffscreenCanvas::ref_from_abi(obj as u32) };
     assert_eq!(&*other_end, &canvas);
 }
 
