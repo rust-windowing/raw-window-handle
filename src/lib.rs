@@ -19,14 +19,19 @@
 //! primary example of this is [`winit`](https://docs.rs/winit/), consider that the "reference
 //! implementation" of a producer crate.
 //!
-//! Other cross-platform producer crates include [`sdl3`](https://docs.rs/sdl3/),
-//! [`sdl2`](https://docs.rs/sdl2/), [`minifb`](https://docs.rs/minifb/),
-//! [`glfw`](https://docs.rs/glfw/) and [`fltk`](https://docs.rs/fltk/).
+//! Other cross-platform producer crates include:
+//! - [`sdl3`](https://docs.rs/sdl3/).
+//! - [`sdl2`](https://docs.rs/sdl2/).
+//! - [`minifb`](https://docs.rs/minifb/)
+//! - [`glfw`](https://docs.rs/glfw/).
+//! - [`fltk`](https://docs.rs/fltk/).
 //!
 //! Some platform-specific toolkits might also decide to implement `HasWindowHandle` for their
-//! types to allow more easily using them with consumer crates. Examples of this include
-//! [`x11rb`](https://docs.rs/x11rb), [`wayland-backend`](https://docs.rs/wayland-backend),
-//! [`ndk`](https://docs.rs/ndk) and [`orbclient`](https://docs.rs/orbclient).
+//! types to allow more easily using them with consumer crates. Examples of this include:
+//! - [`x11rb`](https://docs.rs/x11rb).
+//! - [`wayland-backend`](https://docs.rs/wayland-backend).
+//! - [`ndk`](https://docs.rs/ndk).
+//! - [`orbclient`](https://docs.rs/orbclient).
 //!
 //! ## Consumers
 //!
@@ -42,18 +47,24 @@
 //! }
 //! ```
 //!
-//! Examples of consumer crates include [`softbuffer`](https://docs.rs/softbuffer/),
-//! [`glutin`](https://docs.rs/glutin/) and [`wgpu`](https://docs.rs/wgpu/), consider these
-//! "reference implementations" of consumer crates. Other examples include
-//! [`ash-window`](https://docs.rs/ash-window/) and [`pixels`](https://docs.rs/pixels/).
+//! Examples of consumer crates include:
+//! - [`softbuffer`](https://docs.rs/softbuffer/) (surface for software rendering).
+//! - [`glutin`](https://docs.rs/glutin/) (OpenGL surface and context setup).
+//! - [`wgpu`](https://docs.rs/wgpu/) (general GPU interface).
+//! - [`ash-window`](https://docs.rs/ash-window/) (Vulkan API).
+//! - [`pixels`](https://docs.rs/pixels/) (software rendering built upon `wgpu`).
 //!
 //! Another type of consumer is those that use the window handle to access either the platform
 //! widget/view or the actual window, and performs some operation that requires that. Examples of
-//! this include [`rfd`](https://docs.rs/rfd/), [`wry`](https://docs.rs/wry/),
-//! [`muda`](https://docs.rs/muda/), [`window_clipboard`](https://docs.rs/window_clipboard/),
-//! [`ashpd`](https://docs.rs/ashpd/), [`window-vibrancy`](https://docs.rs/window-vibrancy/),
-//! [`window-shadows`](https://docs.rs/window-shadows/) and
-//! [`native-dialog`](https://docs.rs/native-dialog/).
+//! this include:
+//! - [`rfd`](https://docs.rs/rfd/) (file dialog).
+//! - [`wry`](https://docs.rs/wry/) (webview).
+//! - [`muda`](https://docs.rs/muda/) (menubar).
+//! - [`window_clipboard`](https://docs.rs/window_clipboard/).
+//! - [`ashpd`](https://docs.rs/ashpd/) (XDG portals).
+//! - [`window-vibrancy`](https://docs.rs/window-vibrancy/).
+//! - [`window-shadows`](https://docs.rs/window-shadows/).
+//! - [`native-dialog`](https://docs.rs/native-dialog/).
 //!
 //! ## Safety guarantees
 //!
