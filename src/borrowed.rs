@@ -120,6 +120,153 @@ impl<'a> DisplayHandle<'a> {
     }
 }
 
+/// `'static` display handles.
+impl DisplayHandle<'static> {
+    /// Create a UiKit-based display handle.
+    ///
+    /// As no data is borrowed by this handle, it is completely safe to create. This function
+    /// may be useful to windowing framework implementations that want to avoid unsafe code.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
+    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
+    /// let handle = DisplayHandle::uikit();
+    /// do_something(handle);
+    /// ```
+    pub fn uikit() -> Self {
+        // SAFETY: No data is borrowed.
+        unsafe { Self::borrow_raw(RawDisplayHandle::new_uikit()) }
+    }
+
+    /// Create an AppKit-based display handle.
+    ///
+    /// As no data is borrowed by this handle, it is completely safe to create. This function
+    /// may be useful to windowing framework implementations that want to avoid unsafe code.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
+    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
+    /// let handle = DisplayHandle::appkit();
+    /// do_something(handle);
+    /// ```
+    pub fn appkit() -> Self {
+        // SAFETY: No data is borrowed.
+        unsafe { Self::borrow_raw(RawDisplayHandle::new_appkit()) }
+    }
+
+    /// Create an Orbital-based display handle.
+    ///
+    /// As no data is borrowed by this handle, it is completely safe to create. This function
+    /// may be useful to windowing framework implementations that want to avoid unsafe code.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
+    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
+    /// let handle = DisplayHandle::orbital();
+    /// do_something(handle);
+    /// ```
+    pub fn orbital() -> Self {
+        // SAFETY: No data is borrowed.
+        unsafe { Self::borrow_raw(RawDisplayHandle::new_orbital()) }
+    }
+
+    /// Create an OpenHarmony-based display handle.
+    ///
+    /// As no data is borrowed by this handle, it is completely safe to create. This function
+    /// may be useful to windowing framework implementations that want to avoid unsafe code.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
+    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
+    /// let handle = DisplayHandle::ohos();
+    /// do_something(handle);
+    /// ```
+    pub fn ohos() -> Self {
+        // SAFETY: No data is borrowed.
+        unsafe { Self::borrow_raw(RawDisplayHandle::new_ohos()) }
+    }
+
+    /// Create a Windows-based display handle.
+    ///
+    /// As no data is borrowed by this handle, it is completely safe to create. This function
+    /// may be useful to windowing framework implementations that want to avoid unsafe code.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
+    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
+    /// let handle = DisplayHandle::windows();
+    /// do_something(handle);
+    /// ```
+    pub fn windows() -> Self {
+        // SAFETY: No data is borrowed.
+        unsafe { Self::borrow_raw(RawDisplayHandle::new_windows()) }
+    }
+
+    /// Create a Web-based display handle.
+    ///
+    /// As no data is borrowed by this handle, it is completely safe to create. This function
+    /// may be useful to windowing framework implementations that want to avoid unsafe code.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
+    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
+    /// let handle = DisplayHandle::web();
+    /// do_something(handle);
+    /// ```
+    pub fn web() -> Self {
+        // SAFETY: No data is borrowed.
+        unsafe { Self::borrow_raw(RawDisplayHandle::new_web()) }
+    }
+
+    /// Create an Android-based display handle.
+    ///
+    /// As no data is borrowed by this handle, it is completely safe to create. This function
+    /// may be useful to windowing framework implementations that want to avoid unsafe code.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
+    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
+    /// let handle = DisplayHandle::android();
+    /// do_something(handle);
+    /// ```
+    pub fn android() -> Self {
+        // SAFETY: No data is borrowed.
+        unsafe { Self::borrow_raw(RawDisplayHandle::new_android()) }
+    }
+
+    /// Create an Haiku-based display handle.
+    ///
+    /// As no data is borrowed by this handle, it is completely safe to create. This function
+    /// may be useful to windowing framework implementations that want to avoid unsafe code.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
+    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
+    /// let handle = DisplayHandle::haiku();
+    /// do_something(handle);
+    /// ```
+    pub fn haiku() -> Self {
+        // SAFETY: No data is borrowed.
+        unsafe { Self::borrow_raw(RawDisplayHandle::new_haiku()) }
+    }
+}
+
 impl AsRef<RawDisplayHandle> for DisplayHandle<'_> {
     fn as_ref(&self) -> &RawDisplayHandle {
         &self.raw
