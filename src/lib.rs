@@ -15,11 +15,10 @@
 //! ## Producers
 //!
 //! Producer crates provide some sort of "window" type that implements [`HasWindowHandle`], and
-//! ensures that the [`WindowHandle`] returned from that is alive for as long as the window is. The
-//! primary example of this is [`winit`](https://docs.rs/winit/), consider that the "reference
-//! implementation" of a producer crate.
-//!
-//! Other cross-platform producer crates include:
+//! ensures that the [`WindowHandle`] returned from that is alive for as long as the window is.
+//! Examples of cross-platform producer crates include:
+//! - [`winit`](https://docs.rs/winit/), consider this the "reference implementation" of a producer
+//!   crate.
 //! - [`sdl3`](https://docs.rs/sdl3/).
 //! - [`sdl2`](https://docs.rs/sdl2/).
 //! - [`minifb`](https://docs.rs/minifb/)
