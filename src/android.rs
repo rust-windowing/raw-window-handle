@@ -1,7 +1,7 @@
 use core::ffi::c_void;
 use core::ptr::NonNull;
 
-use super::DisplayHandle;
+use super::BorrowedDisplayHandle;
 
 /// Raw display handle for Android.
 ///
@@ -33,7 +33,7 @@ impl AndroidDisplayHandle {
     }
 }
 
-impl DisplayHandle<'static> {
+impl BorrowedDisplayHandle<'static> {
     /// Create an Android-based display handle.
     ///
     /// As no data is borrowed by this handle, it is completely safe to create. This function
@@ -42,9 +42,9 @@ impl DisplayHandle<'static> {
     /// # Example
     ///
     /// ```
-    /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
-    /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
-    /// let handle = DisplayHandle::android();
+    /// # use raw_window_handle::{BorrowedDisplayHandle, AsDisplayHandle};
+    /// # fn do_something(rwh: impl AsDisplayHandle) { let _ = rwh; }
+    /// let handle = BorrowedDisplayHandle::android();
     /// do_something(handle);
     /// ```
     pub fn android() -> Self {
