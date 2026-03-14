@@ -47,7 +47,7 @@
 //! "reference implementations" of consumer crates. Other examples include
 //! [`ash-window`](https://docs.rs/ash-window/) and [`pixels`](https://docs.rs/pixels/).
 //!
-//! Another type of producer is those that use the window handle to access either the platform
+//! Another type of consumer is those that use the window handle to access either the platform
 //! widget/view or the actual window, and performs some operation that requires that. Examples of
 //! this include [`rfd`](https://docs.rs/rfd/), [`wry`](https://docs.rs/wry/),
 //! [`muda`](https://docs.rs/muda/), [`window_clipboard`](https://docs.rs/window_clipboard/),
