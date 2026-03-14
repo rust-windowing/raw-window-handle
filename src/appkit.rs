@@ -63,20 +63,18 @@ impl DisplayHandle<'static> {
 /// Getting the view from a [`WindowHandle`][crate::WindowHandle].
 ///
 /// ```no_run
-/// # fn inner() {
+/// # #[cfg(not(target_os = "macos"))]
+/// # fn main() {}
+/// # fn main() {
 /// #![cfg(target_os = "macos")]
-/// # #[cfg(requires_objc2)]
 /// use objc2::MainThreadMarker;
-/// # #[cfg(requires_objc2)]
 /// use objc2::rc::Retained;
-/// # #[cfg(requires_objc2)]
 /// use objc2_app_kit::NSView;
 /// use raw_window_handle::{WindowHandle, RawWindowHandle};
 ///
-/// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
+/// let handle: WindowHandle<'_>; // Get the window handle from somewhere
 /// # handle = unimplemented!();
 /// match handle.as_raw() {
-///     # #[cfg(requires_objc2)]
 ///     RawWindowHandle::AppKit(handle) => {
 ///         assert!(MainThreadMarker::new().is_some(), "can only access AppKit handles on the main thread");
 ///         let ns_view = handle.ns_view.as_ptr();
@@ -120,16 +118,25 @@ impl AppKitWindowHandle {
     ///
     /// Create a handle from the content view of a `NSWindow`.
     ///
-    /// ```ignore
+    /// ```
+    /// # #[cfg(not(target_os = "macos"))]
+    /// # fn main() {}
+    /// # fn main() {
+    /// #![cfg(target_os = "macos")]
     /// use std::ptr::NonNull;
     /// use objc2::rc::Retained;
     /// use objc2_app_kit::{NSWindow, NSView};
     /// use raw_window_handle::AppKitWindowHandle;
     ///
-    /// let ns_window: Retained<NSWindow> = ...;
-    /// let ns_view: Retained<NSView> = window.contentView();
+    /// // NSWindow gotten from somewhere.
+    /// let ns_window: Retained<NSWindow>;
+    /// # ns_window = unsafe { objc2_app_kit::NSWindow::new(objc2::MainThreadMarker::new().unwrap()) };
+    ///
+    /// // Use the window's content view.
+    /// let ns_view: Retained<NSView> = ns_window.contentView().unwrap();
     /// let ns_view: NonNull<NSView> = NonNull::from(&*ns_view);
     /// let handle = AppKitWindowHandle::new(ns_view.cast());
+    /// # }
     /// ```
     pub fn new(ns_view: NonNull<c_void>) -> Self {
         Self { ns_view }

@@ -63,21 +63,19 @@ impl DisplayHandle<'static> {
 /// Getting the view from a [`WindowHandle`][crate::WindowHandle].
 ///
 /// ```no_run
-/// # fn inner() {
-/// #![cfg(any(target_os = "ios", target_os = "tvos", target_os = "watchos", target_os = "xros"))]
-/// # #[cfg(requires_objc2)]
+/// # #[cfg(not(all(target_vendor = "apple", not(target_os = "macos"))))]
+/// # fn main() {}
+/// # fn main() {
+/// #![cfg(all(target_vendor = "apple", not(target_os = "macos")))]
 /// use objc2::MainThreadMarker;
-/// # #[cfg(requires_objc2)]
 /// use objc2::rc::Retained;
-/// # #[cfg(requires_objc2)]
 /// use objc2_ui_kit::UIView;
 /// use raw_window_handle::{WindowHandle, RawWindowHandle};
 ///
 /// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
 /// # handle = unimplemented!();
 /// match handle.as_raw() {
-///     # #[cfg(requires_objc2)]
-///     RawWindowHandle::UIKit(handle) => {
+///     RawWindowHandle::UiKit(handle) => {
 ///         assert!(MainThreadMarker::new().is_some(), "can only access UIKit handles on the main thread");
 ///         let ui_view = handle.ui_view.as_ptr();
 ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
@@ -94,11 +92,17 @@ impl DisplayHandle<'static> {
 ///
 /// Get a pointer to an `UIViewController` object by traversing the `UIView`'s responder chain:
 ///
-/// ```ignore
+/// ```
+/// # #[cfg(not(all(target_vendor = "apple", not(target_os = "macos"))))]
+/// # fn main() {}
+/// # fn main() {
+/// #![cfg(all(target_vendor = "apple", not(target_os = "macos")))]
 /// use objc2::rc::Retained;
 /// use objc2_ui_kit::{UIResponder, UIView, UIViewController};
 ///
-/// let view: Retained<UIView> = ...;
+/// // View gotten from somewhere (e.g. as in the example above).
+/// let view: Retained<UIView>;
+/// # view = unsafe { objc2_ui_kit::UIView::new(objc2::MainThreadMarker::new().unwrap()) };
 ///
 /// let mut current_responder: Retained<UIResponder> = view.into_super();
 /// let mut found_controller = None;
@@ -114,6 +118,7 @@ impl DisplayHandle<'static> {
 /// }
 ///
 /// // Use found_controller here.
+/// # }
 /// ```
 ///
 /// ## Thread Safety
@@ -143,15 +148,24 @@ impl UiKitWindowHandle {
     ///
     /// Create a handle from a `UIView`.
     ///
-    /// ```ignore
+    /// ```
+    /// # #[cfg(not(all(target_vendor = "apple", not(target_os = "macos"))))]
+    /// # fn main() {}
+    /// # fn main() {
+    /// #![cfg(all(target_vendor = "apple", not(target_os = "macos")))]
     /// use std::ptr::NonNull;
     /// use objc2::rc::Retained;
     /// use objc2_ui_kit::UIView;
     /// use raw_window_handle::UiKitWindowHandle;
     ///
-    /// let ui_view: Retained<UIView> = ...;
+    /// // UIView gotten from somewhere.
+    /// let ui_view: Retained<UIView>;
+    /// # ui_view = unsafe { objc2_ui_kit::UIView::new(objc2::MainThreadMarker::new().unwrap()) };
+    ///
+    /// // Pass it to raw-window-handle.
     /// let ui_view: NonNull<UIView> = NonNull::from(&*ui_view);
     /// let handle = UiKitWindowHandle::new(ui_view.cast());
+    /// # }
     /// ```
     pub fn new(ui_view: NonNull<c_void>) -> Self {
         Self { ui_view }
