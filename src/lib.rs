@@ -3,7 +3,7 @@
 #![allow(clippy::new_without_default)]
 #![deny(unsafe_op_in_unsafe_fn)]
 
-//! # Interoperability helper between graphics crates
+//! # Interoperability types for window handles
 //!
 //! This crate is intended as an interoperability crate, that allows "producer" crates to create a
 //! handle to a window surface, and for this handle to be passed onwards to "consumer" crates for
