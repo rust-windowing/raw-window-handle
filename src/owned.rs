@@ -4,6 +4,8 @@ use crate::borrowed::{
     AsDisplayHandle, AsWindowHandle, BorrowedDisplayHandle, BorrowedWindowHandle,
 };
 use crate::{HandleError, RawDisplayHandle, RawWindowHandle};
+
+use core::fmt;
 use core::ptr::NonNull;
 
 /// An owned window handle.
@@ -16,7 +18,7 @@ pub struct WindowHandle {
 }
 
 /// A thread-safe owned window handle.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct SyncWindowHandle {
     /// Inner window handle.
     inner: WindowHandle,
@@ -38,6 +40,19 @@ macro_rules! noop_window_handle {
 
         SyncWindowHandle::from_static(&Noop)
     }};
+}
+
+impl fmt::Debug for WindowHandle {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.window_handle() {
+            Ok(handle) => f.debug_tuple("WindowHandle").field(&handle).finish(),
+            Err(_) => f
+                .debug_tuple("WindowHandle")
+                .field(&format_args!("<error>"))
+                .finish(),
+        }
+    }
 }
 
 impl WindowHandle {
@@ -509,6 +524,19 @@ macro_rules! noop_display_handle {
 
         SyncDisplayHandle::from_static(&Noop)
     }};
+}
+
+impl fmt::Debug for DisplayHandle {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.display_handle() {
+            Ok(handle) => f.debug_tuple("DisplayHandle").field(&handle).finish(),
+            Err(_) => f
+                .debug_tuple("DisplayHandle")
+                .field(&format_args!("<error>"))
+                .finish(),
+        }
+    }
 }
 
 impl DisplayHandle {
