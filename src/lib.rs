@@ -62,7 +62,9 @@ pub use drm::{DrmDisplayHandle, DrmWindowHandle};
 pub use gbm::{GbmDisplayHandle, GbmWindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
-pub use owned::{DisplayHandle, DisplayVtable, WindowHandle, WindowVtable};
+pub use owned::{
+    DisplayHandle, DisplayVtable, SyncDisplayHandle, SyncWindowHandle, WindowHandle, WindowVtable,
+};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
 pub use wayland::{WaylandDisplayHandle, WaylandWindowHandle};
@@ -452,8 +454,10 @@ mod tests {
         assert_impl_all!(AndroidNdkWindowHandle: Send, Sync);
         assert_impl_all!(HaikuWindowHandle: Send, Sync);
 
-        assert_impl_all!(WindowHandle: Send, Sync);
-        assert_impl_all!(DisplayHandle: Send, Sync);
+        assert_not_impl_any!(WindowHandle: Send, Sync);
+        assert_not_impl_any!(DisplayHandle: Send, Sync);
+        assert_impl_all!(SyncWindowHandle: Send, Sync);
+        assert_impl_all!(SyncDisplayHandle: Send, Sync);
         assert_impl_all!(WindowVtable: Send, Sync);
         assert_impl_all!(DisplayVtable: Send, Sync);
     }

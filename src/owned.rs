@@ -15,8 +15,15 @@ pub struct WindowHandle {
     vtable: &'static WindowVtable,
 }
 
-unsafe impl Send for WindowHandle {}
-unsafe impl Sync for WindowHandle {}
+/// A thread-safe owned window handle.
+#[derive(Clone)]
+pub struct SyncWindowHandle {
+    /// Inner window handle.
+    inner: WindowHandle,
+}
+
+unsafe impl Send for SyncWindowHandle {}
+unsafe impl Sync for SyncWindowHandle {}
 
 macro_rules! noop_window_handle {
     ($e:expr) => {{
@@ -29,7 +36,7 @@ macro_rules! noop_window_handle {
             }
         }
 
-        WindowHandle::from_static(&Noop)
+        SyncWindowHandle::from_static(&Noop)
     }};
 }
 
@@ -45,8 +52,6 @@ impl WindowHandle {
     ///   remain valid (i.e. not freed).
     /// - The window handle returned by `get` must be valid for the lifetime of
     ///   this window handle.
-    /// - `retain` and `release` must be atomic. This is necessary to ensure that
-    ///   `WindowHandle` is `Send` and `Sync`.
     ///
     /// Note that this API expects the underlying handle to be retained by
     /// default. So if the `retain` callback is called `N` times, `release`
@@ -90,10 +95,10 @@ impl WindowHandle {
     /// }
     /// ```
     #[inline]
-    pub fn from_static<T: AsWindowHandle + Sync + 'static>(value: &'static T) -> Self {
+    pub fn from_static<T: AsWindowHandle + 'static>(value: &'static T) -> Self {
         struct Static<T>(T);
 
-        impl<T: AsWindowHandle + Sync + 'static> Static<T> {
+        impl<T: AsWindowHandle + 'static> Static<T> {
             const VTABLE: WindowVtable = WindowVtable::new(Self::retain, Self::release, Self::get);
 
             #[inline(always)]
@@ -129,7 +134,7 @@ impl WindowHandle {
     /// ```
     #[inline]
     pub fn unavailable() -> Self {
-        noop_window_handle!(Err(HandleError::Unavailable))
+        SyncWindowHandle::unavailable().into()
     }
 
     /// Create a [`WindowHandle`] that always returns `HandleError::NotSupported`.
@@ -144,7 +149,7 @@ impl WindowHandle {
     /// ```
     #[inline]
     pub fn not_supported() -> Self {
-        noop_window_handle!(Err(HandleError::NotSupported))
+        SyncWindowHandle::not_supported().into()
     }
 }
 
@@ -178,8 +183,76 @@ impl AsWindowHandle for WindowHandle {
 }
 
 #[cfg(feature = "alloc")]
+impl<T: AsWindowHandle + 'static> From<alloc::rc::Rc<T>> for WindowHandle {
+    /// Create a `WindowHandle` from a reference counted underlying handle.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{WindowHandle, XcbWindowHandle, BorrowedWindowHandle, AsWindowHandle, HandleError};
+    /// use std::rc::Rc;
+    ///
+    /// struct MyX11Window(u32);
+    ///
+    /// impl AsWindowHandle for MyX11Window {
+    ///     #[inline]
+    ///     fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
+    ///         Ok(unsafe { BorrowedWindowHandle::borrow_raw(XcbWindowHandle::new(self.0.try_into().unwrap()).into()) })
+    ///     }
+    /// }
+    ///
+    /// let window = Rc::new(MyX11Window(67));
+    /// let handle = WindowHandle::from(window);
+    /// match handle.window_handle().unwrap().as_raw() {
+    ///     raw_window_handle::RawWindowHandle::Xcb(xcb) => assert_eq!(xcb.window.get(), 67),
+    ///     _ => unreachable!()
+    /// }
+    /// ```
+    #[inline]
+    fn from(value: alloc::rc::Rc<T>) -> Self {
+        struct Rc<T>(T);
+
+        impl<T: AsWindowHandle + 'static> Rc<T> {
+            const VTABLE: WindowVtable = WindowVtable::new(Self::retain, Self::release, Self::get);
+
+            #[inline(always)]
+            unsafe fn retain(ptr: NonNull<()>) -> Result<NonNull<()>, HandleError> {
+                // Increment the refcount.
+                unsafe {
+                    alloc::rc::Rc::increment_strong_count(ptr.as_ptr().cast::<T>());
+                }
+
+                Ok(ptr)
+            }
+
+            #[inline(always)]
+            unsafe fn release(ptr: NonNull<()>) {
+                // Decrement the refcount.
+                unsafe {
+                    alloc::rc::Rc::decrement_strong_count(ptr.as_ptr().cast::<T>());
+                }
+            }
+
+            #[inline(always)]
+            unsafe fn get(ptr: NonNull<()>) -> Result<RawWindowHandle, HandleError> {
+                let value: &T = unsafe { ptr.cast().as_ref() };
+                value.window_handle().map(|h| h.as_raw())
+            }
+        }
+
+        // SAFETY: Above VTable is valid for this Rc.
+        unsafe {
+            WindowHandle::from_raw_parts(
+                NonNull::new_unchecked(alloc::rc::Rc::into_raw(value).cast::<()>() as *mut ()),
+                &Rc::<T>::VTABLE,
+            )
+        }
+    }
+}
+
+#[cfg(feature = "alloc")]
 impl<T: AsWindowHandle + Send + Sync + 'static> From<alloc::sync::Arc<T>> for WindowHandle {
-    /// Create a `SyncWindowHandle` from a reference counted underlying handle.
+    /// Create a `WindowHandle` from a reference counted underlying handle.
     ///
     /// ## Example
     ///
@@ -198,6 +271,135 @@ impl<T: AsWindowHandle + Send + Sync + 'static> From<alloc::sync::Arc<T>> for Wi
     ///
     /// let window = Arc::new(MyX11Window(67));
     /// let handle = WindowHandle::from(window);
+    /// match handle.window_handle().unwrap().as_raw() {
+    ///     raw_window_handle::RawWindowHandle::Xcb(xcb) => assert_eq!(xcb.window.get(), 67),
+    ///     _ => unreachable!()
+    /// }
+    /// ```
+    #[inline]
+    fn from(value: alloc::sync::Arc<T>) -> Self {
+        SyncWindowHandle::from(value).into()
+    }
+}
+
+impl SyncWindowHandle {
+    /// Create a new [`SyncWindowHandle`] from a [`WindowHandle`].
+    ///
+    /// # Safety
+    ///
+    /// In addition to the other safety requirements of [`WindowHandle`], it is
+    /// also required that the `retain` and `release` functions are thread safe.
+    /// As in, the internal refcounting mechanism for the window handle must be
+    /// atomic.
+    #[inline]
+    pub const unsafe fn new(handle: WindowHandle) -> Self {
+        Self { inner: handle }
+    }
+
+    /// Clone this [`SyncWindowHandle`] fallibly.
+    #[inline]
+    pub fn try_clone(&self) -> Result<Self, HandleError> {
+        self.inner.try_clone().map(|x| unsafe { Self::new(x) })
+    }
+
+    /// Create a `SyncWindowHandle` from a static window handle reference.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{SyncWindowHandle, XcbWindowHandle, BorrowedWindowHandle, AsWindowHandle, HandleError};
+    ///
+    /// struct MyX11Window(u32);
+    ///
+    /// impl AsWindowHandle for MyX11Window {
+    ///     #[inline]
+    ///     fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
+    ///         Ok(unsafe { BorrowedWindowHandle::borrow_raw(XcbWindowHandle::new(self.0.try_into().unwrap()).into()) })
+    ///     }
+    /// }
+    ///
+    /// static WINDOW: MyX11Window = MyX11Window(67);
+    /// let handle = SyncWindowHandle::from_static(&WINDOW);
+    /// match handle.window_handle().unwrap().as_raw() {
+    ///     raw_window_handle::RawWindowHandle::Xcb(xcb) => assert_eq!(xcb.window.get(), 67),
+    ///     _ => unreachable!()
+    /// }
+    /// ```
+    #[inline]
+    pub fn from_static<T: AsWindowHandle + Sync + 'static>(window: &'static T) -> Self {
+        let inner = WindowHandle::from_static(window);
+
+        // SAFETY: Since `T` is `Sync`, `&T` is `Send + Sync`, making it possible
+        // to send this window handle reference across threads.
+        unsafe { Self::new(inner) }
+    }
+
+    /// Create a [`SyncWindowHandle`] that always returns `HandleError::Unavailable`.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{SyncWindowHandle, HandleError, AsWindowHandle};
+    ///
+    /// let handle = SyncWindowHandle::unavailable();
+    /// assert!(matches!(handle.window_handle().unwrap_err(), HandleError::Unavailable));
+    /// ```
+    #[inline]
+    pub fn unavailable() -> Self {
+        noop_window_handle!(Err(HandleError::Unavailable))
+    }
+
+    /// Create a [`SyncWindowHandle`] that always returns `HandleError::NotSupported`.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{SyncWindowHandle, HandleError, AsWindowHandle};
+    ///
+    /// let handle = SyncWindowHandle::not_supported();
+    /// assert!(matches!(handle.window_handle().unwrap_err(), HandleError::NotSupported));
+    /// ```
+    #[inline]
+    pub fn not_supported() -> Self {
+        noop_window_handle!(Err(HandleError::NotSupported))
+    }
+}
+
+impl AsWindowHandle for SyncWindowHandle {
+    #[inline]
+    fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
+        self.inner.window_handle()
+    }
+}
+
+impl From<SyncWindowHandle> for WindowHandle {
+    #[inline]
+    fn from(value: SyncWindowHandle) -> Self {
+        value.inner
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<T: AsWindowHandle + Send + Sync + 'static> From<alloc::sync::Arc<T>> for SyncWindowHandle {
+    /// Create a `SyncWindowHandle` from a reference counted underlying handle.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{SyncWindowHandle, XcbWindowHandle, BorrowedWindowHandle, AsWindowHandle, HandleError};
+    /// use std::sync::Arc;
+    ///
+    /// struct MyX11Window(u32);
+    ///
+    /// impl AsWindowHandle for MyX11Window {
+    ///     #[inline]
+    ///     fn window_handle(&self) -> Result<BorrowedWindowHandle<'_>, HandleError> {
+    ///         Ok(unsafe { BorrowedWindowHandle::borrow_raw(XcbWindowHandle::new(self.0.try_into().unwrap()).into()) })
+    ///     }
+    /// }
+    ///
+    /// let window = Arc::new(MyX11Window(67));
+    /// let handle = SyncWindowHandle::from(window);
     /// match handle.window_handle().unwrap().as_raw() {
     ///     raw_window_handle::RawWindowHandle::Xcb(xcb) => assert_eq!(xcb.window.get(), 67),
     ///     _ => unreachable!()
@@ -237,10 +439,10 @@ impl<T: AsWindowHandle + Send + Sync + 'static> From<alloc::sync::Arc<T>> for Wi
 
         // SAFETY: Above VTable is valid for this Rc.
         unsafe {
-            WindowHandle::from_raw_parts(
+            SyncWindowHandle::new(WindowHandle::from_raw_parts(
                 NonNull::new_unchecked(alloc::sync::Arc::into_raw(value).cast::<()>() as *mut ()),
                 &Arc::<T>::VTABLE,
-            )
+            ))
         }
     }
 }
@@ -275,7 +477,7 @@ impl WindowVtable {
     }
 }
 
-/// An owned Display handle.
+/// An owned display handle.
 pub struct DisplayHandle {
     /// Underlying data representative of the Display handle.
     ptr: NonNull<()>,
@@ -284,8 +486,15 @@ pub struct DisplayHandle {
     vtable: &'static DisplayVtable,
 }
 
-unsafe impl Send for DisplayHandle {}
-unsafe impl Sync for DisplayHandle {}
+/// A thread-safe owned display handle.
+#[derive(Clone)]
+pub struct SyncDisplayHandle {
+    /// Inner Display handle.
+    inner: DisplayHandle,
+}
+
+unsafe impl Send for SyncDisplayHandle {}
+unsafe impl Sync for SyncDisplayHandle {}
 
 macro_rules! noop_display_handle {
     ($e:expr) => {{
@@ -298,7 +507,7 @@ macro_rules! noop_display_handle {
             }
         }
 
-        DisplayHandle::from_static(&Noop)
+        SyncDisplayHandle::from_static(&Noop)
     }};
 }
 
@@ -314,8 +523,6 @@ impl DisplayHandle {
     ///   remain valid (i.e. not freed).
     /// - The Display handle returned by `get` must be valid for the lifetime of
     ///   this Display handle.
-    /// - `retain` and `release` must be atomic. This is necessary to ensure that
-    ///   `WindowHandle` is `Send` and `Sync`.
     ///
     /// Note that this API expects the underlying handle to be retained by
     /// default. So if the `retain` callback is called `N` times, `release`
@@ -399,7 +606,7 @@ impl DisplayHandle {
     /// ```
     #[inline]
     pub fn unavailable() -> Self {
-        noop_display_handle!(Err(HandleError::Unavailable))
+        SyncDisplayHandle::unavailable().into()
     }
 
     /// Create a [`DisplayHandle`] that always returns `HandleError::NotSupported`.
@@ -414,7 +621,7 @@ impl DisplayHandle {
     /// ```
     #[inline]
     pub fn not_supported() -> Self {
-        noop_display_handle!(Err(HandleError::NotSupported))
+        SyncDisplayHandle::not_supported().into()
     }
 }
 
@@ -448,6 +655,75 @@ impl AsDisplayHandle for DisplayHandle {
 }
 
 #[cfg(feature = "alloc")]
+impl<T: AsDisplayHandle + 'static> From<alloc::rc::Rc<T>> for DisplayHandle {
+    /// Create a `DisplayHandle` from a reference counted underlying handle.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{DisplayHandle, BorrowedDisplayHandle, AsDisplayHandle, HandleError};
+    /// use std::rc::Rc;
+    ///
+    /// struct MyDisplay;
+    ///
+    /// impl AsDisplayHandle for MyDisplay {
+    ///     #[inline]
+    ///     fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
+    ///         Ok(BorrowedDisplayHandle::windows())
+    ///     }
+    /// }
+    ///
+    /// let display = Rc::new(MyDisplay);
+    /// let handle = DisplayHandle::from(display);
+    /// match handle.display_handle().unwrap().as_raw() {
+    ///     raw_window_handle::RawDisplayHandle::Windows(_) => {},
+    ///     _ => unreachable!()
+    /// }
+    /// ```
+    #[inline]
+    fn from(value: alloc::rc::Rc<T>) -> Self {
+        struct Rc<T>(T);
+
+        impl<T: AsDisplayHandle + 'static> Rc<T> {
+            const VTABLE: DisplayVtable =
+                DisplayVtable::new(Self::retain, Self::release, Self::get);
+
+            #[inline(always)]
+            unsafe fn retain(ptr: NonNull<()>) -> Result<NonNull<()>, HandleError> {
+                // Increment the refcount.
+                unsafe {
+                    alloc::rc::Rc::increment_strong_count(ptr.as_ptr().cast::<T>());
+                }
+
+                Ok(ptr)
+            }
+
+            #[inline(always)]
+            unsafe fn release(ptr: NonNull<()>) {
+                // Decrement the refcount.
+                unsafe {
+                    alloc::rc::Rc::decrement_strong_count(ptr.as_ptr().cast::<T>());
+                }
+            }
+
+            #[inline(always)]
+            unsafe fn get(ptr: NonNull<()>) -> Result<RawDisplayHandle, HandleError> {
+                let value: &T = unsafe { ptr.cast().as_ref() };
+                value.display_handle().map(|h| h.as_raw())
+            }
+        }
+
+        // SAFETY: Above VTable is valid for this Rc.
+        unsafe {
+            DisplayHandle::from_raw_parts(
+                NonNull::new_unchecked(alloc::rc::Rc::into_raw(value).cast::<()>() as *mut ()),
+                &Rc::<T>::VTABLE,
+            )
+        }
+    }
+}
+
+#[cfg(feature = "alloc")]
 impl<T: AsDisplayHandle + Send + Sync + 'static> From<alloc::sync::Arc<T>> for DisplayHandle {
     /// Create a `DisplayHandle` from a reference counted underlying handle.
     ///
@@ -468,6 +744,135 @@ impl<T: AsDisplayHandle + Send + Sync + 'static> From<alloc::sync::Arc<T>> for D
     ///
     /// let display = Arc::new(MyDisplay);
     /// let handle = DisplayHandle::from(display);
+    /// match handle.display_handle().unwrap().as_raw() {
+    ///     raw_window_handle::RawDisplayHandle::Windows(_) => {},
+    ///     _ => unreachable!()
+    /// }
+    /// ```
+    #[inline]
+    fn from(value: alloc::sync::Arc<T>) -> Self {
+        SyncDisplayHandle::from(value).into()
+    }
+}
+
+impl SyncDisplayHandle {
+    /// Create a new [`SyncDisplayHandle`] from a [`DisplayHandle`].
+    ///
+    /// # Safety
+    ///
+    /// In addition to the other safety requirements of [`DisplayHandle`], it is
+    /// also required that the `retain` and `release` functions are thread safe.
+    /// As in, the internal refcounting mechanism for the Display handle must be
+    /// atomic.
+    #[inline]
+    pub const unsafe fn new(handle: DisplayHandle) -> Self {
+        Self { inner: handle }
+    }
+
+    /// Clone this [`SyncDisplayHandle`] fallibly.
+    #[inline]
+    pub fn try_clone(&self) -> Result<Self, HandleError> {
+        self.inner.try_clone().map(|x| unsafe { Self::new(x) })
+    }
+
+    /// Create a `SyncDisplayHandle` from a static display handle reference.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{SyncDisplayHandle, XcbDisplayHandle, BorrowedDisplayHandle, AsDisplayHandle, HandleError};
+    ///
+    /// struct MyDisplay;
+    ///
+    /// impl AsDisplayHandle for MyDisplay {
+    ///     #[inline]
+    ///     fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
+    ///         Ok(BorrowedDisplayHandle::windows())
+    ///     }
+    /// }
+    ///
+    /// static DISPLAY: MyDisplay = MyDisplay;
+    /// let handle = SyncDisplayHandle::from_static(&DISPLAY);
+    /// match handle.display_handle().unwrap().as_raw() {
+    ///     raw_window_handle::RawDisplayHandle::Windows(_) => {},
+    ///     _ => unreachable!()
+    /// }
+    /// ```
+    #[inline]
+    pub fn from_static<T: AsDisplayHandle + Sync + 'static>(display: &'static T) -> Self {
+        let inner = DisplayHandle::from_static(display);
+
+        // SAFETY: Since `T` is `Sync`, `&T` is `Send + Sync`, making it possible
+        // to send this Display handle reference across threads.
+        unsafe { Self::new(inner) }
+    }
+
+    /// Create a [`SyncDisplayHandle`] that always returns `HandleError::Unavailable`.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{SyncDisplayHandle, HandleError, AsDisplayHandle};
+    ///
+    /// let handle = SyncDisplayHandle::unavailable();
+    /// assert!(matches!(handle.display_handle().unwrap_err(), HandleError::Unavailable));
+    /// ```
+    #[inline]
+    pub fn unavailable() -> Self {
+        noop_display_handle!(Err(HandleError::Unavailable))
+    }
+
+    /// Create a [`SyncDisplayHandle`] that always returns `HandleError::NotSupported`.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{SyncDisplayHandle, HandleError, AsDisplayHandle};
+    ///
+    /// let handle = SyncDisplayHandle::not_supported();
+    /// assert!(matches!(handle.display_handle().unwrap_err(), HandleError::NotSupported));
+    /// ```
+    #[inline]
+    pub fn not_supported() -> Self {
+        noop_display_handle!(Err(HandleError::NotSupported))
+    }
+}
+
+impl AsDisplayHandle for SyncDisplayHandle {
+    #[inline]
+    fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
+        self.inner.display_handle()
+    }
+}
+
+impl From<SyncDisplayHandle> for DisplayHandle {
+    #[inline]
+    fn from(value: SyncDisplayHandle) -> Self {
+        value.inner
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<T: AsDisplayHandle + Send + Sync + 'static> From<alloc::sync::Arc<T>> for SyncDisplayHandle {
+    /// Create a `SyncDisplayHandle` from a reference counted underlying handle.
+    ///
+    /// ## Example
+    ///
+    /// ```
+    /// use raw_window_handle::{SyncDisplayHandle, BorrowedDisplayHandle, AsDisplayHandle, HandleError};
+    /// use std::sync::Arc;
+    ///
+    /// struct MyDisplay;
+    ///
+    /// impl AsDisplayHandle for MyDisplay {
+    ///     #[inline]
+    ///     fn display_handle(&self) -> Result<BorrowedDisplayHandle<'_>, HandleError> {
+    ///         Ok(BorrowedDisplayHandle::windows())
+    ///     }
+    /// }
+    ///
+    /// let display = Arc::new(MyDisplay);
+    /// let handle = SyncDisplayHandle::from(display);
     /// match handle.display_handle().unwrap().as_raw() {
     ///     raw_window_handle::RawDisplayHandle::Windows(_) => {},
     ///     _ => unreachable!()
@@ -508,10 +913,10 @@ impl<T: AsDisplayHandle + Send + Sync + 'static> From<alloc::sync::Arc<T>> for D
 
         // SAFETY: Above VTable is valid for this Rc.
         unsafe {
-            DisplayHandle::from_raw_parts(
+            SyncDisplayHandle::new(DisplayHandle::from_raw_parts(
                 NonNull::new_unchecked(alloc::sync::Arc::into_raw(value).cast::<()>() as *mut ()),
                 &Arc::<T>::VTABLE,
-            )
+            ))
         }
     }
 }
