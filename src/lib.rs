@@ -6,8 +6,8 @@
 //! # Interoperability types for window handles
 //!
 //! This crate is intended as an interoperability crate, that allows "producer" crates to create a
-//! handle to a window surface, and for this handle to be passed onwards to "consumer" crates for
-//! rendering to that surface.
+//! handle to a window, and for this handle to be passed onwards to "consumer" crates for rendering
+//! to the window's surface.
 //!
 //! This crate does not by itself provide any utilities for creating and managing windows, nor for
 //! rendering into them.
@@ -24,16 +24,18 @@
 //! [`glfw`](https://docs.rs/glfw/) and [`fltk`](https://docs.rs/fltk/).
 //!
 //! Some platform-specific toolkits might also decide to implement `HasWindowHandle` for their
-//! types to allow more easily using them with consumer crates. Examples of this include `x11rb`,
-//! `ndk`, `orbclient` and `wayland-backend`.
+//! types to allow more easily using them with consumer crates. Examples of this include
+//! [`x11rb`](https://docs.rs/x11rb), [`wayland-backend`](https://docs.rs/wayland-backend),
+//! [`ndk`](https://docs.rs/ndk) and [`orbclient`](https://docs.rs/orbclient).
 //!
 //! ## Consumers
 //!
-//! Consumer crates expose some sort of "surface" type that renders into a provided window handle.
+//! Consumer crates typically expose some sort of "surface" type that renders into a provided window
+//! handle.
 //!
-//! In general, consumer crates must either be generic over the handle type, or contain a lifetime
-//! to it, because on some platforms (Wayland, GBM, maybe more?) that is the only way to ensure that
-//! the handle is not deallocated while in use by the surface.
+//! These consumer crates must either be generic over the handle type, or contain a lifetime to it,
+//! because on some platforms (Wayland, GBM, maybe more?) that is the only way to ensure that the
+//! handle is not deallocated while in use by the surface.
 //! ```
 //! struct Surface<W: HasWindowHandle> {
 //!     handle: W,
