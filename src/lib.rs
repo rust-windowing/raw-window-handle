@@ -47,6 +47,7 @@ mod drm;
 mod gbm;
 mod haiku;
 mod ohos;
+mod owned;
 mod redox;
 mod uikit;
 mod wayland;
@@ -61,6 +62,10 @@ pub use drm::{DrmDisplayHandle, DrmWindowHandle};
 pub use gbm::{GbmDisplayHandle, GbmWindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
+pub use owned::{
+    DisplayHandleVtable, OwnedDisplayHandle, OwnedWindowHandle, SyncDisplayHandle,
+    SyncWindowHandle, WindowHandleVtable,
+};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
 pub use wayland::{WaylandDisplayHandle, WaylandWindowHandle};
@@ -454,6 +459,13 @@ mod tests {
         assert_not_impl_any!(WasmBindgenOffscreenCanvasWindowHandle: Send, Sync);
         assert_impl_all!(AndroidNdkWindowHandle: Send, Sync);
         assert_impl_all!(HaikuWindowHandle: Send, Sync);
+
+        assert_impl_all!(OwnedDisplayHandle: Unpin, UnwindSafe, RefUnwindSafe);
+        assert_not_impl_any!(OwnedDisplayHandle: Send, Sync);
+        assert_impl_all!(SyncDisplayHandle: Unpin, UnwindSafe, RefUnwindSafe, Sync, Send);
+        assert_impl_all!(OwnedWindowHandle: Unpin, UnwindSafe, RefUnwindSafe);
+        assert_not_impl_any!(OwnedWindowHandle: Send, Sync);
+        assert_impl_all!(SyncWindowHandle: Unpin, UnwindSafe, RefUnwindSafe, Sync, Send);
     }
 
     #[allow(unused)]

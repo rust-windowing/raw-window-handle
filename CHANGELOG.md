@@ -2,13 +2,14 @@
 
 ## Unreleased
 
-* **Breaking:** Rework web handles to remove `wasm-bindgen` from public API. (#184)
+- **Breaking:** Rework web handles to remove `wasm-bindgen` from public API. (#184)
 - **Breaking:** Remove `WebWindowHandle` as it is no longer used. (#186)
 - **Breaking:** Remove deprecated `HasRawWindowHandle` and `HasRawDisplayHandle` traits.
 - **Breaking:** Remove `UiKitWindowHandle::ui_view_controller` field, retrieve this from the UIView's responder chain instead.
 - **Breaking:** Rename `Web*` handles to `WasmBindgen*`, to make it clearer that these are specific to `wasm-bindgen`.
-* Improve documentation on AppKit and UIKit handles.
 - Enabled `std` feature by default.
+- Add owned window and display handles.
+- Improve documentation on AppKit and UIKit handles.
 
 ## 0.6.2 (2024-05-17)
 
