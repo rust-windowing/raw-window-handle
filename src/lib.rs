@@ -47,6 +47,7 @@ mod drm;
 mod gbm;
 mod haiku;
 mod ohos;
+mod owned;
 mod redox;
 mod uikit;
 mod wayland;
@@ -61,6 +62,10 @@ pub use drm::{DrmDisplayHandle, DrmWindowHandle};
 pub use gbm::{GbmDisplayHandle, GbmWindowHandle};
 pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
 pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
+pub use owned::{
+    DisplayHandleVtable, OwnedDisplayHandle, OwnedWindowHandle, SyncDisplayHandle,
+    SyncWindowHandle, WindowHandleVtable,
+};
 pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
 pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
 pub use wayland::{WaylandDisplayHandle, WaylandWindowHandle};
