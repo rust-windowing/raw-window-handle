@@ -17,6 +17,7 @@
 //! Producer crates provide some sort of "window" type that implements [`HasWindowHandle`], and
 //! ensures that the [`WindowHandle`] returned from that is alive for as long as the window is.
 //! Examples of cross-platform producer crates include:
+//!
 //! - [`winit`](https://docs.rs/winit/) (consider this the "reference implementation" of a producer
 //!   crate).
 //! - [`sdl3`](https://docs.rs/sdl3/).
@@ -27,6 +28,7 @@
 //!
 //! Some platform-specific toolkits might also decide to implement `HasWindowHandle` for their
 //! types to allow more easily using them with consumer crates. Examples of this include:
+//!
 //! - [`x11rb`](https://docs.rs/x11rb).
 //! - [`wayland-backend`](https://docs.rs/wayland-backend).
 //! - [`ndk`](https://docs.rs/ndk).
@@ -47,15 +49,17 @@
 //! ```
 //!
 //! Examples of consumer crates include:
+//!
 //! - [`softbuffer`](https://docs.rs/softbuffer/) (surface for software rendering).
 //! - [`glutin`](https://docs.rs/glutin/) (OpenGL surface and context setup).
 //! - [`wgpu`](https://docs.rs/wgpu/) (general GPU interface).
 //! - [`ash-window`](https://docs.rs/ash-window/) (Vulkan API).
 //! - [`pixels`](https://docs.rs/pixels/) (software rendering built upon `wgpu`).
 //!
-//! Another type of consumer is those that use the window handle to access either the platform
-//! widget/view or the actual window, and performs some operation that requires that. Examples of
-//! this include:
+//! Another type of consumer includes crates that use the window handle to access either the
+//! platform widget/view or the actual window, and performs some operation that requires that.
+//! Examples of this pattern include:
+//!
 //! - [`rfd`](https://docs.rs/rfd/) (file dialog).
 //! - [`wry`](https://docs.rs/wry/) (webview).
 //! - [`muda`](https://docs.rs/muda/) (menubar).
