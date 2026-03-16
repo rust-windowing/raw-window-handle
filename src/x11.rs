@@ -1,5 +1,4 @@
-use core::ffi::{c_int, c_ulong, c_void};
-use core::num::NonZeroU32;
+use core::ffi::{c_int, c_void};
 use core::ptr::NonNull;
 
 /// Raw display handle for Xlib.
@@ -53,44 +52,6 @@ impl XlibDisplayHandle {
     }
 }
 
-/// Raw window handle for Xlib.
-///
-/// ## Thread Safety
-///
-/// This type is nothing more than a numeric identifier, therefore it is `Send`
-/// and `Sync`. This means it can be safely sent to or used from other threads.
-#[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct XlibWindowHandle {
-    /// An Xlib `Window`.
-    pub window: c_ulong,
-    /// An Xlib visual ID, or 0 if unknown.
-    pub visual_id: c_ulong,
-}
-
-impl XlibWindowHandle {
-    /// Create a new handle to a window.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use core::ffi::c_ulong;
-    /// # use raw_window_handle::XlibWindowHandle;
-    /// #
-    /// let window: c_ulong;
-    /// # window = 0;
-    /// let mut handle = XlibWindowHandle::new(window);
-    /// // Optionally set the visual ID.
-    /// handle.visual_id = 0;
-    /// ```
-    pub fn new(window: c_ulong) -> Self {
-        Self {
-            window,
-            visual_id: 0,
-        }
-    }
-}
-
 /// Raw display handle for Xcb.
 ///
 /// ## Thread Safety
@@ -139,44 +100,5 @@ impl XcbDisplayHandle {
     /// ```
     pub fn new(connection: Option<NonNull<c_void>>, screen: c_int) -> Self {
         Self { connection, screen }
-    }
-}
-
-/// Raw window handle for Xcb.
-///
-/// ## Thread Safety
-///
-/// This type is nothing more than a numeric identifier, therefore it is `Send`
-/// and `Sync`. This means it can be safely sent to or used from other threads.
-#[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct XcbWindowHandle {
-    /// An X11 `xcb_window_t`.
-    pub window: NonZeroU32, // Based on xproto.h
-    /// An X11 `xcb_visualid_t`.
-    pub visual_id: Option<NonZeroU32>,
-}
-
-impl XcbWindowHandle {
-    /// Create a new handle to a window.
-    ///
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use core::num::NonZeroU32;
-    /// # use raw_window_handle::XcbWindowHandle;
-    /// #
-    /// let window: NonZeroU32;
-    /// # window = NonZeroU32::new(1).unwrap();
-    /// let mut handle = XcbWindowHandle::new(window);
-    /// // Optionally set the visual ID.
-    /// handle.visual_id = None;
-    /// ```
-    pub fn new(window: NonZeroU32) -> Self {
-        Self {
-            window,
-            visual_id: None,
-        }
     }
 }

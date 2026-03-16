@@ -1,6 +1,3 @@
-use core::ffi::c_void;
-use core::ptr::NonNull;
-
 use super::DisplayHandle;
 
 /// Raw display handle for Android.
@@ -50,42 +47,5 @@ impl DisplayHandle<'static> {
     pub fn android() -> Self {
         // SAFETY: No data is borrowed.
         unsafe { Self::borrow_raw(AndroidDisplayHandle::new().into()) }
-    }
-}
-
-/// Raw window handle for Android NDK.
-///
-/// ## Thread Safety
-///
-/// Android native objects are thread-safe by default; therefore this type is
-/// `Send` and `Sync`. This means that this type can be sent to or used from
-/// any thread.
-#[non_exhaustive]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct AndroidNdkWindowHandle {
-    /// A pointer to an `ANativeWindow`.
-    pub a_native_window: NonNull<c_void>,
-}
-
-unsafe impl Send for AndroidNdkWindowHandle {}
-unsafe impl Sync for AndroidNdkWindowHandle {}
-
-impl AndroidNdkWindowHandle {
-    /// Create a new handle to an `ANativeWindow`.
-    ///
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// # use core::ptr::NonNull;
-    /// # use raw_window_handle::AndroidNdkWindowHandle;
-    /// # type ANativeWindow = ();
-    /// #
-    /// let ptr: NonNull<ANativeWindow>;
-    /// # ptr = NonNull::from(&());
-    /// let handle = AndroidNdkWindowHandle::new(ptr.cast());
-    /// ```
-    pub fn new(a_native_window: NonNull<c_void>) -> Self {
-        Self { a_native_window }
     }
 }

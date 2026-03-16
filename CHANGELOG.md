@@ -7,6 +7,7 @@
 - **Breaking:** Remove deprecated `HasRawWindowHandle` and `HasRawDisplayHandle` traits.
 - **Breaking:** Remove `UiKitWindowHandle::ui_view_controller` field, retrieve this from the UIView's responder chain instead.
 - **Breaking:** Rename `Web*` handles to `WasmBindgen*`, to make it clearer that these are specific to `wasm-bindgen`.
+* **Breaking:** Merge platform-specific window handles into `RawWindowHandle`.
 * Improve documentation on AppKit and UIKit handles.
 
 ## 0.6.2 (2024-05-17)
