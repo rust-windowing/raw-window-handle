@@ -47,9 +47,9 @@
 //! struct Surface<W: raw_window_handle::HasWindowHandle> {
 //!     handle: W,
 //! }
+//! ```
 //!
-//! // OR
-//!
+//! ```
 //! // Lifetime:
 //! struct Surface<'w> {
 //!     handle: raw_window_handle::WindowHandle<'w>,
