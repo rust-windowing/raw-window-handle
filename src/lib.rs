@@ -39,12 +39,20 @@
 //! Consumer crates typically expose some sort of "surface" type that renders into a provided window
 //! handle.
 //!
-//! These consumer crates must either be generic over the handle type, or contain a lifetime to it,
-//! because on some platforms (Wayland, GBM, maybe more?) that is the only way to ensure that the
-//! handle is not deallocated while in use by the surface.
+//! These consumer crates must either be generic over the handle type, or contain a lifetime to the
+//! handle, because on some platforms (in particular Wayland) that is the only way to ensure that
+//! the handle is not deallocated while in use by the surface.
 //! ```
+//! // Composition:
 //! struct Surface<W: raw_window_handle::HasWindowHandle> {
 //!     handle: W,
+//! }
+//!
+//! // OR
+//!
+//! // Lifetime:
+//! struct Surface<'w> {
+//!     handle: raw_window_handle::WindowHandle<'w>,
 //! }
 //! ```
 //!
