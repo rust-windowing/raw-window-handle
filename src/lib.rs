@@ -7,7 +7,8 @@
 //!
 //! This crate is an interoperability interface that allows "producer" crates to create a handle to
 //! a window, and for this handle to be passed onwards to "consumer" crates for rendering to the
-//! window's surface.
+//! window's surface. This solves the MxN integration problem: consumer and producer crates don't
+//! have to know about / depend on each other.
 //!
 //! This crate does not by itself provide any utilities for creating and managing windows, nor for
 //! rendering into them.
