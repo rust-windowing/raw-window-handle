@@ -47,10 +47,10 @@ impl DisplayHandle<'static> {
     /// ```
     /// # use raw_window_handle::{DisplayHandle, HasDisplayHandle};
     /// # fn do_something(rwh: impl HasDisplayHandle) { let _ = rwh; }
-    /// let handle = DisplayHandle::appkit();
+    /// let handle = DisplayHandle::app_kit();
     /// do_something(handle);
     /// ```
-    pub fn appkit() -> Self {
+    pub fn app_kit() -> Self {
         // SAFETY: No data is borrowed.
         unsafe { Self::borrow_raw(AppKitDisplayHandle::new().into()) }
     }
