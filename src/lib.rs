@@ -75,7 +75,11 @@ pub use web::{
 pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
 pub use x11::{XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle};
 
+#[cfg(not(feature = "std"))]
+use core::error::Error;
 use core::fmt;
+#[cfg(feature = "std")]
+use std::error::Error; // For MSRV.
 
 /// A window handle for a particular windowing system.
 ///
@@ -355,8 +359,7 @@ impl fmt::Display for HandleError {
     }
 }
 
-#[cfg(feature = "std")]
-impl std::error::Error for HandleError {}
+impl Error for HandleError {}
 
 macro_rules! from_impl {
     ($($to:ident, $enum:ident, $from:ty)*) => ($(
