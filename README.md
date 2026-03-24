@@ -18,5 +18,5 @@ be changed without a patch bump to the version of `raw-window-handle`. After
 version `1.0.0` is released, changes to the MSRV will necessitate a minor
 version bump.
 
-When the `wasm-bindgen-0-2` feature is enabled, the MSRV of this crate will be
-raised to the MSRV of the latest version of `wasm-bindgen`.
+When the `std` feature is **disabled** (it is enabled by default), the MSRV will
+be bumped to v1.81 (to support `core::error::Error`).
