@@ -40,46 +40,29 @@ extern crate alloc;
 #[cfg(feature = "std")]
 extern crate std;
 
-mod android;
-mod appkit;
 mod borrowed;
-mod drm;
-mod gbm;
-mod haiku;
-mod ohos;
-mod redox;
-mod uikit;
-mod wayland;
-mod web;
-mod windows;
-mod x11;
 
-pub use android::{AndroidDisplayHandle, AndroidNdkWindowHandle};
-pub use appkit::{AppKitDisplayHandle, AppKitWindowHandle};
-pub use borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
-pub use drm::{DrmDisplayHandle, DrmWindowHandle};
-pub use gbm::{GbmDisplayHandle, GbmWindowHandle};
-pub use haiku::{HaikuDisplayHandle, HaikuWindowHandle};
-pub use ohos::{OhosDisplayHandle, OhosNdkWindowHandle};
-pub use redox::{OrbitalDisplayHandle, OrbitalWindowHandle};
-pub use uikit::{UiKitDisplayHandle, UiKitWindowHandle};
-pub use wayland::{WaylandDisplayHandle, WaylandWindowHandle};
-pub use web::{
-    WasmBindgenCanvasWindowHandle, WasmBindgenDisplay, WasmBindgenOffscreenCanvasWindowHandle,
+pub use self::borrowed::{DisplayHandle, HasDisplayHandle, HasWindowHandle, WindowHandle};
+
+use core::{
+    ffi::{c_int, c_ulong, c_void},
+    fmt,
+    num::NonZeroU32,
+    ptr::NonNull,
 };
-pub use windows::{Win32WindowHandle, WinRtWindowHandle, WindowsDisplayHandle};
-pub use x11::{XcbDisplayHandle, XcbWindowHandle, XlibDisplayHandle, XlibWindowHandle};
-
-use core::fmt;
 
 /// A window handle for a particular windowing system.
 ///
-/// Each variant contains a struct with fields specific to that windowing system
-/// (e.g. [`Win32WindowHandle`] will include a [HWND], [`WaylandWindowHandle`] uses [wl_surface],
-/// etc.)
+/// Each variant contains fields specific to that windowing system (e.g. [`RawWindowHandle::Win32`]
+/// contains a [HWND], [`RawWindowHandle::Wayland`] uses [wl_surface], etc.)
 ///
 /// [HWND]: https://learn.microsoft.com/en-us/windows/win32/winmsg/about-windows#window-handle
 /// [wl_surface]: https://wayland.freedesktop.org/docs/html/apa.html#protocol-spec-wl_surface
+///
+/// ## Thread safety
+///
+/// See individual variants for thread safety documentation. Since some window
+/// handles are `!Send` and `!Sync`, this sum type is as well.
 ///
 /// # Variant Availability
 ///
@@ -92,105 +75,836 @@ use core::fmt;
 /// unexpected. (For example, it's legal for someone to return a
 /// [`RawWindowHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
-///
-/// ## Thread Safety
-///
-/// See individual handle types for thread safety documentation. Since some
-/// window handle types are `!Send` and `!Sync`, this sum type is as well.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawWindowHandle {
     /// A raw window handle for UIKit (Apple's non-macOS windowing library).
     ///
+    /// ## Thread safety
+    ///
+    /// Handles to UIKit objects can only be safely used from the main thread.
+    /// Therefore, all UIKit objects are `!Send` and `!Sync`.
+    /// This means that this variant cannot be sent to or used from other threads.
+    ///
+    /// In addition, it is also expected that the consumer will take precautions to
+    /// ensure that this object is only used on the main thread.
+    /// It is recommended to use [`objc2::MainThreadMarker`] as a strategy for
+    /// ensuring this.
+    ///
+    /// [`objc2::MainThreadMarker`]: https://docs.rs/objc2/latest/objc2/struct.MainThreadMarker.html
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on iOS, tvOS, watchOS, visionOS, and Mac
     /// Catalyst, as these are the targets that (currently) support UIKit.
     ///
     /// Note that Mac Catalyst (`$arch-apple-ios-macabi` targets), can use
     /// UIKit *or* AppKit.
-    UiKit(UiKitWindowHandle),
+    #[non_exhaustive]
+    UiKit {
+        /// A pointer to an `UIView` object.
+        ///
+        /// # Example
+        ///
+        /// Getting the view from a [`WindowHandle`].
+        ///
+        /// ```no_run
+        /// # #[cfg(not(all(target_vendor = "apple", not(target_os = "macos"))))]
+        /// # fn main() {}
+        /// # fn main() {
+        /// #![cfg(all(target_vendor = "apple", not(target_os = "macos")))]
+        /// use objc2::MainThreadMarker;
+        /// use objc2::rc::Retained;
+        /// use objc2_ui_kit::UIView;
+        /// use raw_window_handle::{WindowHandle, RawWindowHandle};
+        ///
+        /// let handle: WindowHandle<'_>; // Get the window handle from somewhere else
+        /// # handle = unimplemented!();
+        /// match handle.as_raw() {
+        ///     RawWindowHandle::UiKit { ui_view, .. } => {
+        ///         assert!(MainThreadMarker::new().is_some(), "can only access UIKit handles on the main thread");
+        ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
+        ///         // that the `ui_view` contains a valid pointer to an `UIView`.
+        ///         // Unwrap is fine, since the pointer came from `NonNull`.
+        ///         let ui_view: Retained<UIView> = unsafe { Retained::retain(ui_view.as_ptr().cast()) }.unwrap();
+        ///         // Do something with the UIView here.
+        ///     }
+        ///     handle => unreachable!("unknown handle {handle:?} for platform"),
+        /// }
+        /// # }
+        /// ```
+        ///
+        /// Get a pointer to an `UIViewController` object by traversing the `UIView`'s responder
+        /// chain:
+        ///
+        /// ```
+        /// # #[cfg(not(all(target_vendor = "apple", not(target_os = "macos"))))]
+        /// # fn main() {}
+        /// # fn main() {
+        /// #![cfg(all(target_vendor = "apple", not(target_os = "macos")))]
+        /// use objc2::rc::Retained;
+        /// use objc2_ui_kit::{UIResponder, UIView, UIViewController};
+        ///
+        /// // View gotten from somewhere (e.g. as in the example above).
+        /// let view: Retained<UIView>;
+        /// # view = unsafe { objc2_ui_kit::UIView::new(objc2::MainThreadMarker::new().unwrap()) };
+        ///
+        /// let mut current_responder: Retained<UIResponder> = view.into_super();
+        /// let mut found_controller = None;
+        /// while let Some(responder) = unsafe { current_responder.nextResponder() } {
+        ///     match responder.downcast::<UIViewController>() {
+        ///         Ok(controller) => {
+        ///             found_controller = Some(controller);
+        ///             break;
+        ///         }
+        ///         // Search next.
+        ///         Err(responder) => current_responder = responder,
+        ///     }
+        /// }
+        ///
+        /// // Use found_controller here.
+        /// # }
+        /// ```
+        ui_view: NonNull<c_void>,
+    },
+
     /// A raw window handle for AppKit.
     ///
+    /// ## Thread safety
+    ///
+    /// Handles to AppKit objects can only be safely used from the main thread.
+    /// Therefore, all AppKit objects are `!Send` and `!Sync`.
+    /// This means that this variant cannot be sent to or used from other threads.
+    ///
+    /// In addition, it is also expected that the consumer will take precautions to
+    /// ensure that this object is only used on the main thread.
+    /// It is recommended to use [`objc2::MainThreadMarker`] as a strategy for
+    /// ensuring this.
+    ///
+    /// [`objc2::MainThreadMarker`]: https://docs.rs/objc2/latest/objc2/struct.MainThreadMarker.html
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on macOS, although Mac Catalyst can also use it
     /// despite being `target_os = "ios"`.
-    AppKit(AppKitWindowHandle),
+    #[non_exhaustive]
+    AppKit {
+        /// A pointer to an `NSView` object.
+        ///
+        /// # Example
+        ///
+        /// Getting the view from a [`WindowHandle`].
+        ///
+        /// ```no_run
+        /// # #[cfg(not(target_os = "macos"))]
+        /// # fn main() {}
+        /// # fn main() {
+        /// #![cfg(target_os = "macos")]
+        /// use objc2::MainThreadMarker;
+        /// use objc2::rc::Retained;
+        /// use objc2_app_kit::NSView;
+        /// use raw_window_handle::{WindowHandle, RawWindowHandle};
+        ///
+        /// let handle: WindowHandle<'_>; // Get the window handle from somewhere
+        /// # handle = unimplemented!();
+        /// match handle.as_raw() {
+        ///     RawWindowHandle::AppKit { ns_view, ..} => {
+        ///         assert!(MainThreadMarker::new().is_some(), "can only access AppKit handles on the main thread");
+        ///         // SAFETY: The pointer came from `WindowHandle`, which ensures
+        ///         // that the `ns_view` contains a valid pointer to an `NSView`.
+        ///         // Unwrap is fine, since the pointer came from `NonNull`.
+        ///         let ns_view: Retained<NSView> = unsafe { Retained::retain(ns_view.as_ptr().cast()) }.unwrap();
+        ///         // Do something with the NSView here, like getting the `NSWindow`
+        ///         let ns_window = ns_view.window().expect("view was not installed in a window");
+        ///     }
+        ///     handle => unreachable!("unknown handle {handle:?} for platform"),
+        /// }
+        /// # }
+        /// ```
+        ns_view: NonNull<c_void>,
+    },
+
     /// A raw window handle for the Redox operating system.
     ///
+    /// ## Thread safety
+    ///
+    /// The underlying window is a [file descriptor], and most calls on the window
+    /// correspond directly to non-mutating file descriptor reads and writes.
+    /// This means that this variant can be sent to and used from other threads.
+    ///
+    /// [file descriptor]: https://github.com/redox-os/orbclient/blob/77c28e88fcb180c750175f2dcf5c7342d357ab26/src/sys/orbital.rs#L64-L65
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used by the Orbital Windowing System in the Redox
     /// operating system.
-    Orbital(OrbitalWindowHandle),
-    /// A raw window handle for the OpenHarmony OS NDK
+    #[non_exhaustive]
+    Orbital {
+        /// A pointer to an orbclient window.
+        // TODO(madsmtm): I think this is a file descriptor, so perhaps it should
+        // actually use `std::os::fd::RawFd`, or some sort of integer instead?
+        window: NonNull<c_void>,
+    },
+
+    /// A raw window handle for the OpenHarmony OS NDK.
+    ///
+    /// ## Background
+    ///
+    /// Applications on [OpenHarmony] use [ArkUI] for defining their UI. Applications can use an
+    /// [XComponent] to render using native Code (e.g. Rust) via EGL.
+    /// Native code will receive a callback `OnSurfaceCreatedCB(OH_NativeXComponent *component, void *window)`
+    /// when the `XComponent` is created. The window argument has the type [`OHNativeWindow`] / `EGLNativeWindowType`.
+    /// The window can then be used to create a surface with
+    /// `eglCreateWindowSurface(eglDisplay_, eglConfig_, window, NULL)`
+    ///
+    /// [OpenHarmony]: https://gitee.com/openharmony/docs/blob/master/en/OpenHarmony-Overview.md
+    /// [ArkUI]: https://gitee.com/openharmony/docs/blob/master/en/application-dev/ui/arkui-overview.md
+    /// [XComponent]: https://gitee.com/openharmony/docs/blob/master/en/application-dev/ui/arkts-common-components-xcomponent.md
+    /// [`OHNativeWindow`]: https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis-arkgraphics2d/_native_window.md
+    ///
+    /// ## Thread safety
+    ///
+    /// OpenHarmony [expects] that UI primitives will only be called from one
+    /// thread. Therefore, all OHOS objects are `!Send` and `!Sync`. This means
+    /// that this type cannot be sent to or used from other threads.
+    ///
+    /// [expects]: https://ai6s.net/6921b48882fbe0098cade00f.html
     ///
     /// ## Availability Hints
+    ///
     /// This variant is used on OpenHarmony OS (`target_env = "ohos"`).
-    OhosNdk(OhosNdkWindowHandle),
+    #[non_exhaustive]
+    OhosNdk {
+        /// An [`OHNativeWindow`].
+        ///
+        /// [`OHNativeWindow`]: https://gitee.com/openharmony/docs/blob/master/en/application-dev/reference/apis-arkgraphics2d/_native_window.md
+        native_window: NonNull<c_void>,
+    },
+
     /// A raw window handle for Xlib.
     ///
+    /// ## Thread safety
+    ///
+    /// This type is nothing more than a numeric identifier, therefore it is `Send`
+    /// and `Sync`. This means it can be safely sent to or used from other threads.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is likely to show up anywhere someone manages to get X11
     /// working that Xlib can be built for, which is to say, most (but not all)
     /// Unix systems.
-    Xlib(XlibWindowHandle),
+    #[non_exhaustive]
+    Xlib {
+        /// An Xlib `Window`.
+        window: c_ulong,
+        /// An Xlib visual ID, or 0 if unknown.
+        visual_id: c_ulong,
+    },
+
     /// A raw window handle for Xcb.
     ///
+    /// ## Thread safety
+    ///
+    /// This type is nothing more than a numeric identifier, therefore it is `Send`
+    /// and `Sync`. This means it can be safely sent to or used from other threads.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is likely to show up anywhere someone manages to get X11
     /// working that XCB can be built for, which is to say, most (but not all)
     /// Unix systems.
-    Xcb(XcbWindowHandle),
+    #[non_exhaustive]
+    Xcb {
+        /// An X11 `xcb_window_t`.
+        window: NonZeroU32, // Based on xproto.h
+        /// An X11 `xcb_visualid_t`.
+        visual_id: Option<NonZeroU32>,
+    },
+
     /// A raw window handle for Wayland.
     ///
+    /// ## Thread safety
+    ///
+    /// `libwayland-client` is thread safe, so this variant is `Send` + `Sync` too.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant should be expected anywhere Wayland works, which is
     /// currently some subset of unix systems.
-    Wayland(WaylandWindowHandle),
+    #[non_exhaustive]
+    Wayland {
+        /// A pointer to a `wl_surface`.
+        surface: NonNull<c_void>,
+    },
+
     /// A raw window handle for the Linux Kernel Mode Set/Direct Rendering Manager
     ///
+    /// ## Thread safety
+    ///
+    /// DRM "windows" are just planes, which are just numbers, therefore it is `Send`
+    /// and `Sync`. This means that it can be sent to or used from other threads.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on Linux when neither X nor Wayland are available
-    Drm(DrmWindowHandle),
+    #[non_exhaustive]
+    Drm {
+        /// The primary drm plane handle.
+        plane: u32,
+    },
+
     /// A raw window handle for the Linux Generic Buffer Manager.
     ///
+    /// ## Thread safety
+    ///
+    /// GBM surfaces are not bound to a single thread; however, they are not
+    /// internally secured by mutexes and cannot be used by multiple threads at
+    /// once. You can view that as this type being `Send` but not `Sync`. This
+    /// means it can be sent to other threads but not used from other threads.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is present regardless of windowing backend and likely to be used with
     /// EGL_MESA_platform_gbm or EGL_KHR_platform_gbm.
-    Gbm(GbmWindowHandle),
+    #[non_exhaustive]
+    Gbm {
+        /// The gbm surface.
+        gbm_surface: NonNull<c_void>,
+    },
+
     /// A raw window handle for Win32.
     ///
+    /// ## Thread safety
+    ///
+    /// Window objects have [thread affinity]. Some functions read or modify window
+    /// state non-atomically, making them unsafe to call from threads other than
+    /// the one that created the window. When in doubt, only run the function on
+    /// the thread the window object was created on.
+    ///
+    /// [thread affinity]: https://devblogs.microsoft.com/oldnewthing/20051010-09/?p=33843
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on Windows systems.
-    Win32(Win32WindowHandle),
+    #[non_exhaustive]
+    Win32 {
+        /// A Win32 `HWND` handle.
+        hwnd: NonNull<c_void>,
+        /// The `GWLP_HINSTANCE` associated with this type's `HWND`.
+        hinstance: Option<NonNull<c_void>>,
+    },
+
     /// A raw window handle for WinRT.
     ///
+    /// ## Thread safety
+    ///
+    /// TODO.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on Windows systems.
-    WinRt(WinRtWindowHandle),
+    #[non_exhaustive]
+    WinRt {
+        /// A WinRT `CoreWindow` handle.
+        core_window: NonNull<c_void>,
+    },
+
     /// A raw window handle for a Web canvas registered via [`wasm-bindgen`].
     ///
-    /// ## Availability Hints
-    /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
-    ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    WasmBindgenCanvas(WasmBindgenCanvasWindowHandle),
+    ///
+    /// ## Thread safety
+    ///
+    /// WASM objects are usually bound to the main UI "thread" belonging to the
+    /// top-level webpage. Logically this variant is `!Send` and `!Sync`. It
+    /// cannot be sent to or used from other threads.
+    ///
+    /// ## Availability Hints
+    ///
+    /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
+    #[non_exhaustive]
+    WasmBindgenCanvas {
+        /// An inner index of the [`JsValue`] of an [`HtmlCanvasElement`].
+        ///
+        /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+        /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
+        ///
+        /// # Example
+        ///
+        /// ```no_run
+        /// # #[cfg(not(target_family = "wasm"))]
+        /// # fn main() {}
+        /// # fn main() {
+        /// #![cfg(target_family = "wasm")]
+        /// use core::mem::ManuallyDrop;
+        /// use raw_window_handle::{WindowHandle, RawWindowHandle};
+        /// use wasm_bindgen::convert::RefFromWasmAbi;
+        /// use web_sys::HtmlCanvasElement;
+        ///
+        /// let handle: WindowHandle<'_>; // Get the window handle from somewhere
+        /// # handle = unimplemented!();
+        /// match handle.as_raw() {
+        ///     RawWindowHandle::WasmBindgenCanvas { obj, ..} => {
+        ///         // To get the canvas element back, convert the index back.
+        ///         let element: ManuallyDrop<HtmlCanvasElement> = unsafe {
+        ///             HtmlCanvasElement::ref_from_abi(obj as u32)
+        ///         };
+        ///     }
+        ///     _ => todo!(),
+        /// }
+        /// # }
+        /// ```
+        obj: usize,
+        // Logically, this variant is `!Send` and `!Sync`, even though it contains only `usize`.
+    },
+
     /// A raw window handle for a Web offscreen canvas registered via [`wasm-bindgen`].
     ///
-    /// ## Availability Hints
-    /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
-    ///
     /// [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-    WasmBindgenOffscreenCanvas(WasmBindgenOffscreenCanvasWindowHandle),
+    ///
+    /// ## Thread safety
+    ///
+    /// WASM objects are usually bound to the main UI "thread" belonging to the
+    /// top-level webpage. Logically this variant is `!Send` and `!Sync`. It
+    /// cannot be sent to or used from other threads.
+    ///
+    /// ## Availability Hints
+    ///
+    /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
+    #[non_exhaustive]
+    WasmBindgenOffscreenCanvas {
+        /// An inner index of the [`JsValue`] of an [`OffscreenCanvas`].
+        ///
+        /// [`JsValue`]: https://docs.rs/wasm-bindgen/latest/wasm_bindgen/struct.JsValue.html
+        /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
+        ///
+        /// # Example
+        ///
+        /// ```no_run
+        /// # #[cfg(not(target_family = "wasm"))]
+        /// # fn main() {}
+        /// # fn main() {
+        /// #![cfg(target_family = "wasm")]
+        /// use core::mem::ManuallyDrop;
+        /// use raw_window_handle::{WindowHandle, RawWindowHandle};
+        /// use wasm_bindgen::convert::RefFromWasmAbi;
+        /// use web_sys::OffscreenCanvas;
+        ///
+        /// let handle: WindowHandle<'_>; // Get the window handle from somewhere
+        /// # handle = unimplemented!();
+        /// match handle.as_raw() {
+        ///     RawWindowHandle::WasmBindgenOffscreenCanvas { obj, ..} => {
+        ///         // To get the canvas element back, convert the index back.
+        ///         let element: ManuallyDrop<OffscreenCanvas> = unsafe {
+        ///             OffscreenCanvas::ref_from_abi(obj as u32)
+        ///         };
+        ///     }
+        ///     _ => todo!(),
+        /// }
+        /// # }
+        /// ```
+        obj: usize,
+        // Logically, this variant is `!Send` and `!Sync`, even though it contains only `usize`.
+    },
+
     /// A raw window handle for Android NDK.
     ///
-    /// ## Availability Hints
-    /// This variant is used on Android targets.
-    AndroidNdk(AndroidNdkWindowHandle),
-    /// A raw window handle for Haiku.
+    /// ## Thread safety
+    ///
+    /// Android native objects are thread-safe by default, therefore it is `Send`
+    /// and `Sync`. This means that this variant can be sent to or used from
+    /// any thread.
     ///
     /// ## Availability Hints
+    ///
+    /// This variant is used on Android targets.
+    #[non_exhaustive]
+    AndroidNdk {
+        /// A pointer to an `ANativeWindow`.
+        a_native_window: NonNull<c_void>,
+    },
+
+    /// A raw window handle for Haiku.
+    ///
+    /// ## Thread safety
+    ///
+    /// Haiku objects are protected by a [global lock]. They are `Send` and `Sync`
+    /// as long as producers/downstream consumers take this lock before the `BLooper`
+    /// or `BWindow` are used outside of their origin threads.
+    ///
+    /// [global lock]: https://grok.nikisoft.one/opengrok/xref/haiku/src/kits/app/Looper.cpp?r=b47e8b0cadeb9a9d985d7f72d2e9a099cbcb8f90#591-627
+    ///
+    /// ## Availability Hints
+    ///
     /// This variant is used on HaikuOS.
-    Haiku(HaikuWindowHandle),
+    #[non_exhaustive]
+    Haiku {
+        /// A pointer to a `BWindow` object.
+        b_window: NonNull<c_void>,
+        /// A pointer to a `BDirectWindow` object that might be null.
+        b_direct_window: Option<NonNull<c_void>>,
+    },
+}
+
+impl RawWindowHandle {
+    /// Create a new handle to a UIView.
+    ///
+    /// # Example
+    ///
+    /// Create a handle from a `UIView`.
+    ///
+    /// ```
+    /// # #[cfg(not(all(target_vendor = "apple", not(target_os = "macos"))))]
+    /// # fn main() {}
+    /// # fn main() {
+    /// #![cfg(all(target_vendor = "apple", not(target_os = "macos")))]
+    /// use std::ptr::NonNull;
+    /// use objc2::rc::Retained;
+    /// use objc2_ui_kit::UIView;
+    /// use raw_window_handle::RawWindowHandle;
+    ///
+    /// // UIView gotten from somewhere.
+    /// let ui_view: Retained<UIView>;
+    /// # ui_view = unsafe { objc2_ui_kit::UIView::new(objc2::MainThreadMarker::new().unwrap()) };
+    ///
+    /// // Pass it to raw-window-handle.
+    /// let ui_view: NonNull<UIView> = NonNull::from(&*ui_view);
+    /// let handle = RawWindowHandle::new_ui_kit(ui_view.cast());
+    /// # }
+    /// ```
+    pub fn new_ui_kit(ui_view: NonNull<c_void>) -> Self {
+        Self::UiKit { ui_view }
+    }
+
+    /// Create a new handle to a NSView.
+    ///
+    /// # Example
+    ///
+    /// Create a handle from the content view of a `NSWindow`.
+    ///
+    /// ```
+    /// # #[cfg(not(target_os = "macos"))]
+    /// # fn main() {}
+    /// # fn main() {
+    /// #![cfg(target_os = "macos")]
+    /// use std::ptr::NonNull;
+    /// use objc2::rc::Retained;
+    /// use objc2_app_kit::{NSWindow, NSView};
+    /// use raw_window_handle::RawWindowHandle;
+    ///
+    /// // NSWindow gotten from somewhere.
+    /// let ns_window: Retained<NSWindow>;
+    /// # ns_window = unsafe { objc2_app_kit::NSWindow::new(objc2::MainThreadMarker::new().unwrap()) };
+    ///
+    /// // Use the window's content view.
+    /// let ns_view: Retained<NSView> = ns_window.contentView().unwrap();
+    /// let ns_view: NonNull<NSView> = NonNull::from(&*ns_view);
+    /// let handle = RawWindowHandle::new_app_kit(ns_view.cast());
+    /// # }
+    /// ```
+    pub fn new_app_kit(ns_view: NonNull<c_void>) -> Self {
+        Self::AppKit { ns_view }
+    }
+
+    /// Create a new handle to an orbclient window.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// # type Window = ();
+    /// #
+    /// let window: NonNull<Window>;
+    /// # window = NonNull::from(&());
+    /// let handle = RawWindowHandle::new_orbital(window.cast());
+    /// ```
+    pub fn new_orbital(window: NonNull<c_void>) -> Self {
+        Self::Orbital { window }
+    }
+
+    /// Create a new handle to an `OHNativeWindow`.
+    ///
+    /// The handle will typically be created from an [`XComponent`], consult the
+    /// [native `XComponent` Guidelines] for more details.
+    ///
+    /// [`XComponent`]: https://gitee.com/openharmony/docs/blob/master/en/application-dev/ui/arkts-common-components-xcomponent.md
+    /// [native `XComponent` Guidelines]: https://gitee.com/openharmony/docs/blob/OpenHarmony-4.0-Release/en/application-dev/napi/xcomponent-guidelines.md
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ptr::NonNull;
+    /// # use core::ffi::c_void;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// # #[allow(non_camel_case_types)]
+    /// # type OH_NativeXComponent = ();
+    ///
+    /// /// Called When the `XComponent` is created.
+    /// ///
+    /// /// See the [XComponent Guidelines](https://gitee.com/openharmony/docs/blob/OpenHarmony-4.0-Release/en/application-dev/napi/xcomponent-guidelines.md)
+    /// /// for more details
+    /// extern "C" fn on_surface_created_callback(component: *mut OH_NativeXComponent, window: *mut c_void) {
+    ///     let handle = RawWindowHandle::new_ohos_ndk(NonNull::new(window).unwrap());
+    /// }
+    /// ```
+    pub fn new_ohos_ndk(native_window: NonNull<c_void>) -> Self {
+        Self::OhosNdk { native_window }
+    }
+
+    /// Create a new handle to an Xlib window.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_ulong;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// #
+    /// let window: c_ulong;
+    /// # window = 0;
+    /// let mut handle = RawWindowHandle::new_xlib(window);
+    /// // Optionally set the visual ID.
+    /// if let RawWindowHandle::Xlib { visual_id, .. } = &mut handle {
+    ///     *visual_id = 0;
+    /// } else {
+    ///     unreachable!();
+    /// }
+    /// ```
+    pub fn new_xlib(window: c_ulong) -> Self {
+        Self::Xlib {
+            window,
+            visual_id: 0,
+        }
+    }
+
+    /// Create a new handle to an XCB window.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::num::NonZeroU32;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// #
+    /// let window: NonZeroU32;
+    /// # window = NonZeroU32::new(1).unwrap();
+    /// let mut handle = RawWindowHandle::new_xcb(window);
+    /// // Optionally set the visual ID.
+    /// if let RawWindowHandle::Xcb { visual_id, .. } = &mut handle {
+    ///     *visual_id = None;
+    /// } else {
+    ///     unreachable!();
+    /// }
+    /// ```
+    pub fn new_xcb(window: NonZeroU32) -> Self {
+        Self::Xcb {
+            window,
+            visual_id: None,
+        }
+    }
+
+    /// Create a new handle to a `wl_surface`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// #
+    /// let surface: NonNull<c_void>;
+    /// # surface = NonNull::from(&()).cast();
+    /// let handle = RawWindowHandle::new_wayland(surface);
+    /// ```
+    pub fn new_wayland(surface: NonNull<c_void>) -> Self {
+        Self::Wayland { surface }
+    }
+
+    /// Create a new handle to a DRM plane.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawWindowHandle;
+    /// #
+    /// let plane: u32;
+    /// # plane = 0;
+    /// let handle = RawWindowHandle::new_drm(plane);
+    /// ```
+    pub fn new_drm(plane: u32) -> Self {
+        Self::Drm { plane }
+    }
+
+    /// Create a new handle to a GBM surface.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// #
+    /// let ptr: NonNull<c_void>;
+    /// # ptr = NonNull::from(&()).cast();
+    /// let handle = RawWindowHandle::new_gbm(ptr);
+    /// ```
+    pub fn new_gbm(gbm_surface: NonNull<c_void>) -> Self {
+        Self::Gbm { gbm_surface }
+    }
+
+    /// Create a new handle to a Win32 window.
+    ///
+    /// # Safety
+    ///
+    /// Some APIs taking a `HWND` must observe its thread-affinity.
+    /// Consumers are responsible to ensure these safety guarantees themselves.
+    /// See [`GetWindowThreadProcessId()`](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowthreadprocessid).
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// # struct HWND(*mut c_void);
+    /// #
+    /// let window: HWND;
+    /// # window = HWND(1 as *mut c_void);
+    /// let mut handle = RawWindowHandle::new_win32(NonNull::new(window.0).unwrap());
+    /// // Optionally set the GWLP_HINSTANCE.
+    /// if let RawWindowHandle::Win32 { hinstance, .. } = &mut handle {
+    ///     # #[cfg(only_for_showcase)]
+    ///     let hinst = NonNull::new(unsafe { GetWindowLongPtrW(window, GWLP_HINSTANCE) }).unwrap();
+    ///     # let hinst = None;
+    ///     *hinstance = hinst;
+    /// } else {
+    ///     unreachable!();
+    /// }
+    ///
+    /// // On the other end we need to check if we are on the
+    /// // right thread when using API calls that require it:
+    /// # #[cfg(only_for_showcase)]
+    /// unsafe { assert_eq!(GetWindowThreadProcessId(HWND(handle.hwnd.as_ptr()), None), GetCurrentThreadId()) };
+    /// ```
+    pub fn new_win32(hwnd: NonNull<c_void>) -> Self {
+        Self::Win32 {
+            hwnd,
+            hinstance: None,
+        }
+    }
+
+    /// Create a new handle to a WinRT window.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// # type CoreWindow = ();
+    /// #
+    /// let window: NonNull<CoreWindow>;
+    /// # window = NonNull::from(&());
+    /// let handle = RawWindowHandle::new_winrt(window.cast());
+    /// ```
+    pub fn new_winrt(core_window: NonNull<c_void>) -> Self {
+        Self::WinRt { core_window }
+    }
+
+    /// Create a new handle from a pointer to [`HtmlCanvasElement`].
+    ///
+    /// [`HtmlCanvasElement`]: https://docs.rs/web-sys/latest/web_sys/struct.HtmlCanvasElement.html
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # #[cfg(not(target_family = "wasm"))]
+    /// # fn main() {}
+    /// # fn main() {
+    /// #![cfg(target_family = "wasm")]
+    /// use raw_window_handle::RawWindowHandle;
+    /// use wasm_bindgen::convert::IntoWasmAbi;
+    /// use web_sys::HtmlCanvasElement;
+    ///
+    /// let value: HtmlCanvasElement;
+    /// # value = todo!();
+    ///
+    /// // Convert to the raw index and convert to the handle.
+    /// let index = (&value).into_abi();
+    /// let mut handle = RawWindowHandle::new_wasm_bindgen_canvas(index as usize);
+    /// # }
+    /// ```
+    pub fn new_wasm_bindgen_canvas(obj: usize) -> Self {
+        Self::WasmBindgenCanvas { obj }
+    }
+
+    /// Create a new handle from a pointer to an [`OffscreenCanvas`].
+    ///
+    /// [`OffscreenCanvas`]: https://docs.rs/web-sys/latest/web_sys/struct.OffscreenCanvas.html
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # #[cfg(not(target_family = "wasm"))]
+    /// # fn main() {}
+    /// # fn main() {
+    /// #![cfg(target_family = "wasm")]
+    /// use raw_window_handle::RawWindowHandle;
+    /// use wasm_bindgen::convert::IntoWasmAbi;
+    /// use web_sys::OffscreenCanvas;
+    ///
+    /// let value: OffscreenCanvas;
+    /// # value = todo!();
+    ///
+    /// // Convert to the raw index and convert to the handle.
+    /// let index = (&value).into_abi();
+    /// let handle = RawWindowHandle::new_wasm_bindgen_offscreen_canvas(index as usize);
+    /// # }
+    /// ```
+    pub fn new_wasm_bindgen_offscreen_canvas(obj: usize) -> Self {
+        Self::WasmBindgenOffscreenCanvas { obj }
+    }
+
+    /// Create a new handle to an `ANativeWindow`.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// # type ANativeWindow = ();
+    /// #
+    /// let ptr: NonNull<ANativeWindow>;
+    /// # ptr = NonNull::from(&());
+    /// let handle = RawWindowHandle::new_android_ndk(ptr.cast());
+    /// ```
+    pub fn new_android_ndk(a_native_window: NonNull<c_void>) -> Self {
+        Self::AndroidNdk { a_native_window }
+    }
+
+    /// Create a new handle to a Haiku window.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawWindowHandle;
+    /// # type BWindow = ();
+    /// #
+    /// let b_window: NonNull<BWindow>;
+    /// # b_window = NonNull::from(&());
+    /// let mut handle = RawWindowHandle::new_haiku(b_window.cast());
+    /// // Optionally set `b_direct_window`.
+    /// if let RawWindowHandle::Haiku { b_direct_window, .. } = &mut handle {
+    ///     *b_direct_window = None;
+    /// } else {
+    ///     unreachable!()
+    /// }
+    /// ```
+    pub fn new_haiku(b_window: NonNull<c_void>) -> Self {
+        Self::Haiku {
+            b_window,
+            b_direct_window: None,
+        }
+    }
 }
 
 /// A display server handle for a particular windowing system.
@@ -199,14 +913,18 @@ pub enum RawWindowHandle {
 /// tied to a particular window. Some APIs can use the display handle without ever creating a window
 /// handle (e.g. offscreen rendering, headless event handling).
 ///
-/// Each variant contains a struct with fields specific to that windowing system
-/// (e.g. [`XlibDisplayHandle`] contains a [Display] connection to an X Server,
-/// [`WaylandDisplayHandle`] uses [wl_display] to connect to a compositor). Not all windowing
-/// systems have a separate display handle (or they haven't been implemented yet) and their variants
-/// contain empty structs.
+/// Each variant fields specific to that windowing system (e.g. [`RawDisplayHandle::Xlib`] contains
+/// a [Display] connection to an X Server, [`RawDisplayHandle::Wayland`] uses [wl_display] to
+/// connect to a compositor). Not all windowing systems have a separate display handle (or they
+/// haven't been implemented yet) and their variants are empty.
 ///
 /// [Display]: https://www.x.org/releases/current/doc/libX11/libX11/libX11.html#Display_Functions
 /// [wl_display]: https://wayland.freedesktop.org/docs/html/apb.html#Client-classwl__display
+///
+/// ## Thread safety
+///
+/// See individual variants for thread safety documentation. Since some
+/// window handle types are `!Send` and `!Sync`, this sum type is as well.
 ///
 /// # Variant Availability
 ///
@@ -219,91 +937,479 @@ pub enum RawWindowHandle {
 /// unexpected. (For example, it's legal for someone to return a
 /// [`RawDisplayHandle::Xlib`] on macOS, it would just be weird, and probably
 /// requires something like XQuartz be used).
-///
-/// ## Thread Safety
-///
-/// See individual handle types for thread safety documentation. Since some
-/// window handle types are `!Send` and `!Sync`, this sum type is as well.
 #[non_exhaustive]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RawDisplayHandle {
     /// A raw display handle for UIKit (Apple's non-macOS windowing library).
     ///
+    /// ## Thread safety
+    ///
+    /// This type has the same thread safety guarantees as [`RawWindowHandle::UiKit`].
+    ///
+    /// Note that this type does not contain any UIKit objects. However,
+    /// it is kept `!Send` and `!Sync` for the event that UIKit objects are
+    /// added to this type.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on iOS, tvOS, watchOS, visionOS, and Mac
     /// Catalyst, as these are the targets that (currently) support UIKit.
     ///
     /// Note that Mac Catalyst (`$arch-apple-ios-macabi` targets), can use
     /// UIKit *or* AppKit.
-    UiKit(UiKitDisplayHandle),
+    #[non_exhaustive]
+    UiKit {
+        // Empty for now, logically `!Send` + `!Sync`.
+    },
+
     /// A raw display handle for AppKit.
     ///
+    /// ## Thread safety
+    ///
+    /// This type has the safe thread safety guarantees as [`RawWindowHandle::AppKit`].
+    ///
+    /// Note that this type does not contain any Appkit objects. However,
+    /// it is kept `!Send` and `!Sync` for the event that Appkit objects are
+    /// added to this type.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on macOS, although Mac Catalyst can also use it
     /// despite being `target_os = "ios"`.
-    AppKit(AppKitDisplayHandle),
+    #[non_exhaustive]
+    AppKit {
+        // Empty for now, logically `!Send` + `!Sync`.
+        // Could probably be either `NSApplication` or `CATransaction`.
+    },
+
     /// A raw display handle for the Redox operating system.
     ///
+    /// ## Thread safety
+    ///
+    /// The underlying window is a [file descriptor], and most calls on the window
+    /// correspond directly to non-mutating file descriptor reads and writes.
+    /// Therefore this type is `Send` and `Sync`. This means that this type can be
+    /// sent to and used from other threads.
+    ///
+    /// Note that this type does not currently contain any Orbital file descriptors.
+    /// This type is kept as `Send` and `Sync` in preparation for file descriptors
+    /// to be added to this type.
+    ///
+    /// [file descriptor]: https://github.com/redox-os/orbclient/blob/77c28e88fcb180c750175f2dcf5c7342d357ab26/src/sys/orbital.rs#L64-L65
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used by the Orbital Windowing System in the Redox
     /// operating system.
-    Orbital(OrbitalDisplayHandle),
+    #[non_exhaustive]
+    Orbital {
+        // Empty for now.
+    },
+
     /// A raw display handle for OpenHarmony OS NDK
     ///
-    /// ## Availability Hints
-    /// This variant is used on OpenHarmony OS (`target_env = "ohos"`).
-    Ohos(OhosDisplayHandle),
-    /// A raw display handle for Xlib.
+    /// ## Thread safety
+    ///
+    /// OpenHarmony [expects] that UI primitives will only be called from one
+    /// thread. Therefore, all OHOS objects are `!Send` and `!Sync`. This means
+    /// that this type cannot be sent to or used from other threads.
+    ///
+    /// Note that this type does not contain any OHOS objects. However, it is kept
+    /// `!Send` and `!Sync` for the event that OHOS objects are added to this
+    /// type.
+    ///
+    /// [expects]: https://ai6s.net/6921b48882fbe0098cade00f.html
     ///
     /// ## Availability Hints
+    ///
+    /// This variant is used on OpenHarmony OS (`target_env = "ohos"`).
+    #[non_exhaustive]
+    Ohos {
+        // Empty for now, logically `!Send` + `!Sync`.
+    },
+
+    /// A raw display handle for Xlib.
+    ///
+    /// ## Thread safety
+    ///
+    /// Reads and writes to and from the X server are internally secure by a [mutex].
+    /// Therefore this type is `Send` and `Sync`. This means it can be sent to or
+    /// used from other threads.
+    ///
+    /// [mutex]: https://gitlab.freedesktop.org/xorg/lib/libx11/-/blob/master/src/locking.c?ref_type=heads#L596
+    ///
+    /// ## Availability Hints
+    ///
     /// This variant is likely to show up anywhere someone manages to get X11
     /// working that Xlib can be built for, which is to say, most (but not all)
     /// Unix systems.
-    Xlib(XlibDisplayHandle),
+    #[non_exhaustive]
+    Xlib {
+        /// A pointer to an Xlib `Display`.
+        ///
+        /// It is strongly recommended to set this value, however it may be set to
+        /// `None` to request the default display when using EGL.
+        display: Option<NonNull<c_void>>,
+
+        /// An X11 screen to use with this display handle.
+        ///
+        /// Note, that X11 could have multiple screens, however
+        /// graphics APIs could work only with one screen at the time,
+        /// given that multiple screens usually reside on different GPUs.
+        screen: c_int,
+    },
+
     /// A raw display handle for Xcb.
     ///
+    /// ## Thread safety
+    ///
+    /// Reads and writes to and from the X server are internally secure by a [mutex].
+    /// Therefore this type is `Send` and `Sync`. This means it can be sent to or
+    /// used from other threads.
+    ///
+    /// [mutex]: https://gitlab.freedesktop.org/xorg/lib/libxcb/-/blob/master/src/xcb_conn.c?ref_type=heads#L165
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is likely to show up anywhere someone manages to get X11
     /// working that XCB can be built for, which is to say, most (but not all)
     /// Unix systems.
-    Xcb(XcbDisplayHandle),
+    #[non_exhaustive]
+    Xcb {
+        /// A pointer to an X server `xcb_connection_t`.
+        ///
+        /// It is strongly recommended to set this value, however it may be set to
+        /// `None` to request the default display when using EGL.
+        connection: Option<NonNull<c_void>>,
+
+        /// An X11 screen to use with this display handle.
+        ///
+        /// Note, that X11 could have multiple screens, however
+        /// graphics APIs could work only with one screen at the time,
+        /// given that multiple screens usually reside on different GPUs.
+        screen: c_int,
+    },
+
     /// A raw display handle for Wayland.
     ///
+    /// ## Thread safety
+    ///
+    /// `libwayland-client` is thread safe, therefore this type is `Send` and `Sync`.
+    /// This means that this type can be sent to and from other threads.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant should be expected anywhere Wayland works, which is
     /// currently some subset of unix systems.
-    Wayland(WaylandDisplayHandle),
+    #[non_exhaustive]
+    Wayland {
+        /// A pointer to a `wl_display`.
+        display: NonNull<c_void>,
+    },
+
     /// A raw display handle for the Linux Kernel Mode Set/Direct Rendering Manager
     ///
+    /// ## Thread safety
+    ///
+    /// The DRM display handle is a file descriptor, and file descriptors in Unix
+    /// are thread-safe by default. Therefore this type is `Send` and `Sync`. This
+    /// means that it can be sent to or used from other threads.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on Linux when neither X nor Wayland are available
-    Drm(DrmDisplayHandle),
+    #[non_exhaustive]
+    Drm {
+        /// The drm file descriptor.
+        // TODO: Use `std::os::fd::RawFd`?
+        fd: i32,
+    },
+
     /// A raw display handle for the Linux Generic Buffer Manager.
     ///
+    /// ## Thread safety
+    ///
+    /// GBM devices are not bound to a single thread; however, they are not
+    /// internally secured by mutexes and cannot be used by multiple threads at
+    /// once. Therefore this type is `Send` but not `Sync`. This means it can be
+    /// sent to other threads but not used from other threads.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is present regardless of windowing backend and likely to be used with
     /// EGL_MESA_platform_gbm or EGL_KHR_platform_gbm.
-    Gbm(GbmDisplayHandle),
+    #[non_exhaustive]
+    Gbm {
+        /// The gbm device.
+        gbm_device: NonNull<c_void>,
+    },
+
     /// A raw display handle for Win32.
     ///
+    /// This can be used regardless of Windows window backend.
+    ///
+    /// ## Thread safety
+    ///
+    /// TODO.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on Windows systems.
-    Windows(WindowsDisplayHandle),
+    #[non_exhaustive]
+    Windows {
+        // Empty for now.
+    },
+
     /// A raw display handle for the Web.
     ///
+    /// ## Thread-Safety
+    ///
+    /// WASM objects are usually bound to the main UI "thread" belonging to the
+    /// top-level webpage. Therefore this type is `!Send` and `!Sync`. It cannot be
+    /// sent to or used from other threads.
+    ///
+    /// Note that this type does not contain any WASM objects. However,
+    /// it is kept `!Send` and `!Sync` for the event that WASM objects are
+    /// added to this type.
+    ///
+    /// However, this status quo may change in the future, due to the adoption of
+    /// atomics in WASM code. Therefore this type may be made `Send` and `Sync` as
+    /// part of a non-breaking change.
+    ///
     /// ## Availability Hints
+    ///
     /// This variant is used on Wasm or asm.js targets when targeting the Web/HTML5.
-    WasmBindgen(WasmBindgenDisplay),
+    #[non_exhaustive]
+    WasmBindgen {
+        // Empty for now, logically `!Send` + `!Sync`.
+    },
+
     /// A raw display handle for Android NDK.
     ///
-    /// ## Availability Hints
-    /// This variant is used on Android targets.
-    Android(AndroidDisplayHandle),
-    /// A raw display handle for Haiku.
+    /// ## Thread safety
+    ///
+    /// Android native objects are thread-safe by default; therefore this type is
+    /// `Send` and `Sync`. This means that this variant can be sent to or used from
+    /// any thread.
+    ///
+    /// Note that this variant does not contain any Android native objects. However,
+    /// it is kept `Send` and `Sync` for the event that Android native objects are
+    /// added to this type.
     ///
     /// ## Availability Hints
+    ///
+    /// This variant is used on Android targets.
+    #[non_exhaustive]
+    Android {
+        // Empty for now.
+    },
+
+    /// A raw display handle for Haiku.
+    ///
+    /// ## Thread Safety
+    ///
+    /// Haiku objects are protected by a [global lock]. They are `Send` and `Sync`
+    /// as long as producers/downstream consumers take this lock before the `BLooper`
+    /// or `BWindow` are used outside of their origin threads.
+    ///
+    /// Note that this type does not currently contain any Haiku objects. However,
+    /// it is kept `Send` and `Sync` for the event that Haiku objects are added to
+    /// this type.
+    ///
+    /// [global lock]: https://grok.nikisoft.one/opengrok/xref/haiku/src/kits/app/Looper.cpp?r=b47e8b0cadeb9a9d985d7f72d2e9a099cbcb8f90#591-627
+    ///
+    /// ## Availability Hints
+    ///
     /// This variant is used on HaikuOS.
-    Haiku(HaikuDisplayHandle),
+    #[non_exhaustive]
+    Haiku {
+        // Empty for now.
+    },
+}
+
+impl RawDisplayHandle {
+    /// Create a new empty display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// let handle = RawDisplayHandle::new_uikit();
+    /// ```
+    pub fn new_uikit() -> Self {
+        Self::UiKit {}
+    }
+
+    /// Create a new empty display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// let handle = RawDisplayHandle::new_appkit();
+    /// ```
+    pub fn new_appkit() -> Self {
+        Self::AppKit {}
+    }
+
+    /// Create a new empty display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// let handle = RawDisplayHandle::new_orbital();
+    /// ```
+    pub fn new_orbital() -> Self {
+        Self::Orbital {}
+    }
+
+    /// Create a new empty display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// let handle = RawDisplayHandle::new_ohos();
+    /// ```
+    pub fn new_ohos() -> Self {
+        Self::Ohos {}
+    }
+
+    /// Create a new handle to a display.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// #
+    /// let display: NonNull<c_void>;
+    /// let screen;
+    /// # display = NonNull::from(&()).cast();
+    /// # screen = 0;
+    /// let handle = RawDisplayHandle::new_xlib(Some(display), screen);
+    /// ```
+    pub fn new_xlib(display: Option<NonNull<c_void>>, screen: c_int) -> Self {
+        Self::Xlib { display, screen }
+    }
+
+    /// Create a new handle to a connection and screen.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// #
+    /// let connection: NonNull<c_void>;
+    /// let screen;
+    /// # connection = NonNull::from(&()).cast();
+    /// # screen = 0;
+    /// let handle = RawDisplayHandle::new_xcb(Some(connection), screen);
+    /// ```
+    pub fn new_xcb(connection: Option<NonNull<c_void>>, screen: c_int) -> Self {
+        Self::Xcb { connection, screen }
+    }
+
+    /// Create a new display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// #
+    /// let display: NonNull<c_void>;
+    /// # display = NonNull::from(&()).cast();
+    /// let handle = RawDisplayHandle::new_wayland(display);
+    /// ```
+    pub fn new_wayland(display: NonNull<c_void>) -> Self {
+        Self::Wayland { display }
+    }
+
+    /// Create a new handle to a file descriptor.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// #
+    /// let fd: i32;
+    /// # fd = 0;
+    /// let handle = RawDisplayHandle::new_drm(fd);
+    /// ```
+    pub fn new_drm(fd: i32) -> Self {
+        Self::Drm { fd }
+    }
+
+    /// Create a new handle to a device.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::ffi::c_void;
+    /// # use core::ptr::NonNull;
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// #
+    /// let ptr: NonNull<c_void>;
+    /// # ptr = NonNull::from(&()).cast();
+    /// let handle = RawDisplayHandle::new_gbm(ptr);
+    /// ```
+    pub fn new_gbm(gbm_device: NonNull<c_void>) -> Self {
+        Self::Gbm { gbm_device }
+    }
+
+    /// Create a new empty display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// let handle = RawDisplayHandle::new_windows();
+    /// ```
+    pub fn new_windows() -> Self {
+        Self::Windows {}
+    }
+
+    /// Create a new empty display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// let handle = RawDisplayHandle::new_wasm_bindgen();
+    /// ```
+    pub fn new_wasm_bindgen() -> Self {
+        Self::WasmBindgen {}
+    }
+
+    /// Create a new empty display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// let handle = RawDisplayHandle::new_android();
+    /// ```
+    pub fn new_android() -> Self {
+        Self::Android {}
+    }
+
+    /// Create a new empty display handle.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use raw_window_handle::RawDisplayHandle;
+    /// let handle = RawDisplayHandle::new_haiku();
+    /// ```
+    pub fn new_haiku() -> Self {
+        Self::Haiku {}
+    }
 }
 
 /// An error that can occur while fetching a display or window handle.
@@ -353,54 +1459,6 @@ impl fmt::Display for HandleError {
 #[cfg(feature = "std")]
 impl std::error::Error for HandleError {}
 
-macro_rules! from_impl {
-    ($($to:ident, $enum:ident, $from:ty)*) => ($(
-        impl From<$from> for $to {
-            fn from(value: $from) -> Self {
-                $to::$enum(value)
-            }
-        }
-    )*)
-}
-
-from_impl!(RawDisplayHandle, UiKit, UiKitDisplayHandle);
-from_impl!(RawDisplayHandle, AppKit, AppKitDisplayHandle);
-from_impl!(RawDisplayHandle, Orbital, OrbitalDisplayHandle);
-from_impl!(RawDisplayHandle, Ohos, OhosDisplayHandle);
-from_impl!(RawDisplayHandle, Xlib, XlibDisplayHandle);
-from_impl!(RawDisplayHandle, Xcb, XcbDisplayHandle);
-from_impl!(RawDisplayHandle, Wayland, WaylandDisplayHandle);
-from_impl!(RawDisplayHandle, Drm, DrmDisplayHandle);
-from_impl!(RawDisplayHandle, Gbm, GbmDisplayHandle);
-from_impl!(RawDisplayHandle, Windows, WindowsDisplayHandle);
-from_impl!(RawDisplayHandle, WasmBindgen, WasmBindgenDisplay);
-from_impl!(RawDisplayHandle, Android, AndroidDisplayHandle);
-from_impl!(RawDisplayHandle, Haiku, HaikuDisplayHandle);
-
-from_impl!(RawWindowHandle, UiKit, UiKitWindowHandle);
-from_impl!(RawWindowHandle, AppKit, AppKitWindowHandle);
-from_impl!(RawWindowHandle, Orbital, OrbitalWindowHandle);
-from_impl!(RawWindowHandle, OhosNdk, OhosNdkWindowHandle);
-from_impl!(RawWindowHandle, Xlib, XlibWindowHandle);
-from_impl!(RawWindowHandle, Xcb, XcbWindowHandle);
-from_impl!(RawWindowHandle, Wayland, WaylandWindowHandle);
-from_impl!(RawWindowHandle, Drm, DrmWindowHandle);
-from_impl!(RawWindowHandle, Gbm, GbmWindowHandle);
-from_impl!(RawWindowHandle, Win32, Win32WindowHandle);
-from_impl!(RawWindowHandle, WinRt, WinRtWindowHandle);
-from_impl!(
-    RawWindowHandle,
-    WasmBindgenCanvas,
-    WasmBindgenCanvasWindowHandle
-);
-from_impl!(
-    RawWindowHandle,
-    WasmBindgenOffscreenCanvas,
-    WasmBindgenOffscreenCanvasWindowHandle
-);
-from_impl!(RawWindowHandle, AndroidNdk, AndroidNdkWindowHandle);
-from_impl!(RawWindowHandle, Haiku, HaikuWindowHandle);
-
 #[cfg(test)]
 mod tests {
     use core::panic::{RefUnwindSafe, UnwindSafe};
@@ -419,41 +1477,6 @@ mod tests {
         assert_impl_all!(WindowHandle<'_>: UnwindSafe, RefUnwindSafe, Unpin);
         assert_not_impl_any!(WindowHandle<'_>: Send, Sync);
         assert_impl_all!(HandleError: Send, Sync, UnwindSafe, RefUnwindSafe, Unpin);
-
-        // TODO: Unsure if some of these should not actually be Send + Sync
-        assert_not_impl_any!(UiKitDisplayHandle: Send, Sync);
-        assert_not_impl_any!(AppKitDisplayHandle: Send, Sync);
-        assert_impl_all!(OrbitalDisplayHandle: Send, Sync);
-        assert_not_impl_any!(OhosDisplayHandle: Send, Sync);
-        assert_impl_all!(XlibDisplayHandle: Send, Sync);
-        assert_impl_all!(XcbDisplayHandle: Send, Sync);
-        assert_impl_all!(WaylandDisplayHandle: Send, Sync);
-        assert_impl_all!(DrmDisplayHandle: Send, Sync);
-        assert_impl_all!(GbmDisplayHandle: Send);
-        assert_not_impl_any!(GbmDisplayHandle: Sync);
-        assert_impl_all!(WindowsDisplayHandle: Send, Sync);
-        assert_not_impl_any!(WasmBindgenDisplay: Send, Sync);
-        assert_impl_all!(AndroidDisplayHandle: Send, Sync);
-        assert_impl_all!(HaikuDisplayHandle: Send, Sync);
-
-        // TODO: Unsure if some of these should not actually be Send + Sync
-        assert_not_impl_any!(UiKitWindowHandle: Send, Sync);
-        assert_not_impl_any!(AppKitWindowHandle: Send, Sync);
-        assert_impl_all!(OrbitalWindowHandle: Send, Sync);
-        assert_not_impl_any!(OhosNdkWindowHandle: Send, Sync);
-        assert_impl_all!(XlibWindowHandle: Send, Sync);
-        assert_impl_all!(XcbWindowHandle: Send, Sync);
-        assert_impl_all!(WaylandWindowHandle: Send, Sync);
-        assert_impl_all!(DrmWindowHandle: Send, Sync);
-        assert_not_impl_any!(GbmWindowHandle: Sync);
-        assert_impl_all!(GbmWindowHandle: Send);
-        assert_not_impl_any!(WinRtWindowHandle: Send);
-        assert_impl_all!(Win32WindowHandle: Send, Sync);
-        assert_impl_all!(WinRtWindowHandle: Sync);
-        assert_not_impl_any!(WasmBindgenCanvasWindowHandle: Send, Sync);
-        assert_not_impl_any!(WasmBindgenOffscreenCanvasWindowHandle: Send, Sync);
-        assert_impl_all!(AndroidNdkWindowHandle: Send, Sync);
-        assert_impl_all!(HaikuWindowHandle: Send, Sync);
     }
 
     #[allow(unused)]
