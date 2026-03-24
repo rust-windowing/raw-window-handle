@@ -12,6 +12,7 @@ documentation = "https://docs.rs/raw-window-handle"
 rust-version = "1.64"
 
 [features]
+default = ["std"]
 alloc = []
 std = ["alloc"]
 
