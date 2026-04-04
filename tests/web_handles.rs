@@ -4,8 +4,8 @@
 
 use core::mem::ManuallyDrop;
 use raw_window_handle::{WasmBindgenCanvasWindowHandle, WasmBindgenOffscreenCanvasWindowHandle};
-use wasm_bindgen::convert::{IntoWasmAbi, RefFromWasmAbi};
 use wasm_bindgen::JsCast;
+use wasm_bindgen::convert::{IntoWasmAbi, RefFromWasmAbi};
 use web_sys::{HtmlCanvasElement, OffscreenCanvas};
 
 #[wasm_bindgen_test::wasm_bindgen_test]
