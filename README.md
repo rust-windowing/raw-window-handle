@@ -13,10 +13,7 @@ can use to easily talk with graphics libraries (e.g. gfx-hal).
 ## MSRV Policy
 
 The Minimum Safe Rust Version (MSRV) of this crate as of the time of writing is
-**1.64.0**. For pre-`1.0` releases of `raw-window-handle`, this version will not
+**1.85.0**. For pre-`1.0` releases of `raw-window-handle`, this version will not
 be changed without a patch bump to the version of `raw-window-handle`. After
 version `1.0.0` is released, changes to the MSRV will necessitate a minor
 version bump.
-
-When the `std` feature is **disabled** (it is enabled by default), the MSRV will
-be bumped to v1.81 (to support `core::error::Error`).
